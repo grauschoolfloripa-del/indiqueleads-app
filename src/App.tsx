@@ -200,11 +200,19 @@ export default function App() {
     }
   }, []);
 
-  // --- BRIDGE: Supabase Auth → loggedUser (real production auth) ---
+  // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
   const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
   useEffect(() => {
     if (supaLoading) return;
-    if (!supaUser) return; // keep legacy localStorage session for demo/switcher
+    if (!supaUser) {
+      // No Supabase session: clear any stale legacy session so UI reflects logged-out state.
+      const stale = localStorage.getItem('indica_logged_user');
+      if (stale) {
+        localStorage.removeItem('indica_logged_user');
+        setLoggedUser(null);
+      }
+      return;
+    }
     const role: 'indicador' | 'anunciante' | 'admin' =
       supaRoles.includes('admin') ? 'admin'
       : supaRoles.includes('advertiser') ? 'anunciante'
@@ -216,8 +224,9 @@ export default function App() {
     const userObj = { id: supaUser.id, name: displayName, email: supaUser.email ?? '', role };
     setLoggedUser(userObj);
     setCurrentRole(role);
-    saveToStorage('indica_logged_user', userObj);
+    localStorage.setItem('indica_logged_user', JSON.stringify(userObj));
   }, [supaUser, supaRoles, supaLoading]);
+
 
 
 
