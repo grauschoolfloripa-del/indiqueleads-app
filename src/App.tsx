@@ -390,7 +390,7 @@ export default function App() {
             contractUrl: url,
             notes,
             commissionPaid: true,
-            status: 'venda_concluida'
+            status: 'venda_concluida' as const
           };
         }
         return l;

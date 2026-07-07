@@ -600,13 +600,13 @@ export default function AdvertiserDashboard({
       }
 
       setIntegrations(prev => {
-        const u = { ...prev };
+        const u = { ...prev } as Record<string, any>;
         u[platform] = {
           ...u[platform],
           active: true,
           lastSync: new Date().toLocaleString('pt-BR')
         };
-        return u;
+        return u as typeof prev;
       });
 
       onAddNotification(`Sincronização concluída! ${syncCount} anúncio(s) importados de ${platform.toUpperCase()}.`, 'success');
