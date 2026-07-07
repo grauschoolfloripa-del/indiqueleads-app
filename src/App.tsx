@@ -16,6 +16,8 @@ import AdminPanel from './components/AdminPanel';
 import VisitorView from './components/VisitorView';
 import LandingPage from './components/LandingPage';
 import AuthBar from './components/AuthBar';
+import { useAuth, signOut as supabaseSignOut } from './hooks/useAuth';
+
 
 export default function App() {
   // --- STATE DECLARATIONS ---
