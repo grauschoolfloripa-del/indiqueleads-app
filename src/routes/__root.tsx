@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "IndicaAqui — Plataforma de Indicações" },
+      { name: "description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
+      { property: "og:description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
+      { name: "twitter:description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31474af4-b458-4797-b4de-f8a4e4c04a6f/id-preview-53458672--59267e10-8ce6-4542-af3e-3921c95632d7.lovable.app-1783437774974.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31474af4-b458-4797-b4de-f8a4e4c04a6f/id-preview-53458672--59267e10-8ce6-4542-af3e-3921c95632d7.lovable.app-1783437774974.png" },
     ],
     links: [
       {
