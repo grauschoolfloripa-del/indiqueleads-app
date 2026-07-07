@@ -15,6 +15,7 @@ import AdvertiserDashboard from './components/AdvertiserDashboard';
 import AdminPanel from './components/AdminPanel';
 import VisitorView from './components/VisitorView';
 import LandingPage from './components/LandingPage';
+import AuthBar from './components/AuthBar';
 
 export default function App() {
   // --- STATE DECLARATIONS ---
@@ -727,13 +728,16 @@ export default function App() {
               Sessão Ativa: <strong className="font-bold">{loggedUser.name}</strong> ({loggedUser.role === 'admin' ? 'Administrador Geral' : loggedUser.role === 'indicador' ? 'Indicador Autônomo' : 'Anunciante Parceiro'}) — <span className="font-mono text-[10px] text-slate-500">{loggedUser.email}</span>
             </span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-white border border-orange-200 text-orange-700 font-bold px-3 py-1 rounded-lg hover:bg-orange-100 transition-colors flex items-center gap-1 shadow-sm text-[11px]"
-          >
-            <X className="w-3.5 h-3.5" />
-            Sair do Painel
-          </button>
+          <div className="flex items-center gap-2">
+            <AuthBar />
+            <button
+              onClick={handleLogout}
+              className="bg-white border border-orange-200 text-orange-700 font-bold px-3 py-1 rounded-lg hover:bg-orange-100 transition-colors flex items-center gap-1 shadow-sm text-[11px]"
+            >
+              <X className="w-3.5 h-3.5" />
+              Sair do Painel
+            </button>
+          </div>
         </div>
       )}
 

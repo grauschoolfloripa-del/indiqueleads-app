@@ -14,16 +14,762 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      advertisers: {
+        Row: {
+          categories: Database["public"]["Enums"]["product_category"][]
+          city: string | null
+          cnpj_or_cpf: string
+          created_at: string
+          email: string
+          has_accepted_terms: boolean
+          id: string
+          name: string
+          phone: string
+          plan: Database["public"]["Enums"]["advertiser_plan"]
+          state: string | null
+          terms_accepted_at: string | null
+          type: Database["public"]["Enums"]["advertiser_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories?: Database["public"]["Enums"]["product_category"][]
+          city?: string | null
+          cnpj_or_cpf: string
+          created_at?: string
+          email: string
+          has_accepted_terms?: boolean
+          id?: string
+          name: string
+          phone: string
+          plan?: Database["public"]["Enums"]["advertiser_plan"]
+          state?: string | null
+          terms_accepted_at?: string | null
+          type: Database["public"]["Enums"]["advertiser_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories?: Database["public"]["Enums"]["product_category"][]
+          city?: string | null
+          cnpj_or_cpf?: string
+          created_at?: string
+          email?: string
+          has_accepted_terms?: boolean
+          id?: string
+          name?: string
+          phone?: string
+          plan?: Database["public"]["Enums"]["advertiser_plan"]
+          state?: string | null
+          terms_accepted_at?: string | null
+          type?: Database["public"]["Enums"]["advertiser_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_blocked_by_security: boolean
+          is_system: boolean
+          lead_id: string
+          original_text: string | null
+          sender_id: string | null
+          sender_name: string
+          sender_role: Database["public"]["Enums"]["chat_sender_role"]
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_blocked_by_security?: boolean
+          is_system?: boolean
+          lead_id: string
+          original_text?: string | null
+          sender_id?: string | null
+          sender_name: string
+          sender_role: Database["public"]["Enums"]["chat_sender_role"]
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_blocked_by_security?: boolean
+          is_system?: boolean
+          lead_id?: string
+          original_text?: string | null
+          sender_id?: string | null
+          sender_name?: string
+          sender_role?: Database["public"]["Enums"]["chat_sender_role"]
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financing_bank_responses: {
+        Row: {
+          approved_amount: number
+          approved_status: string
+          bank_name: string
+          created_at: string
+          id: string
+          installment_value: number
+          installments_count: number
+          interest_rate: number
+          notes: string | null
+          simulation_id: string
+        }
+        Insert: {
+          approved_amount: number
+          approved_status: string
+          bank_name: string
+          created_at?: string
+          id?: string
+          installment_value: number
+          installments_count: number
+          interest_rate: number
+          notes?: string | null
+          simulation_id: string
+        }
+        Update: {
+          approved_amount?: number
+          approved_status?: string
+          bank_name?: string
+          created_at?: string
+          id?: string
+          installment_value?: number
+          installments_count?: number
+          interest_rate?: number
+          notes?: string | null
+          simulation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financing_bank_responses_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "financing_simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financing_simulations: {
+        Row: {
+          advertiser_id: string
+          approved_amount: number | null
+          approved_bank: string | null
+          approved_down_payment: number | null
+          approved_installment_value: number | null
+          approved_installments: number | null
+          approved_interest_rate: number | null
+          approved_notes: string | null
+          client_birth_date: string
+          client_cpf: string
+          client_income: number
+          client_name: string
+          client_phone: string
+          created_at: string
+          desired_installments: number
+          down_payment: number
+          id: string
+          indicator_id: string | null
+          product_id: string
+          status: Database["public"]["Enums"]["financing_status"]
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          approved_amount?: number | null
+          approved_bank?: string | null
+          approved_down_payment?: number | null
+          approved_installment_value?: number | null
+          approved_installments?: number | null
+          approved_interest_rate?: number | null
+          approved_notes?: string | null
+          client_birth_date: string
+          client_cpf: string
+          client_income: number
+          client_name: string
+          client_phone: string
+          created_at?: string
+          desired_installments: number
+          down_payment: number
+          id?: string
+          indicator_id?: string | null
+          product_id: string
+          status?: Database["public"]["Enums"]["financing_status"]
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          approved_amount?: number | null
+          approved_bank?: string | null
+          approved_down_payment?: number | null
+          approved_installment_value?: number | null
+          approved_installments?: number | null
+          approved_interest_rate?: number | null
+          approved_notes?: string | null
+          client_birth_date?: string
+          client_cpf?: string
+          client_income?: number
+          client_name?: string
+          client_phone?: string
+          created_at?: string
+          desired_installments?: number
+          down_payment?: number
+          id?: string
+          indicator_id?: string | null
+          product_id?: string
+          status?: Database["public"]["Enums"]["financing_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financing_simulations_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financing_simulations_indicator_id_fkey"
+            columns: ["indicator_id"]
+            isOneToOne: false
+            referencedRelation: "indicators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financing_simulations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      indicators: {
+        Row: {
+          balance_available: number
+          balance_pending: number
+          city: string | null
+          clicks: number
+          cpf: string
+          created_at: string
+          email: string
+          has_accepted_terms: boolean
+          id: string
+          league: Database["public"]["Enums"]["indicator_league"]
+          name: string
+          phone: string
+          pix_key: string
+          pix_type: Database["public"]["Enums"]["pix_type"]
+          score: number
+          state: string | null
+          terms_accepted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_available?: number
+          balance_pending?: number
+          city?: string | null
+          clicks?: number
+          cpf: string
+          created_at?: string
+          email: string
+          has_accepted_terms?: boolean
+          id?: string
+          league?: Database["public"]["Enums"]["indicator_league"]
+          name: string
+          phone: string
+          pix_key: string
+          pix_type: Database["public"]["Enums"]["pix_type"]
+          score?: number
+          state?: string | null
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_available?: number
+          balance_pending?: number
+          city?: string | null
+          clicks?: number
+          cpf?: string
+          created_at?: string
+          email?: string
+          has_accepted_terms?: boolean
+          id?: string
+          league?: Database["public"]["Enums"]["indicator_league"]
+          name?: string
+          phone?: string
+          pix_key?: string
+          pix_type?: Database["public"]["Enums"]["pix_type"]
+          score?: number
+          state?: string | null
+          terms_accepted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lead_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["lead_status"] | null
+          id: string
+          lead_id: string
+          notes: string | null
+          to_status: Database["public"]["Enums"]["lead_status"]
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["lead_status"] | null
+          id?: string
+          lead_id: string
+          notes?: string | null
+          to_status: Database["public"]["Enums"]["lead_status"]
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["lead_status"] | null
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          to_status?: Database["public"]["Enums"]["lead_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_status_history_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          advertiser_id: string
+          check_in_requested: boolean
+          client_email: string
+          client_name: string
+          client_phone: string
+          commission_paid: boolean
+          commission_type: Database["public"]["Enums"]["commission_type"]
+          commission_value: number
+          contract_url: string | null
+          created_at: string
+          id: string
+          indicator_id: string | null
+          notes: string | null
+          product_id: string
+          referral_channel: string | null
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+          visit_date: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          check_in_requested?: boolean
+          client_email: string
+          client_name: string
+          client_phone: string
+          commission_paid?: boolean
+          commission_type?: Database["public"]["Enums"]["commission_type"]
+          commission_value?: number
+          contract_url?: string | null
+          created_at?: string
+          id?: string
+          indicator_id?: string | null
+          notes?: string | null
+          product_id: string
+          referral_channel?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+          visit_date?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          check_in_requested?: boolean
+          client_email?: string
+          client_name?: string
+          client_phone?: string
+          commission_paid?: boolean
+          commission_type?: Database["public"]["Enums"]["commission_type"]
+          commission_value?: number
+          contract_url?: string | null
+          created_at?: string
+          id?: string
+          indicator_id?: string | null
+          notes?: string | null
+          product_id?: string
+          referral_channel?: string | null
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+          visit_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_indicator_id_fkey"
+            columns: ["indicator_id"]
+            isOneToOne: false
+            referencedRelation: "indicators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          failure_reason: string | null
+          fee: number
+          id: string
+          indicator_id: string
+          net_amount: number
+          pix_key: string
+          pix_type: Database["public"]["Enums"]["pix_type"]
+          processed_at: string | null
+          status: Database["public"]["Enums"]["payout_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          failure_reason?: string | null
+          fee?: number
+          id?: string
+          indicator_id: string
+          net_amount: number
+          pix_key: string
+          pix_type: Database["public"]["Enums"]["pix_type"]
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          failure_reason?: string | null
+          fee?: number
+          id?: string
+          indicator_id?: string
+          net_amount?: number
+          pix_key?: string
+          pix_type?: Database["public"]["Enums"]["pix_type"]
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_indicator_id_fkey"
+            columns: ["indicator_id"]
+            isOneToOne: false
+            referencedRelation: "indicators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_config: {
+        Row: {
+          fee_per_lead: number
+          fee_percent: number
+          id: number
+          min_commission_barco: number
+          min_commission_carro: number
+          min_commission_imovel: number
+          min_commission_jetski: number
+          min_commission_moto: number
+          updated_at: string
+        }
+        Insert: {
+          fee_per_lead?: number
+          fee_percent?: number
+          id?: number
+          min_commission_barco?: number
+          min_commission_carro?: number
+          min_commission_imovel?: number
+          min_commission_jetski?: number
+          min_commission_moto?: number
+          updated_at?: string
+        }
+        Update: {
+          fee_per_lead?: number
+          fee_percent?: number
+          id?: number
+          min_commission_barco?: number
+          min_commission_carro?: number
+          min_commission_imovel?: number
+          min_commission_jetski?: number
+          min_commission_moto?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_images: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          product_id: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          product_id: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          product_id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          advertiser_id: string
+          allow_negotiate_tier: boolean
+          allow_presencial_tier: boolean
+          attributes: Json
+          category: Database["public"]["Enums"]["product_category"]
+          city: string | null
+          commission_digital_pct: number | null
+          commission_digital_value: number | null
+          commission_presencial_pct: number | null
+          commission_presencial_value: number | null
+          cover_image: string | null
+          created_at: string
+          currency: string
+          description: string
+          id: string
+          lat: number | null
+          lng: number | null
+          price: number
+          state: string | null
+          status: Database["public"]["Enums"]["product_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          allow_negotiate_tier?: boolean
+          allow_presencial_tier?: boolean
+          attributes?: Json
+          category: Database["public"]["Enums"]["product_category"]
+          city?: string | null
+          commission_digital_pct?: number | null
+          commission_digital_value?: number | null
+          commission_presencial_pct?: number | null
+          commission_presencial_value?: number | null
+          cover_image?: string | null
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          price?: number
+          state?: string | null
+          status?: Database["public"]["Enums"]["product_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          allow_negotiate_tier?: boolean
+          allow_presencial_tier?: boolean
+          attributes?: Json
+          category?: Database["public"]["Enums"]["product_category"]
+          city?: string | null
+          commission_digital_pct?: number | null
+          commission_digital_value?: number | null
+          commission_presencial_pct?: number | null
+          commission_presencial_value?: number | null
+          cover_image?: string | null
+          created_at?: string
+          currency?: string
+          description?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          price?: number
+          state?: string | null
+          status?: Database["public"]["Enums"]["product_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "advertisers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      terms_acceptance: {
+        Row: {
+          accepted_at: string
+          document: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          accepted_at?: string
+          document: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          accepted_at?: string
+          document?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      advertiser_plan: "gratuito" | "starter" | "premium" | "pro"
+      advertiser_type: "PF" | "PJ"
+      app_role: "admin" | "advertiser" | "indicator" | "visitor"
+      chat_sender_role: "client" | "advertiser" | "system"
+      commission_type: "digital" | "presencial"
+      financing_status:
+        | "pendente"
+        | "analise_bancos"
+        | "aprovado"
+        | "rejeitado"
+        | "concluido"
+      indicator_league: "bronze" | "prata" | "ouro"
+      lead_status:
+        | "lead_recebido"
+        | "contato_feito"
+        | "visita_agendada"
+        | "visita_confirmada"
+        | "proposta"
+        | "venda_concluida"
+      payout_status: "pending" | "processing" | "paid" | "failed"
+      pix_type: "cpf" | "email" | "phone" | "random"
+      product_category: "imovel" | "carro" | "moto" | "barco" | "jetski"
+      product_status: "rascunho" | "ativo" | "reservado" | "vendido" | "pausado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +896,32 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      advertiser_plan: ["gratuito", "starter", "premium", "pro"],
+      advertiser_type: ["PF", "PJ"],
+      app_role: ["admin", "advertiser", "indicator", "visitor"],
+      chat_sender_role: ["client", "advertiser", "system"],
+      commission_type: ["digital", "presencial"],
+      financing_status: [
+        "pendente",
+        "analise_bancos",
+        "aprovado",
+        "rejeitado",
+        "concluido",
+      ],
+      indicator_league: ["bronze", "prata", "ouro"],
+      lead_status: [
+        "lead_recebido",
+        "contato_feito",
+        "visita_agendada",
+        "visita_confirmada",
+        "proposta",
+        "venda_concluida",
+      ],
+      payout_status: ["pending", "processing", "paid", "failed"],
+      pix_type: ["cpf", "email", "phone", "random"],
+      product_category: ["imovel", "carro", "moto", "barco", "jetski"],
+      product_status: ["rascunho", "ativo", "reservado", "vendido", "pausado"],
+    },
   },
 } as const
