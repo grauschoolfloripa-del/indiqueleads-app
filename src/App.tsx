@@ -16,6 +16,8 @@ import AdminPanel from './components/AdminPanel';
 import VisitorView from './components/VisitorView';
 import LandingPage from './components/LandingPage';
 import AuthBar from './components/AuthBar';
+import { useAuth, signOut as supabaseSignOut } from './hooks/useAuth';
+
 
 export default function App() {
   // --- STATE DECLARATIONS ---
@@ -197,6 +199,27 @@ export default function App() {
       addNotification(`Painel do Indicador ativado via link!`, 'success');
     }
   }, []);
+
+  // --- BRIDGE: Supabase Auth → loggedUser (real production auth) ---
+  const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
+  useEffect(() => {
+    if (supaLoading) return;
+    if (!supaUser) return; // keep legacy localStorage session for demo/switcher
+    const role: 'indicador' | 'anunciante' | 'admin' =
+      supaRoles.includes('admin') ? 'admin'
+      : supaRoles.includes('advertiser') ? 'anunciante'
+      : 'indicador';
+    const displayName =
+      (supaUser.user_metadata?.full_name as string) ||
+      (supaUser.user_metadata?.name as string) ||
+      supaUser.email?.split('@')[0] || 'Usuário';
+    const userObj = { id: supaUser.id, name: displayName, email: supaUser.email ?? '', role };
+    setLoggedUser(userObj);
+    setCurrentRole(role);
+    saveToStorage('indica_logged_user', userObj);
+  }, [supaUser, supaRoles, supaLoading]);
+
+
 
   // Sync state helpers
   const saveToStorage = (key: string, data: any) => {
@@ -633,8 +656,10 @@ export default function App() {
   const handleLogout = () => {
     setLoggedUser(null);
     localStorage.removeItem('indica_logged_user');
+    void supabaseSignOut();
     addNotification('Sessão encerrada com segurança.', 'info');
   };
+
 
   const handleRoleChangeFromSwitcher = (role: 'indicador' | 'anunciante' | 'admin' | 'visitante') => {
     setCurrentRole(role);
