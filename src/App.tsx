@@ -15,6 +15,7 @@ import AdvertiserDashboard from './components/AdvertiserDashboard';
 import AdminPanel from './components/AdminPanel';
 import VisitorView from './components/VisitorView';
 import LandingPage from './components/LandingPage';
+import AuthBar from './components/AuthBar';
 
 export default function App() {
   // --- STATE DECLARATIONS ---
