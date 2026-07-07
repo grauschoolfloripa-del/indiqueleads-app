@@ -656,8 +656,10 @@ export default function App() {
   const handleLogout = () => {
     setLoggedUser(null);
     localStorage.removeItem('indica_logged_user');
+    void supabaseSignOut();
     addNotification('Sessão encerrada com segurança.', 'info');
   };
+
 
   const handleRoleChangeFromSwitcher = (role: 'indicador' | 'anunciante' | 'admin' | 'visitante') => {
     setCurrentRole(role);
