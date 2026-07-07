@@ -200,6 +200,27 @@ export default function App() {
     }
   }, []);
 
+  // --- BRIDGE: Supabase Auth → loggedUser (real production auth) ---
+  const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
+  useEffect(() => {
+    if (supaLoading) return;
+    if (!supaUser) return; // keep legacy localStorage session for demo/switcher
+    const role: 'indicador' | 'anunciante' | 'admin' =
+      supaRoles.includes('admin') ? 'admin'
+      : supaRoles.includes('advertiser') ? 'anunciante'
+      : 'indicador';
+    const displayName =
+      (supaUser.user_metadata?.full_name as string) ||
+      (supaUser.user_metadata?.name as string) ||
+      supaUser.email?.split('@')[0] || 'Usuário';
+    const userObj = { id: supaUser.id, name: displayName, email: supaUser.email ?? '', role };
+    setLoggedUser(userObj);
+    setCurrentRole(role);
+    saveToStorage('indica_logged_user', userObj);
+  }, [supaUser, supaRoles, supaLoading]);
+
+
+
   // Sync state helpers
   const saveToStorage = (key: string, data: any) => {
     localStorage.setItem(key, JSON.stringify(data));
