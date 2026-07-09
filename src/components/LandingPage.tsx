@@ -69,64 +69,21 @@ export default function LandingPage({
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Niche information
-  const nichesData = [
-    {
-      id: 'imovel' as Category,
-      title: 'Mercado de Imóveis',
-      icon: <Home className="w-8 h-8 text-orange-600" />,
-      description: 'Coberturas de alto padrão, casas em condomínios fechados, apartamentos e lotes comerciais.',
-      averageValue: 'R$ 350.000 a R$ 2.000.000',
-      avgCommission: 'R$ 5.000 a R$ 35.000',
-      difficulty: 'Médio',
-      popularBrands: 'Vanguard, Prime Real Estate, Construtoras locais',
-      gradient: 'from-orange-50 to-orange-100/50'
-    },
-    {
-      id: 'carro' as Category,
-      title: 'Veículos & SUVs',
-      icon: <Car className="w-8 h-8 text-orange-600" />,
-      description: 'Carros esportivos, SUVs familiares, utilitários e veículos seminovos de concessionárias parceiras.',
-      averageValue: 'R$ 80.000 a R$ 250.000',
-      avgCommission: 'R$ 1.000 a R$ 6.000',
-      difficulty: 'Baixo',
-      popularBrands: 'Motorsport SP, Concessionárias credenciadas',
-      gradient: 'from-amber-50 to-amber-100/30'
-    },
-    {
-      id: 'moto' as Category,
-      title: 'Motos Premium',
-      icon: <TrendingUp className="w-8 h-8 text-orange-600" />,
-      description: 'Alta cilindrada, motos esportivas, estradeiras de luxo e modelos urbanos premium.',
-      averageValue: 'R$ 30.000 a R$ 90.000',
-      avgCommission: 'R$ 400 a R$ 2.500',
-      difficulty: 'Baixo',
-      popularBrands: 'Kawasaki, BMW Motorrad, Honda Premium',
-      gradient: 'from-orange-50 to-amber-50'
-    },
-    {
-      id: 'barco' as Category,
-      title: 'Náutica & Lanchas',
-      icon: <Compass className="w-8 h-8 text-orange-600" />,
-      description: 'Lanchas de passeio, veleiros, iates de luxo e barcos de pesca esportiva.',
-      averageValue: 'R$ 150.000 a R$ 1.500.000',
-      avgCommission: 'R$ 3.000 a R$ 25.000',
-      difficulty: 'Alto',
-      popularBrands: 'Náutica Blue Ocean, Estaleiros de Luxo',
-      gradient: 'from-sky-50 to-sky-100/20'
-    },
-    {
-      id: 'jetski' as Category,
-      title: 'Motos Aquáticas',
-      icon: <Coins className="w-8 h-8 text-orange-600" />,
-      description: 'Modelos de jetski modernos, esportivos, com reboque rodoviário incluso.',
-      averageValue: 'R$ 50.000 a R$ 130.000',
-      avgCommission: 'R$ 800 a R$ 3.500',
-      difficulty: 'Baixo',
-      popularBrands: 'Sea-Doo, Yamaha Marine',
-      gradient: 'from-orange-50/50 to-sky-50/50'
-    }
-  ];
+  // Niches derivados de VERTICALS (fonte única de verdade)
+  const nichesData = VERTICALS_ORDER.map((catId) => {
+    const v = VERTICALS[catId];
+    return {
+      id: v.id,
+      title: v.label,
+      icon: <span className="text-3xl leading-none">{v.emoji}</span>,
+      description: v.description,
+      averageValue: v.averageValue,
+      avgCommission: v.avgCommission,
+      difficulty: v.difficulty,
+      popularBrands: v.popularBrands,
+      gradient: v.gradient,
+    };
+  });
 
   // Calculated values
   const totalAdvertiserCommission = (calcSaleValue * calcCommPct) / 100;
