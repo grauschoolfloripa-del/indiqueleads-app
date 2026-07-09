@@ -80,14 +80,18 @@ export default function App() {
     }
   });
   
-  // Dynamic Categories (zero-deploy verticals)
-  const [categories, setCategories] = useState<Array<{ id: Category | string; name: string; icon: string; fields: string[] }>>([
-    { id: 'imovel', name: 'Imóveis', icon: '🏠', fields: ['Finalidade', 'Tipo', 'Área Útil (m²)', 'Suítes', 'Garagem', 'Condomínio', 'Matrícula'] },
-    { id: 'carro', name: 'Carros', icon: '🚗', fields: ['Marca', 'KM', 'Cor', 'Câmbio', 'Placa', 'Laudo Cautelar'] },
-    { id: 'moto', name: 'Motos', icon: '🏍️', fields: ['Marca', 'cc', 'KM', 'Tipo', 'Documentação'] },
-    { id: 'barco', name: 'Barcos', icon: '🛥️', fields: ['Estaleiro', 'Pés', 'Horas de Motor', 'Casco', 'Motorização', 'Vaga Marina'] },
-    { id: 'jetski', name: 'Jetski', icon: '🎿', fields: ['Marca', 'Horas', 'Cilindradas', 'Capacidade', 'Carretinha'] }
-  ]);
+  // Dynamic Categories (fonte: src/lib/verticals.ts — verticais oficiais da plataforma)
+  const [categories, setCategories] = useState<Array<{ id: Category | string; name: string; icon: string; fields: string[] }>>(() => {
+    // Importado dinamicamente para evitar ciclo de import em build; usamos require-style via módulo estático.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { VERTICALS, VERTICALS_ORDER } = require('./lib/verticals') as typeof import('./lib/verticals');
+    return VERTICALS_ORDER.map((id) => ({
+      id,
+      name: VERTICALS[id].shortLabel,
+      icon: VERTICALS[id].emoji,
+      fields: VERTICALS[id].attributes.map((a) => a.label),
+    }));
+  });
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
     try {
