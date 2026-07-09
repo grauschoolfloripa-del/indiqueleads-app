@@ -9,6 +9,7 @@ import {
 } from './data/mockData';
 import { Product, Indicator, Advertiser, Lead, Category, PlatformConfig, FinancingSimulation, FinancingStatus, BankSimulationResponse, ApprovedContract, ChatMessage } from './types';
 import { sanitizeChatMessage, getSecurityWarningMessage } from './lib/chatSecurity';
+import { VERTICALS, VERTICALS_ORDER } from './lib/verticals';
 
 import AffiliateDashboard from './components/AffiliateDashboard';
 import AdvertiserDashboard from './components/AdvertiserDashboard';
