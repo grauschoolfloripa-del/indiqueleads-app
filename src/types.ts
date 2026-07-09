@@ -46,13 +46,27 @@ export interface Product {
   attributes: Record<string, any>;
 }
 
-export type LeadStatus = 
-  | 'lead_recebido' 
-  | 'contato_feito' 
-  | 'visita_agendada' 
-  | 'visita_confirmada' 
-  | 'proposta' 
-  | 'venda_concluida';
+export type LeadStatus =
+  | 'lead_recebido'
+  | 'contato_feito'
+  | 'visita_agendada'
+  | 'visita_confirmada'
+  | 'proposta'
+  | 'venda_concluida'
+  | 'triagem'
+  | 'avaliacao_agendada'
+  | 'avaliacao_confirmada'
+  | 'orcamento_emitido'
+  | 'tratamento_iniciado'
+  | 'visita_tecnica_agendada'
+  | 'visita_tecnica_realizada'
+  | 'projeto_aprovado'
+  | 'contrato_assinado'
+  | 'matricula_efetivada'
+  | 'pacote_fechado'
+  | 'apolice_emitida'
+  | 'contrato_franquia'
+  | 'locacao_assinada';
 
 export interface Lead {
   id: string;
