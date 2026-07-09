@@ -472,6 +472,91 @@ export default function AdminPanel({
           </form>
         </div>
       )}
+
+      {activeTab === 'admins' && (
+        <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm max-w-xl">
+          <div className="flex items-center gap-2 mb-4">
+            <UserPlus className="w-5 h-5 text-orange-600" />
+            <h3 className="font-display font-bold text-slate-900 text-sm">Criar Novo Administrador</h3>
+          </div>
+          <p className="text-xs text-slate-500 mb-4">
+            O usuário será criado já confirmado e receberá permissão total de administrador.
+            Somente administradores podem executar esta ação.
+          </p>
+
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setAdminFormError(null);
+              setCreatingAdmin(true);
+              try {
+                await createAdminFn({
+                  data: {
+                    fullName: newAdminName.trim(),
+                    email: newAdminEmail.trim().toLowerCase(),
+                    password: newAdminPassword,
+                  },
+                });
+                onAddNotification(`Administrador ${newAdminEmail} criado com sucesso!`, 'success');
+                setNewAdminName('');
+                setNewAdminEmail('');
+                setNewAdminPassword('');
+              } catch (err) {
+                setAdminFormError(err instanceof Error ? err.message : 'Falha ao criar administrador.');
+              } finally {
+                setCreatingAdmin(false);
+              }
+            }}
+            className="space-y-3 font-sans text-slate-700"
+          >
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Nome completo</label>
+              <input
+                type="text" required
+                value={newAdminName}
+                onChange={(e) => setNewAdminName(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900"
+                placeholder="Ex: Maria Silva"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">E-mail</label>
+              <input
+                type="email" required
+                value={newAdminEmail}
+                onChange={(e) => setNewAdminEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900"
+                placeholder="admin@empresa.com"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Senha temporária</label>
+              <input
+                type="password" required minLength={8}
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900"
+                placeholder="Mínimo 8 caracteres"
+              />
+            </div>
+
+            {adminFormError && (
+              <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2">
+                {adminFormError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={creatingAdmin}
+              className="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white font-bold text-xs py-3 rounded-xl transition-all shadow"
+            >
+              {creatingAdmin && <Loader2 className="w-4 h-4 animate-spin" />}
+              Criar Administrador
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
