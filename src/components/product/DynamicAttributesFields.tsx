@@ -37,7 +37,8 @@ export default function DynamicAttributesFields({
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {fields.map((f) => {
-          const v = values?.[f.key] ?? "";
+          const raw = values?.[f.key];
+          const v: string | number = typeof raw === "number" ? raw : (raw as string | undefined) ?? "";
           const common =
             "w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200";
           return (
