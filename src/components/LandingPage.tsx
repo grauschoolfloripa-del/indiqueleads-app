@@ -1277,22 +1277,26 @@ export default function LandingPage({
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Ninhos Atuantes (Múltiplas Verticais)</label>
-                        <div className="grid grid-cols-5 gap-1 pt-1">
-                          {(['imovel', 'carro', 'moto', 'barco', 'jetski'] as Category[]).map((cat) => (
-                            <button
-                              type="button"
-                              key={cat}
-                              onClick={() => toggleCategorySelection(cat)}
-                              className={`py-1 rounded text-[10px] font-bold border transition-all ${
-                                regAdvCategories.includes(cat)
-                                  ? 'bg-orange-600 border-orange-600 text-white'
-                                  : 'bg-slate-100 border-slate-200 text-slate-600'
-                              }`}
-                            >
-                              {cat === 'imovel' ? '🏠' : cat === 'carro' ? '🚗' : cat === 'moto' ? '🏍️' : cat === 'barco' ? '🛥️' : '🎿'}
-                            </button>
-                          ))}
+                        <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">Nichos Atuantes (Múltiplas Verticais)</label>
+                        <div className="grid grid-cols-5 md:grid-cols-7 gap-1 pt-1">
+                          {VERTICALS_ORDER.map((cat) => {
+                            const v = VERTICALS[cat];
+                            return (
+                              <button
+                                type="button"
+                                key={cat}
+                                onClick={() => toggleCategorySelection(cat)}
+                                title={v.label}
+                                className={`py-1 rounded text-[11px] font-bold border transition-all ${
+                                  regAdvCategories.includes(cat)
+                                    ? 'bg-orange-600 border-orange-600 text-white'
+                                    : 'bg-slate-100 border-slate-200 text-slate-600'
+                                }`}
+                              >
+                                {v.emoji}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </>
