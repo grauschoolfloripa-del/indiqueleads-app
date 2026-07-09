@@ -980,11 +980,7 @@ export default function AffiliateDashboard({
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-xl text-[10px] font-bold font-mono tracking-wider flex items-center gap-1.5 shadow-sm">
-                          {prod.category === 'imovel' && '🏠 IMÓVEL'}
-                          {prod.category === 'carro' && '🚗 CARRO'}
-                          {prod.category === 'moto' && '🏍️ MOTO'}
-                          {prod.category === 'barco' && '🛥️ BARCO'}
-                          {prod.category === 'jetski' && '🎿 JETSKI'}
+                          {verticalBadge(prod.category)}
                         </div>
                         {prod.status === 'reservado' && (
                           <div className="absolute inset-0 bg-slate-950/60 flex items-center justify-center">
