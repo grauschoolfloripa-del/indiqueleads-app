@@ -1,12 +1,26 @@
-import { useState, FormEvent } from 'react';
-import { useServerFn } from '@tanstack/react-start';
-import { 
-  ShieldAlert, Settings, TrendingUp, AlertTriangle, ListFilter, Play, Sparkles,
-  Layers, Plus, Trash2, CheckCircle2, DollarSign, Users, FileText, UserPlus, Loader2
-} from 'lucide-react';
-import { createAdminUser } from '@/lib/admin-users.functions';
-import { Product, Advertiser, Indicator, Lead, Category, PlatformConfig } from '../types';
-import { VERTICALS, VERTICALS_ORDER } from '../lib/verticals';
+import { useState, FormEvent } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  ShieldAlert,
+  Settings,
+  TrendingUp,
+  AlertTriangle,
+  ListFilter,
+  Play,
+  Sparkles,
+  Layers,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  DollarSign,
+  Users,
+  FileText,
+  UserPlus,
+  Loader2,
+} from "lucide-react";
+import { createAdminUser } from "@/lib/admin-users.functions";
+import { Product, Advertiser, Indicator, Lead, Category, PlatformConfig } from "../types";
+import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
 
 interface AdminPanelProps {
   products: Product[];
@@ -18,7 +32,7 @@ interface AdminPanelProps {
   onUpdatePlatformConfig: (config: PlatformConfig) => void;
   categories: Array<{ id: Category | string; name: string; icon: string; fields: string[] }>;
   onAddCategory: (cat: { id: string; name: string; icon: string; fields: string[] }) => void;
-  onAddNotification: (msg: string, type: 'success' | 'info') => void;
+  onAddNotification: (msg: string, type: "success" | "info") => void;
 }
 
 export default function AdminPanel({
@@ -31,90 +45,106 @@ export default function AdminPanel({
   onUpdatePlatformConfig,
   categories,
   onAddCategory,
-  onAddNotification
+  onAddNotification,
 }: AdminPanelProps) {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'geral' | 'categorias' | 'verticais' | 'fraudes' | 'taxas' | 'admins'>('geral');
+  const [activeTab, setActiveTab] = useState<
+    "geral" | "categorias" | "verticais" | "fraudes" | "taxas" | "admins"
+  >("geral");
 
   // Criação de novos administradores
   const createAdminFn = useServerFn(createAdminUser);
-  const [newAdminName, setNewAdminName] = useState('');
-  const [newAdminEmail, setNewAdminEmail] = useState('');
-  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [newAdminName, setNewAdminName] = useState("");
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [adminFormError, setAdminFormError] = useState<string | null>(null);
-  
+
   // Dynamic Category Form
-  const [newCatId, setNewCatId] = useState('');
-  const [newCatName, setNewCatName] = useState('');
-  const [newCatIcon, setNewCatIcon] = useState('📦');
-  const [newCatFields, setNewCatFields] = useState('');
+  const [newCatId, setNewCatId] = useState("");
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatIcon, setNewCatIcon] = useState("📦");
+  const [newCatFields, setNewCatFields] = useState("");
 
   // Local config edits
   const [configEdit, setConfigEdit] = useState({ ...platformConfig });
 
   // Calculate platform financial stats
-  const totalVolume = products.filter(p => p.status === 'vendido').reduce((acc, p) => acc + p.price, 0) 
-    || leads.filter(l => l.status === 'venda_concluida').reduce((acc, l) => acc + (l.commissionValue * 20), 0); // fallback simulation
-  const platformAccruedFees = leads.filter(l => l.status === 'venda_concluida').reduce((acc, l) => acc + (l.commissionValue * (platformConfig.feePercent / 100)), 0);
+  const totalVolume =
+    products.filter((p) => p.status === "vendido").reduce((acc, p) => acc + p.price, 0) ||
+    leads
+      .filter((l) => l.status === "venda_concluida")
+      .reduce((acc, l) => acc + l.commissionValue * 20, 0); // fallback simulation
+  const platformAccruedFees = leads
+    .filter((l) => l.status === "venda_concluida")
+    .reduce((acc, l) => acc + l.commissionValue * (platformConfig.feePercent / 100), 0);
   const totalLeadsChargedFee = leads.length * platformConfig.feePerLead;
-  const planIncomes = advertisers.length * 199.00; // premium average
+  const planIncomes = advertisers.length * 199.0; // premium average
   const totalRevenue = platformAccruedFees + totalLeadsChargedFee + planIncomes;
 
   const handleSaveConfig = (e: FormEvent) => {
     e.preventDefault();
     onUpdatePlatformConfig(configEdit);
-    onAddNotification('Configurações de taxas e comissões atualizadas!', 'success');
+    onAddNotification("Configurações de taxas e comissões atualizadas!", "success");
   };
 
   const handleCreateCategory = (e: FormEvent) => {
     e.preventDefault();
     if (!newCatId || !newCatName) {
-      onAddNotification('Insira um ID e Nome válidos para a categoria.', 'info');
+      onAddNotification("Insira um ID e Nome válidos para a categoria.", "info");
       return;
     }
 
-    const fieldsArr = newCatFields.split(',').map(f => f.trim()).filter(Boolean);
+    const fieldsArr = newCatFields
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
     onAddCategory({
       id: newCatId.toLowerCase(),
       name: newCatName,
       icon: newCatIcon,
-      fields: fieldsArr.length > 0 ? fieldsArr : ['Ano', 'Modelo', 'Observações']
+      fields: fieldsArr.length > 0 ? fieldsArr : ["Ano", "Modelo", "Observações"],
     });
 
-    onAddNotification(`Nova vertical "${newCatName}" criada com sucesso no sistema dinâmico!`, 'success');
-    setNewCatId('');
-    setNewCatName('');
-    setNewCatIcon('📦');
-    setNewCatFields('');
+    onAddNotification(
+      `Nova vertical "${newCatName}" criada com sucesso no sistema dinâmico!`,
+      "success",
+    );
+    setNewCatId("");
+    setNewCatName("");
+    setNewCatIcon("📦");
+    setNewCatFields("");
   };
 
   // Mock Fraud & Auditing center alerts
   const mockFraudAlerts = [
     {
-      id: 'alert-1',
-      indicatorName: 'Gabriel Martins',
-      type: 'Anomalia de Cliques',
-      severity: 'alta',
-      time: 'Há 5 minutos',
-      description: 'Acúmulo de 340 cliques em intervalo de 3 segundos no link Cobertura Duplex. Padrão de script ou robot de indexação de redes sociais detectado.'
+      id: "alert-1",
+      indicatorName: "Gabriel Martins",
+      type: "Anomalia de Cliques",
+      severity: "alta",
+      time: "Há 5 minutos",
+      description:
+        "Acúmulo de 340 cliques em intervalo de 3 segundos no link Cobertura Duplex. Padrão de script ou robot de indexação de redes sociais detectado.",
     },
     {
-      id: 'alert-2',
-      indicatorName: 'Juliana Silva',
-      type: 'Check-In GPS Suspeito',
-      severity: 'media',
-      time: 'Há 25 minutos',
-      description: 'Coordenadas do dispositivo divergem do endereço da Porsche GTS por mais de 800 metros. Proximidade de geofencing rejeitada, check-in forçado com fallback de foto.'
+      id: "alert-2",
+      indicatorName: "Juliana Silva",
+      type: "Check-In GPS Suspeito",
+      severity: "media",
+      time: "Há 25 minutos",
+      description:
+        "Coordenadas do dispositivo divergem do endereço da Porsche GTS por mais de 800 metros. Proximidade de geofencing rejeitada, check-in forçado com fallback de foto.",
     },
     {
-      id: 'alert-3',
-      indicatorName: 'Roberto Alencar',
-      type: 'Múltiplos Clones de IP',
-      severity: 'baixa',
-      time: 'Há 2 horas',
-      description: 'Mesmo IP simulando geração de 3 leads em menos de 10 minutos para o anúncio Sea-Doo.'
-    }
+      id: "alert-3",
+      indicatorName: "Roberto Alencar",
+      type: "Múltiplos Clones de IP",
+      severity: "baixa",
+      time: "Há 2 horas",
+      description:
+        "Mesmo IP simulando geração de 3 leads em menos de 10 minutos para o anúncio Sea-Doo.",
+    },
   ];
 
   return (
@@ -127,7 +157,9 @@ export default function AdminPanel({
           </div>
           <div>
             <h2 className="font-display font-bold text-xl text-white">Central Administrativa</h2>
-            <p className="text-xs text-slate-400 mt-0.5 font-mono">Controle global de regras comerciais, fraudes e novas categorias.</p>
+            <p className="text-xs text-slate-400 mt-0.5 font-mono">
+              Controle global de regras comerciais, fraudes e novas categorias.
+            </p>
           </div>
         </div>
       </div>
@@ -135,49 +167,61 @@ export default function AdminPanel({
       {/* Tabs Submenu */}
       <div className="flex border-b border-slate-200 mb-6 font-display font-medium text-sm">
         <button
-          onClick={() => setActiveTab('geral')}
+          onClick={() => setActiveTab("geral")}
           className={`pb-3 px-4 border-b-2 transition-all ${
-            activeTab === 'geral' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+            activeTab === "geral"
+              ? "border-orange-600 text-orange-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Visão Geral & Métricas
         </button>
         <button
-          onClick={() => setActiveTab('categorias')}
+          onClick={() => setActiveTab("categorias")}
           className={`pb-3 px-4 border-b-2 transition-all ${
-            activeTab === 'categorias' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+            activeTab === "categorias"
+              ? "border-orange-600 text-orange-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Campos Dinâmicos (Verticais)
         </button>
         <button
-          onClick={() => setActiveTab('fraudes')}
+          onClick={() => setActiveTab("fraudes")}
           className={`pb-3 px-4 border-b-2 transition-all ${
-            activeTab === 'fraudes' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+            activeTab === "fraudes"
+              ? "border-orange-600 text-orange-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Auditoria de Fraudes ({mockFraudAlerts.length})
         </button>
         <button
-          onClick={() => setActiveTab('taxas')}
+          onClick={() => setActiveTab("taxas")}
           className={`pb-3 px-4 border-b-2 transition-all ${
-            activeTab === 'taxas' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+            activeTab === "taxas"
+              ? "border-orange-600 text-orange-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Taxas & Comissões
         </button>
         <button
-          onClick={() => setActiveTab('verticais')}
+          onClick={() => setActiveTab("verticais")}
           className={`pb-3 px-4 border-b-2 transition-all ${
-            activeTab === 'verticais' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+            activeTab === "verticais"
+              ? "border-orange-600 text-orange-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Verticais
         </button>
         <button
-          onClick={() => setActiveTab('admins')}
+          onClick={() => setActiveTab("admins")}
           className={`pb-3 px-4 border-b-2 transition-all ${
-            activeTab === 'admins' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+            activeTab === "admins"
+              ? "border-orange-600 text-orange-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
           Administradores
@@ -185,11 +229,13 @@ export default function AdminPanel({
       </div>
 
       {/* VIEW: VERTICAIS METRICS */}
-      {activeTab === 'verticais' && (
+      {activeTab === "verticais" && (
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h3 className="text-lg font-bold text-slate-900 mb-1">Desempenho por Vertical</h3>
-            <p className="text-xs text-slate-500 mb-4">Anúncios ativos, leads gerados e conversão em cada vertical cadastrada.</p>
+            <p className="text-xs text-slate-500 mb-4">
+              Anúncios ativos, leads gerados e conversão em cada vertical cadastrada.
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -206,15 +252,29 @@ export default function AdminPanel({
                 <tbody>
                   {VERTICALS_ORDER.map((catId) => {
                     const v = VERTICALS[catId];
-                    const prodsAtivos = products.filter(p => p.category === catId && p.status === 'ativo').length;
-                    const leadsCat = leads.filter(l => l.productCategory === catId);
-                    const finalStatuses = new Set(['venda_concluida','tratamento_iniciado','contrato_assinado','matricula_efetivada','pacote_fechado','apolice_emitida','contrato_franquia','locacao_assinada']);
-                    const concluidos = leadsCat.filter(l => finalStatuses.has(l.status)).length;
-                    const conv = leadsCat.length ? ((concluidos / leadsCat.length) * 100).toFixed(1) + '%' : '—';
+                    const prodsAtivos = products.filter(
+                      (p) => p.category === catId && p.status === "ativo",
+                    ).length;
+                    const leadsCat = leads.filter((l) => l.productCategory === catId);
+                    const finalStatuses = new Set([
+                      "venda_concluida",
+                      "tratamento_iniciado",
+                      "contrato_assinado",
+                      "matricula_efetivada",
+                      "pacote_fechado",
+                      "apolice_emitida",
+                      "contrato_franquia",
+                      "locacao_assinada",
+                    ]);
+                    const concluidos = leadsCat.filter((l) => finalStatuses.has(l.status)).length;
+                    const conv = leadsCat.length
+                      ? ((concluidos / leadsCat.length) * 100).toFixed(1) + "%"
+                      : "—";
                     return (
                       <tr key={catId} className="border-b border-slate-50 hover:bg-slate-50/60">
                         <td className="py-2 pr-3 font-semibold text-slate-800">
-                          <span className="mr-1.5">{v.emoji}</span>{v.shortLabel}
+                          <span className="mr-1.5">{v.emoji}</span>
+                          {v.shortLabel}
                         </td>
                         <td className="py-2 pr-3">{prodsAtivos}</td>
                         <td className="py-2 pr-3">{leadsCat.length}</td>
@@ -222,10 +282,16 @@ export default function AdminPanel({
                         <td className="py-2 pr-3 font-mono text-xs">{conv}</td>
                         <td className="py-2 pr-3">
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 uppercase">
-                            {v.commissionModel === 'recorrente' ? 'Recorrente' : v.commissionModel === 'digital' ? 'Digital' : 'Pres.+Digital'}
+                            {v.commissionModel === "recorrente"
+                              ? "Recorrente"
+                              : v.commissionModel === "digital"
+                                ? "Digital"
+                                : "Pres.+Digital"}
                           </span>
                         </td>
-                        <td className="py-2 pr-3 text-[11px] text-slate-500">{v.statusFlow.length} etapas</td>
+                        <td className="py-2 pr-3 text-[11px] text-slate-500">
+                          {v.statusFlow.length} etapas
+                        </td>
                       </tr>
                     );
                   })}
@@ -238,13 +304,20 @@ export default function AdminPanel({
             {VERTICALS_ORDER.map((catId) => {
               const v = VERTICALS[catId];
               return (
-                <div key={catId} className={`bg-gradient-to-br ${v.gradient} rounded-2xl border border-slate-100 p-4`}>
+                <div
+                  key={catId}
+                  className={`bg-gradient-to-br ${v.gradient} rounded-2xl border border-slate-100 p-4`}
+                >
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs font-mono text-slate-500 uppercase">{catId}</div>
-                      <div className="text-lg font-bold text-slate-900">{v.emoji} {v.label}</div>
+                      <div className="text-lg font-bold text-slate-900">
+                        {v.emoji} {v.label}
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold uppercase bg-white/70 border border-slate-200 rounded-full px-2 py-0.5 text-slate-700">{v.difficulty}</span>
+                    <span className="text-[10px] font-bold uppercase bg-white/70 border border-slate-200 rounded-full px-2 py-0.5 text-slate-700">
+                      {v.difficulty}
+                    </span>
                   </div>
                   <p className="text-xs text-slate-700 mt-2">{v.description}</p>
                   <div className="grid grid-cols-2 gap-2 mt-3 text-[11px]">
@@ -269,36 +342,57 @@ export default function AdminPanel({
         </div>
       )}
 
-
       {/* VIEW: CONSOLIDATED METRICS */}
-      {activeTab === 'geral' && (
+      {activeTab === "geral" && (
         <div className="space-y-6">
           {/* Key metrics blocks */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Volume de Vendas (GMV)</span>
-              <span className="text-xl font-mono font-bold text-slate-900 mt-1 block">R$ {totalVolume.toLocaleString('pt-BR')}</span>
-              <p className="text-[10px] text-slate-500 mt-1 font-semibold">Volume total negociado na rede</p>
-            </div>
-
-            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Receita da Plataforma</span>
-              <span className="text-xl font-mono font-bold text-emerald-600 mt-1 block">
-                R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                Volume de Vendas (GMV)
               </span>
-              <p className="text-[10px] text-slate-500 mt-1 font-semibold">Spread de comissão + taxas lead + mensalidades</p>
+              <span className="text-xl font-mono font-bold text-slate-900 mt-1 block">
+                R$ {totalVolume.toLocaleString("pt-BR")}
+              </span>
+              <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                Volume total negociado na rede
+              </p>
             </div>
 
             <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Anunciantes Cadastrados</span>
-              <span className="text-xl font-mono font-bold text-orange-600 mt-1 block">{advertisers.length} Contas</span>
-              <p className="text-[10px] text-slate-500 mt-1 font-semibold">Imobiliárias, lojas e concessionárias PJ</p>
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                Receita da Plataforma
+              </span>
+              <span className="text-xl font-mono font-bold text-emerald-600 mt-1 block">
+                R$ {totalRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              </span>
+              <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                Spread de comissão + taxas lead + mensalidades
+              </p>
             </div>
 
             <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Indicadores Autônomos</span>
-              <span className="text-xl font-mono font-bold text-orange-600 mt-1 block">{indicators.filter(i=>i.name).length} Contas</span>
-              <p className="text-[10px] text-slate-500 mt-1 font-semibold">Parceiros com termos vigentes</p>
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                Anunciantes Cadastrados
+              </span>
+              <span className="text-xl font-mono font-bold text-orange-600 mt-1 block">
+                {advertisers.length} Contas
+              </span>
+              <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                Imobiliárias, lojas e concessionárias PJ
+              </p>
+            </div>
+
+            <div className="bg-white border border-slate-150 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                Indicadores Autônomos
+              </span>
+              <span className="text-xl font-mono font-bold text-orange-600 mt-1 block">
+                {indicators.filter((i) => i.name).length} Contas
+              </span>
+              <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                Parceiros com termos vigentes
+              </p>
             </div>
           </div>
 
@@ -308,7 +402,10 @@ export default function AdminPanel({
               <ListFilter className="w-4 h-4 text-red-600" />
               Moderação de Anúncios de Bens
             </h3>
-            <p className="text-xs text-slate-500">Aprovação comercial ou suspensão preventiva de novos carros/imóveis cadastrados por anunciantes.</p>
+            <p className="text-xs text-slate-500">
+              Aprovação comercial ou suspensão preventiva de novos carros/imóveis cadastrados por
+              anunciantes.
+            </p>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -323,27 +420,42 @@ export default function AdminPanel({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700 font-sans">
-                  {products.map(prod => (
+                  {products.map((prod) => (
                     <tr key={prod.id} className="hover:bg-slate-50/50">
-                      <td className="py-3 px-4 font-semibold text-slate-900">{prod.advertiserName}</td>
+                      <td className="py-3 px-4 font-semibold text-slate-900">
+                        {prod.advertiserName}
+                      </td>
                       <td className="py-3 px-4">
                         <span className="font-bold block text-slate-900">{prod.title}</span>
-                        <span className="text-[9px] text-slate-400 font-mono capitalize">{prod.category}</span>
+                        <span className="text-[9px] text-slate-400 font-mono capitalize">
+                          {prod.category}
+                        </span>
                       </td>
-                      <td className="py-3 px-4 font-mono">R$ {prod.price.toLocaleString('pt-BR')}</td>
-                      <td className="py-3 px-4">{prod.location.city} - {prod.location.state}</td>
+                      <td className="py-3 px-4 font-mono">
+                        R$ {prod.price.toLocaleString("pt-BR")}
+                      </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                          prod.status === 'ativo' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
+                        {prod.location.city} - {prod.location.state}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                            prod.status === "ativo"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
                           {prod.status}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-right space-x-1">
                         <button
                           onClick={() => {
-                            onUpdateProductStatus(prod.id, 'ativo');
-                            onAddNotification('Anúncio auditado e aprovado com sucesso!', 'success');
+                            onUpdateProductStatus(prod.id, "ativo");
+                            onAddNotification(
+                              "Anúncio auditado e aprovado com sucesso!",
+                              "success",
+                            );
                           }}
                           className="bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-colors"
                         >
@@ -351,8 +463,11 @@ export default function AdminPanel({
                         </button>
                         <button
                           onClick={() => {
-                            onUpdateProductStatus(prod.id, 'pausado');
-                            onAddNotification('Anúncio pausado preventivamente para verificação.', 'info');
+                            onUpdateProductStatus(prod.id, "pausado");
+                            onAddNotification(
+                              "Anúncio pausado preventivamente para verificação.",
+                              "info",
+                            );
                           }}
                           className="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-colors"
                         >
@@ -369,33 +484,42 @@ export default function AdminPanel({
       )}
 
       {/* VIEW: DYNAMIC CATEGORIES CREATOR */}
-      {activeTab === 'categorias' && (
+      {activeTab === "categorias" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-1 space-y-4">
             <h3 className="font-display font-bold text-slate-800 text-sm flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-red-600" />
               Adicionar Nova Vertical
             </h3>
-            <p className="text-xs text-slate-500">Insira as configurações básicas para criar uma nova vertical de dados que os anunciantes podem usar no catálogo sem deploy.</p>
+            <p className="text-xs text-slate-500">
+              Insira as configurações básicas para criar uma nova vertical de dados que os
+              anunciantes podem usar no catálogo sem deploy.
+            </p>
 
             <form onSubmit={handleCreateCategory} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">ID (Slug do Banco)</label>
-                <input 
-                  type="text" required
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  ID (Slug do Banco)
+                </label>
+                <input
+                  type="text"
+                  required
                   value={newCatId}
-                  onChange={e => setNewCatId(e.target.value)}
+                  onChange={(e) => setNewCatId(e.target.value)}
                   placeholder="ex: aeronave ou caminhao"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-red-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Nome Exibição</label>
-                <input 
-                  type="text" required
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Nome Exibição
+                </label>
+                <input
+                  type="text"
+                  required
                   value={newCatName}
-                  onChange={e => setNewCatName(e.target.value)}
+                  onChange={(e) => setNewCatName(e.target.value)}
                   placeholder="ex: Aeronaves Privadas"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-red-500"
                 />
@@ -403,17 +527,22 @@ export default function AdminPanel({
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Emoji / Ícone</label>
-                  <input 
-                    type="text" required
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                    Emoji / Ícone
+                  </label>
+                  <input
+                    type="text"
+                    required
                     value={newCatIcon}
-                    onChange={e => setNewCatIcon(e.target.value)}
+                    onChange={(e) => setNewCatIcon(e.target.value)}
                     placeholder="🛩️"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-center focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Taxa Mínima Padronizada</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                    Taxa Mínima Padronizada
+                  </label>
                   <div className="bg-slate-100 py-2.5 text-center text-xs font-bold text-slate-700 rounded-xl">
                     R$ 1.500
                   </div>
@@ -421,16 +550,20 @@ export default function AdminPanel({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Atributos JSONB Dinâmicos (Vírgulas)</label>
-                <textarea 
-                  rows={2} required
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Atributos JSONB Dinâmicos (Vírgulas)
+                </label>
+                <textarea
+                  rows={2}
+                  required
                   value={newCatFields}
-                  onChange={e => setNewCatFields(e.target.value)}
+                  onChange={(e) => setNewCatFields(e.target.value)}
                   placeholder="ex: fabricante, horas_voo, turbinas, autonomia_km"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none"
                 />
                 <span className="text-[10px] text-slate-400 leading-tight block mt-1">
-                  ✓ O formulário de novos produtos gerará estes campos de dados dinamicamente no onboarding.
+                  ✓ O formulário de novos produtos gerará estes campos de dados dinamicamente no
+                  onboarding.
                 </span>
               </div>
 
@@ -444,16 +577,26 @@ export default function AdminPanel({
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-2 space-y-4">
-            <h3 className="font-display font-bold text-slate-800 text-sm">Estruturas de Atributos de Verticais Ativas</h3>
-            <p className="text-xs text-slate-500">Estas são as verticais ativas gerenciadas pelo core de comissionamento.</p>
+            <h3 className="font-display font-bold text-slate-800 text-sm">
+              Estruturas de Atributos de Verticais Ativas
+            </h3>
+            <p className="text-xs text-slate-500">
+              Estas são as verticais ativas gerenciadas pelo core de comissionamento.
+            </p>
 
             <div className="space-y-3">
-              {categories.map(cat => (
-                <div key={cat.id} className="border border-slate-100 rounded-2xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-all">
+              {categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="border border-slate-100 rounded-2xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-all"
+                >
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-display font-bold text-slate-900 text-sm flex items-center gap-2">
                       <span className="text-xl">{cat.icon}</span>
-                      <span>{cat.name} <span className="text-slate-400 text-xs font-normal">({cat.id})</span></span>
+                      <span>
+                        {cat.name}{" "}
+                        <span className="text-slate-400 text-xs font-normal">({cat.id})</span>
+                      </span>
                     </span>
                     <span className="text-[9px] bg-orange-50 text-orange-700 border border-orange-100 px-2.5 py-0.5 rounded-full font-bold uppercase font-mono">
                       {cat.fields.length} Campos
@@ -461,7 +604,10 @@ export default function AdminPanel({
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {cat.fields.map((f, idx) => (
-                      <span key={idx} className="bg-white border border-slate-200 rounded px-2 py-0.5 text-[10px] text-slate-600 font-mono">
+                      <span
+                        key={idx}
+                        className="bg-white border border-slate-200 rounded px-2 py-0.5 text-[10px] text-slate-600 font-mono"
+                      >
                         {f}
                       </span>
                     ))}
@@ -474,7 +620,7 @@ export default function AdminPanel({
       )}
 
       {/* VIEW: SUSPICIOUS FRAUDS */}
-      {activeTab === 'fraudes' && (
+      {activeTab === "fraudes" && (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <div>
@@ -482,32 +628,52 @@ export default function AdminPanel({
                 <AlertTriangle className="w-5 h-5 text-red-600" />
                 Auditoria de Fraudes & Logs de Geofencing
               </h3>
-              <p className="text-xs text-slate-500">Alertas em tempo real gerados pelo sistema de cookies de atribuição e do geofencing de check-ins.</p>
+              <p className="text-xs text-slate-500">
+                Alertas em tempo real gerados pelo sistema de cookies de atribuição e do geofencing
+                de check-ins.
+              </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {mockFraudAlerts.map(alert => (
-              <div key={alert.id} className="border border-slate-150 rounded-2xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-all flex flex-col sm:flex-row justify-between items-start gap-4">
+            {mockFraudAlerts.map((alert) => (
+              <div
+                key={alert.id}
+                className="border border-slate-150 rounded-2xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-all flex flex-col sm:flex-row justify-between items-start gap-4"
+              >
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase font-mono tracking-wider ${
-                      alert.severity === 'alta' ? 'bg-red-100 text-red-800' :
-                      alert.severity === 'media' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700'
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase font-mono tracking-wider ${
+                        alert.severity === "alta"
+                          ? "bg-red-100 text-red-800"
+                          : alert.severity === "media"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-slate-200 text-slate-700"
+                      }`}
+                    >
                       Risco {alert.severity}
                     </span>
-                    <span className="text-xs font-bold text-slate-900 font-display">{alert.type}</span>
+                    <span className="text-xs font-bold text-slate-900 font-display">
+                      {alert.type}
+                    </span>
                     <span className="text-[10px] text-slate-400 font-mono">• {alert.time}</span>
                   </div>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{alert.description}</p>
-                  <p className="text-[10px] text-orange-600 font-semibold font-mono">Indicador Envolvido: {alert.indicatorName}</p>
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                    {alert.description}
+                  </p>
+                  <p className="text-[10px] text-orange-600 font-semibold font-mono">
+                    Indicador Envolvido: {alert.indicatorName}
+                  </p>
                 </div>
 
                 <div className="flex gap-1.5 sm:self-center">
                   <button
                     onClick={() => {
-                      onAddNotification(`Investigação aberta para o log de ${alert.indicatorName}.`, 'info');
+                      onAddNotification(
+                        `Investigação aberta para o log de ${alert.indicatorName}.`,
+                        "info",
+                      );
                     }}
                     className="bg-white border border-slate-200 text-slate-700 py-1.5 px-3 rounded-lg text-[10px] font-bold hover:bg-slate-100"
                   >
@@ -515,7 +681,10 @@ export default function AdminPanel({
                   </button>
                   <button
                     onClick={() => {
-                      onAddNotification(`Indicador ${alert.indicatorName} foi suspenso temporariamente por fraude flagrante.`, 'success');
+                      onAddNotification(
+                        `Indicador ${alert.indicatorName} foi suspenso temporariamente por fraude flagrante.`,
+                        "success",
+                      );
                     }}
                     className="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white py-1.5 px-3 rounded-lg text-[10px] font-bold"
                   >
@@ -529,32 +698,49 @@ export default function AdminPanel({
       )}
 
       {/* VIEW: PARAMETERS AND FEES */}
-      {activeTab === 'taxas' && (
+      {activeTab === "taxas" && (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm max-w-xl">
-          <h3 className="font-display font-bold text-slate-900 text-sm mb-4">Parâmetros Gerais de Rentabilidade</h3>
+          <h3 className="font-display font-bold text-slate-900 text-sm mb-4">
+            Parâmetros Gerais de Rentabilidade
+          </h3>
 
           <form onSubmit={handleSaveConfig} className="space-y-4 font-sans text-slate-700">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Spread de Comissão (%)</label>
-                <input 
-                  type="number" step="0.1" required
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Spread de Comissão (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  required
                   value={configEdit.feePercent}
-                  onChange={e => setConfigEdit({...configEdit, feePercent: parseFloat(e.target.value) || 0})}
+                  onChange={(e) =>
+                    setConfigEdit({ ...configEdit, feePercent: parseFloat(e.target.value) || 0 })
+                  }
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900"
                 />
-                <span className="text-[10px] text-slate-400 block mt-1">Taxa cobrada da comissão do indicador no saque.</span>
+                <span className="text-[10px] text-slate-400 block mt-1">
+                  Taxa cobrada da comissão do indicador no saque.
+                </span>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Custo por Lead Ativo (R$)</label>
-                <input 
-                  type="number" required
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Custo por Lead Ativo (R$)
+                </label>
+                <input
+                  type="number"
+                  required
                   value={configEdit.feePerLead}
-                  onChange={e => setConfigEdit({...configEdit, feePerLead: parseFloat(e.target.value) || 0})}
+                  onChange={(e) =>
+                    setConfigEdit({ ...configEdit, feePerLead: parseFloat(e.target.value) || 0 })
+                  }
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900"
                 />
-                <span className="text-[10px] text-slate-400 block mt-1">Valor fixo faturado do anunciante por lead de interesse gerado.</span>
+                <span className="text-[10px] text-slate-400 block mt-1">
+                  Valor fixo faturado do anunciante por lead de interesse gerado.
+                </span>
               </div>
             </div>
 
@@ -568,15 +754,17 @@ export default function AdminPanel({
         </div>
       )}
 
-      {activeTab === 'admins' && (
+      {activeTab === "admins" && (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm max-w-xl">
           <div className="flex items-center gap-2 mb-4">
             <UserPlus className="w-5 h-5 text-orange-600" />
-            <h3 className="font-display font-bold text-slate-900 text-sm">Criar Novo Administrador</h3>
+            <h3 className="font-display font-bold text-slate-900 text-sm">
+              Criar Novo Administrador
+            </h3>
           </div>
           <p className="text-xs text-slate-500 mb-4">
-            O usuário será criado já confirmado e receberá permissão total de administrador.
-            Somente administradores podem executar esta ação.
+            O usuário será criado já confirmado e receberá permissão total de administrador. Somente
+            administradores podem executar esta ação.
           </p>
 
           <form
@@ -592,12 +780,14 @@ export default function AdminPanel({
                     password: newAdminPassword,
                   },
                 });
-                onAddNotification(`Administrador ${newAdminEmail} criado com sucesso!`, 'success');
-                setNewAdminName('');
-                setNewAdminEmail('');
-                setNewAdminPassword('');
+                onAddNotification(`Administrador ${newAdminEmail} criado com sucesso!`, "success");
+                setNewAdminName("");
+                setNewAdminEmail("");
+                setNewAdminPassword("");
               } catch (err) {
-                setAdminFormError(err instanceof Error ? err.message : 'Falha ao criar administrador.');
+                setAdminFormError(
+                  err instanceof Error ? err.message : "Falha ao criar administrador.",
+                );
               } finally {
                 setCreatingAdmin(false);
               }
@@ -605,9 +795,12 @@ export default function AdminPanel({
             className="space-y-3 font-sans text-slate-700"
           >
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Nome completo</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                Nome completo
+              </label>
               <input
-                type="text" required
+                type="text"
+                required
                 value={newAdminName}
                 onChange={(e) => setNewAdminName(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900"
@@ -615,9 +808,12 @@ export default function AdminPanel({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">E-mail</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                E-mail
+              </label>
               <input
-                type="email" required
+                type="email"
+                required
                 value={newAdminEmail}
                 onChange={(e) => setNewAdminEmail(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900"
@@ -625,9 +821,13 @@ export default function AdminPanel({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Senha temporária</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                Senha temporária
+              </label>
               <input
-                type="password" required minLength={8}
+                type="password"
+                required
+                minLength={8}
                 value={newAdminPassword}
                 onChange={(e) => setNewAdminPassword(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900"

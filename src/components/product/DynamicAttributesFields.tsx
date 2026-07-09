@@ -13,10 +13,16 @@ interface Props {
   mode?: "product" | "lead";
 }
 
-export default function DynamicAttributesFields({ category, values, onChange, mode = "product" }: Props) {
+export default function DynamicAttributesFields({
+  category,
+  values,
+  onChange,
+  mode = "product",
+}: Props) {
   const vertical = getVertical(category);
   if (!vertical) return null;
-  const fields: AttributeField[] = mode === "lead" ? (vertical.leadFields ?? []) : vertical.attributes;
+  const fields: AttributeField[] =
+    mode === "lead" ? (vertical.leadFields ?? []) : vertical.attributes;
   if (fields.length === 0) return null;
 
   const setField = (key: string, value: any) => onChange({ ...values, [key]: value });
@@ -32,30 +38,60 @@ export default function DynamicAttributesFields({ category, values, onChange, mo
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {fields.map((f) => {
           const v = values?.[f.key] ?? "";
-          const common = "w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200";
+          const common =
+            "w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200";
           return (
             <label key={f.key} className="block text-xs">
               <span className="block font-semibold text-slate-600 mb-1">
-                {f.label}{f.required && <span className="text-red-500 ml-0.5">*</span>}
+                {f.label}
+                {f.required && <span className="text-red-500 ml-0.5">*</span>}
               </span>
               {f.type === "textarea" ? (
-                <textarea className={common} rows={3} value={v}
-                  onChange={(e) => setField(f.key, e.target.value)} placeholder={f.placeholder} />
+                <textarea
+                  className={common}
+                  rows={3}
+                  value={v}
+                  onChange={(e) => setField(f.key, e.target.value)}
+                  placeholder={f.placeholder}
+                />
               ) : f.type === "select" ? (
-                <select className={common} value={v} onChange={(e) => setField(f.key, e.target.value)}>
+                <select
+                  className={common}
+                  value={v}
+                  onChange={(e) => setField(f.key, e.target.value)}
+                >
                   <option value="">Selecione…</option>
-                  {f.options?.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                  {f.options?.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
                 </select>
               ) : f.type === "boolean" ? (
-                <input type="checkbox" className="h-4 w-4 accent-orange-600"
-                  checked={!!v} onChange={(e) => setField(f.key, e.target.checked)} />
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-orange-600"
+                  checked={!!v}
+                  onChange={(e) => setField(f.key, e.target.checked)}
+                />
               ) : f.type === "number" ? (
-                <input type="number" className={common} value={v}
-                  onChange={(e) => setField(f.key, e.target.value === "" ? "" : Number(e.target.value))}
-                  placeholder={f.placeholder} />
+                <input
+                  type="number"
+                  className={common}
+                  value={v}
+                  onChange={(e) =>
+                    setField(f.key, e.target.value === "" ? "" : Number(e.target.value))
+                  }
+                  placeholder={f.placeholder}
+                />
               ) : (
-                <input type="text" className={common} value={v}
-                  onChange={(e) => setField(f.key, e.target.value)} placeholder={f.placeholder} />
+                <input
+                  type="text"
+                  className={common}
+                  value={v}
+                  onChange={(e) => setField(f.key, e.target.value)}
+                  placeholder={f.placeholder}
+                />
               )}
             </label>
           );

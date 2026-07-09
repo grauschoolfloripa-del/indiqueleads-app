@@ -1,19 +1,19 @@
 export type Category =
-  | 'imovel'
-  | 'carro'
-  | 'moto'
-  | 'barco'
-  | 'jetski'
-  | 'saude'
-  | 'energia_solar'
-  | 'educacao'
-  | 'turismo'
-  | 'seguros'
-  | 'franquias'
-  | 'veiculos_pesados'
-  | 'imoveis_comerciais_locacao';
+  | "imovel"
+  | "carro"
+  | "moto"
+  | "barco"
+  | "jetski"
+  | "saude"
+  | "energia_solar"
+  | "educacao"
+  | "turismo"
+  | "seguros"
+  | "franquias"
+  | "veiculos_pesados"
+  | "imoveis_comerciais_locacao";
 
-export type ProductStatus = 'rascunho' | 'ativo' | 'reservado' | 'vendido' | 'pausado';
+export type ProductStatus = "rascunho" | "ativo" | "reservado" | "vendido" | "pausado";
 
 export interface LocationInfo {
   lat: number;
@@ -47,26 +47,26 @@ export interface Product {
 }
 
 export type LeadStatus =
-  | 'lead_recebido'
-  | 'contato_feito'
-  | 'visita_agendada'
-  | 'visita_confirmada'
-  | 'proposta'
-  | 'venda_concluida'
-  | 'triagem'
-  | 'avaliacao_agendada'
-  | 'avaliacao_confirmada'
-  | 'orcamento_emitido'
-  | 'tratamento_iniciado'
-  | 'visita_tecnica_agendada'
-  | 'visita_tecnica_realizada'
-  | 'projeto_aprovado'
-  | 'contrato_assinado'
-  | 'matricula_efetivada'
-  | 'pacote_fechado'
-  | 'apolice_emitida'
-  | 'contrato_franquia'
-  | 'locacao_assinada';
+  | "lead_recebido"
+  | "contato_feito"
+  | "visita_agendada"
+  | "visita_confirmada"
+  | "proposta"
+  | "venda_concluida"
+  | "triagem"
+  | "avaliacao_agendada"
+  | "avaliacao_confirmada"
+  | "orcamento_emitido"
+  | "tratamento_iniciado"
+  | "visita_tecnica_agendada"
+  | "visita_tecnica_realizada"
+  | "projeto_aprovado"
+  | "contrato_assinado"
+  | "matricula_efetivada"
+  | "pacote_fechado"
+  | "apolice_emitida"
+  | "contrato_franquia"
+  | "locacao_assinada";
 
 export interface Lead {
   id: string;
@@ -84,7 +84,7 @@ export interface Lead {
   updatedAt: string;
   commissionPaid: boolean;
   commissionValue: number;
-  commissionType: 'digital' | 'presencial';
+  commissionType: "digital" | "presencial";
   notes?: string;
   contractUrl?: string; // NF or contract proof
   visitDate?: string;
@@ -100,8 +100,8 @@ export interface Indicator {
   email: string;
   password?: string;
   pixKey: string;
-  pixType: 'cpf' | 'email' | 'phone' | 'random';
-  league: 'bronze' | 'prata' | 'ouro';
+  pixType: "cpf" | "email" | "phone" | "random";
+  league: "bronze" | "prata" | "ouro";
   score: number; // reputation score 0-100
   clicks: number;
   hasAcceptedTerms: boolean;
@@ -116,13 +116,13 @@ export interface Advertiser {
   id: string;
   name: string;
   cnpjOrCpf: string;
-  type: 'PF' | 'PJ';
+  type: "PF" | "PJ";
   phone: string;
   email: string;
   password?: string;
   hasAcceptedTerms: boolean;
   termsAcceptedAt?: string;
-  plan: 'gratuito' | 'starter' | 'premium' | 'pro';
+  plan: "gratuito" | "starter" | "premium" | "pro";
   categoriesSelected: Category[];
   city?: string;
   state?: string;
@@ -134,7 +134,12 @@ export interface PlatformConfig {
   minCommissionValue: Record<Category, number>;
 }
 
-export type FinancingStatus = 'pendente' | 'analise_bancos' | 'aprovado' | 'rejeitado' | 'concluido';
+export type FinancingStatus =
+  | "pendente"
+  | "analise_bancos"
+  | "aprovado"
+  | "rejeitado"
+  | "concluido";
 
 export interface BankSimulationResponse {
   bankName: string;
@@ -142,7 +147,7 @@ export interface BankSimulationResponse {
   interestRate: number; // e.g., 1.89% p.m.
   installmentValue: number;
   installmentsCount: number;
-  approvedStatus: 'aprovado' | 'recusado' | 'revisar_entrada';
+  approvedStatus: "aprovado" | "recusado" | "revisar_entrada";
   notes?: string;
 }
 
@@ -184,11 +189,10 @@ export interface ChatMessage {
   leadId: string;
   senderId: string; // 'client' (buyer) or advertiserId (store)
   senderName: string;
-  senderRole: 'client' | 'advertiser' | 'system';
+  senderRole: "client" | "advertiser" | "system";
   text: string;
   originalText?: string;
   isSystem?: boolean;
   isBlockedBySecurity?: boolean;
   createdAt: string;
 }
-
