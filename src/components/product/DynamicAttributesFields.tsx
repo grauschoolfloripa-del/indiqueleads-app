@@ -7,8 +7,8 @@ import { getVertical, type AttributeField } from "@/lib/verticals";
 
 interface Props {
   category: Category;
-  values: Record<string, any>;
-  onChange: (next: Record<string, any>) => void;
+  values: Record<string, unknown>;
+  onChange: (next: Record<string, unknown>) => void;
   /** Se true, usa os `leadFields` da vertical em vez dos atributos de produto. */
   mode?: "product" | "lead";
 }
