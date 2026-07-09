@@ -167,6 +167,14 @@ export default function AdminPanel({
           Taxas & Comissões
         </button>
         <button
+          onClick={() => setActiveTab('verticais')}
+          className={`pb-3 px-4 border-b-2 transition-all ${
+            activeTab === 'verticais' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Verticais
+        </button>
+        <button
           onClick={() => setActiveTab('admins')}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === 'admins' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -175,6 +183,92 @@ export default function AdminPanel({
           Administradores
         </button>
       </div>
+
+      {/* VIEW: VERTICAIS METRICS */}
+      {activeTab === 'verticais' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Desempenho por Vertical</h3>
+            <p className="text-xs text-slate-500 mb-4">Anúncios ativos, leads gerados e conversão em cada vertical cadastrada.</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-[11px] uppercase text-slate-500 border-b border-slate-100">
+                    <th className="py-2 pr-3">Vertical</th>
+                    <th className="py-2 pr-3">Anúncios ativos</th>
+                    <th className="py-2 pr-3">Leads</th>
+                    <th className="py-2 pr-3">Vendas / Concluídos</th>
+                    <th className="py-2 pr-3">Conversão</th>
+                    <th className="py-2 pr-3">Modelo</th>
+                    <th className="py-2 pr-3">Funil</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {VERTICALS_ORDER.map((catId) => {
+                    const v = VERTICALS[catId];
+                    const prodsAtivos = products.filter(p => p.category === catId && p.status === 'ativo').length;
+                    const leadsCat = leads.filter(l => l.productCategory === catId);
+                    const finalStatuses = new Set(['venda_concluida','tratamento_iniciado','contrato_assinado','matricula_efetivada','pacote_fechado','apolice_emitida','contrato_franquia','locacao_assinada']);
+                    const concluidos = leadsCat.filter(l => finalStatuses.has(l.status)).length;
+                    const conv = leadsCat.length ? ((concluidos / leadsCat.length) * 100).toFixed(1) + '%' : '—';
+                    return (
+                      <tr key={catId} className="border-b border-slate-50 hover:bg-slate-50/60">
+                        <td className="py-2 pr-3 font-semibold text-slate-800">
+                          <span className="mr-1.5">{v.emoji}</span>{v.shortLabel}
+                        </td>
+                        <td className="py-2 pr-3">{prodsAtivos}</td>
+                        <td className="py-2 pr-3">{leadsCat.length}</td>
+                        <td className="py-2 pr-3">{concluidos}</td>
+                        <td className="py-2 pr-3 font-mono text-xs">{conv}</td>
+                        <td className="py-2 pr-3">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 uppercase">
+                            {v.commissionModel === 'recorrente' ? 'Recorrente' : v.commissionModel === 'digital' ? 'Digital' : 'Pres.+Digital'}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-3 text-[11px] text-slate-500">{v.statusFlow.length} etapas</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {VERTICALS_ORDER.map((catId) => {
+              const v = VERTICALS[catId];
+              return (
+                <div key={catId} className={`bg-gradient-to-br ${v.gradient} rounded-2xl border border-slate-100 p-4`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-mono text-slate-500 uppercase">{catId}</div>
+                      <div className="text-lg font-bold text-slate-900">{v.emoji} {v.label}</div>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase bg-white/70 border border-slate-200 rounded-full px-2 py-0.5 text-slate-700">{v.difficulty}</span>
+                  </div>
+                  <p className="text-xs text-slate-700 mt-2">{v.description}</p>
+                  <div className="grid grid-cols-2 gap-2 mt-3 text-[11px]">
+                    <div className="bg-white/70 rounded-lg p-2 border border-slate-100">
+                      <div className="text-slate-500">Ticket médio</div>
+                      <div className="font-semibold text-slate-900">{v.averageValue}</div>
+                    </div>
+                    <div className="bg-white/70 rounded-lg p-2 border border-slate-100">
+                      <div className="text-slate-500">Comissão</div>
+                      <div className="font-semibold text-emerald-700">{v.avgCommission}</div>
+                    </div>
+                  </div>
+                  {v.disclaimer && (
+                    <div className="text-[10px] mt-2 bg-amber-100/70 border border-amber-200 rounded p-2 text-amber-900">
+                      ⚠️ {v.disclaimer}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
 
       {/* VIEW: CONSOLIDATED METRICS */}
       {activeTab === 'geral' && (
