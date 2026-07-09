@@ -50,6 +50,8 @@ import {
   ApprovedContract,
   ChatMessage,
 } from "../types";
+import { VERTICALS, VERTICALS_ORDER, getVertical } from "@/lib/verticals";
+import DynamicAttributesFields from "@/components/product/DynamicAttributesFields";
 
 interface AdvertiserDashboardProps {
   advertiser: Advertiser;
