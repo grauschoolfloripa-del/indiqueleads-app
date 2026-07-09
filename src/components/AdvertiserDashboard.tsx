@@ -3271,29 +3271,28 @@ export default function AdvertiserDashboard({
               </p>
             </div>
 
-            {/* Vertical picker */}
-            <div className="grid grid-cols-5 gap-2 mb-6">
-              {(["imovel", "carro", "moto", "barco", "jetski"] as const).map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => handleCategoryChange(cat)}
-                  className={`py-3 px-1 rounded-2xl border text-xs font-bold text-center flex flex-col items-center gap-1.5 transition-all uppercase tracking-wide ${
-                    newProductCategory === cat
-                      ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100"
-                      : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  <span className="text-xl">
-                    {cat === "imovel" && "🏠"}
-                    {cat === "carro" && "🚗"}
-                    {cat === "moto" && "🏍️"}
-                    {cat === "barco" && "🛥️"}
-                    {cat === "jetski" && "🎿"}
-                  </span>
-                  <span className="text-[9px] block leading-none">{cat}</span>
-                </button>
-              ))}
+            {/* Vertical picker — todas as verticais suportadas */}
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-2 mb-6">
+              {VERTICALS_ORDER.map((cat) => {
+                const v = VERTICALS[cat];
+                const active = newProductCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleCategoryChange(cat)}
+                    title={v.label}
+                    className={`py-3 px-1 rounded-2xl border text-xs font-bold text-center flex flex-col items-center gap-1.5 transition-all uppercase tracking-wide ${
+                      active
+                        ? "bg-orange-600 border-orange-600 text-white shadow-lg shadow-orange-100"
+                        : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="text-xl">{v.emoji}</span>
+                    <span className="text-[9px] block leading-tight">{v.shortLabel}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <form onSubmit={handleAddProductSubmit} className="space-y-4">
