@@ -756,7 +756,7 @@ export default function AffiliateDashboard({
               </button>
             </div>
 
-            {/* Verticals Icon Filter */}
+            {/* Verticals Icon Filter (dinâmico via VERTICALS) */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase mb-2">Categoria (Vertical)</label>
               <div className="grid grid-cols-3 gap-2">
@@ -770,58 +770,27 @@ export default function AffiliateDashboard({
                 >
                   Todas
                 </button>
-                <button
-                  onClick={() => setSelectedCategory('imovel')}
-                  className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
-                    selectedCategory === 'imovel'
-                      ? 'bg-orange-50 border-orange-200 text-orange-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  🏠 Imóvel
-                </button>
-                <button
-                  onClick={() => setSelectedCategory('carro')}
-                  className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
-                    selectedCategory === 'carro'
-                      ? 'bg-orange-50 border-orange-200 text-orange-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  🚗 Carro
-                </button>
-                <button
-                  onClick={() => setSelectedCategory('moto')}
-                  className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
-                    selectedCategory === 'moto'
-                      ? 'bg-orange-50 border-orange-200 text-orange-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  🏍️ Moto
-                </button>
-                <button
-                  onClick={() => setSelectedCategory('barco')}
-                  className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
-                    selectedCategory === 'barco'
-                      ? 'bg-orange-50 border-orange-200 text-orange-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  🛥️ Barco
-                </button>
-                <button
-                  onClick={() => setSelectedCategory('jetski')}
-                  className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
-                    selectedCategory === 'jetski'
-                      ? 'bg-orange-50 border-orange-200 text-orange-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  🎿 JetSki
-                </button>
+                {VERTICALS_ORDER.map((catId) => {
+                  const v = VERTICALS[catId];
+                  const active = selectedCategory === catId;
+                  return (
+                    <button
+                      key={catId}
+                      onClick={() => setSelectedCategory(catId)}
+                      className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
+                        active
+                          ? 'bg-orange-50 border-orange-200 text-orange-700'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                      title={v.label}
+                    >
+                      <span className="mr-1">{v.emoji}</span>{v.shortLabel}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+
 
             {/* City location filter */}
             <div>
