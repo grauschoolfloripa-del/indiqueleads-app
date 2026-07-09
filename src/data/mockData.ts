@@ -8,7 +8,15 @@ export const INITIAL_PLATFORM_CONFIG: PlatformConfig = {
     carro: 1000,
     moto: 400,
     barco: 3000,
-    jetski: 800
+    jetski: 800,
+    saude: 300,
+    energia_solar: 500,
+    educacao: 200,
+    turismo: 400,
+    seguros: 100,
+    franquias: 2000,
+    veiculos_pesados: 2500,
+    imoveis_comerciais_locacao: 3000,
   }
 };
 
