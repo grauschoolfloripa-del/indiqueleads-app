@@ -1029,9 +1029,9 @@ export default function App() {
         ) : (
           /* Render respective authenticated dashboards */
           <>
-            {currentRole === "indicador" && indicators.length > 0 && (
+            {currentRole === "indicador" && loggedUser && indicators.find((i) => i.id === loggedUser.id) && (
               <AffiliateDashboard
-                indicator={indicators.find((i) => i.id === loggedUser.id) || indicators[0]}
+                indicator={indicators.find((i) => i.id === loggedUser.id)!}
                 onUpdateIndicator={handleUpdateIndicator}
                 products={products}
                 leads={leads}
@@ -1049,9 +1049,10 @@ export default function App() {
               />
             )}
 
-            {currentRole === "anunciante" && advertisers.length > 0 && (
+            {currentRole === "anunciante" && loggedUser && advertisers.find((a) => a.id === loggedUser.id) && (
               <AdvertiserDashboard
-                advertiser={advertisers.find((a) => a.id === loggedUser.id) || advertisers[0]}
+                advertiser={advertisers.find((a) => a.id === loggedUser.id)!}
+
                 onUpdateAdvertiser={handleUpdateAdvertiser}
                 products={products}
                 onAddProduct={handleAddProduct}
