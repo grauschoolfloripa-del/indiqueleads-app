@@ -266,12 +266,10 @@ export default function LandingPage({
     }
   };
 
-  const openAuth = (role: 'indicador' | 'anunciante' | 'admin', isRegister = false) => {
-    setAuthRole(role);
-    setIsRegisterMode(isRegister);
-    setErrorMsg('');
-    setSuccessMsg('');
-    setShowAuthModal(true);
+  const openAuth = (_role: 'indicador' | 'anunciante' | 'admin', _isRegister = false) => {
+    // Fluxo unificado: todo cadastro/login vai para a rota /auth (Supabase real).
+    // O modal interno legado foi desativado — evita cadastros em localStorage que sumiam.
+    window.location.href = '/auth';
   };
 
   return (

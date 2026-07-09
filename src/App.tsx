@@ -26,14 +26,9 @@ export default function App() {
   const [activeProductId, setActiveProductId] = useState<string>('prod-1');
 
   // Session / Authentication state
-  const [loggedUser, setLoggedUser] = useState<{ id: string; name: string; email: string; role: 'indicador' | 'anunciante' | 'admin' } | null>(() => {
-    try {
-      const cached = localStorage.getItem('indica_logged_user');
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Sessão real vem exclusivamente do Supabase (useAuth) via bridge abaixo.
+  // Nunca lemos de localStorage para evitar sessões fantasmas de fluxos antigos.
+  const [loggedUser, setLoggedUser] = useState<{ id: string; name: string; email: string; role: 'indicador' | 'anunciante' | 'admin' } | null>(null);
 
   // Core Db States
   const [products, setProducts] = useState<Product[]>(() => {
@@ -107,6 +102,12 @@ export default function App() {
   const [notifications, setNotifications] = useState<Array<{ id: string; msg: string; type: 'success' | 'info' }>>([]);
 
   // --- INITIALIZATION & REFERRAL COOKIE READING ---
+  // Limpa qualquer sessão legada em localStorage do fluxo antigo (mock).
+  // A autenticação real é 100% Supabase via useAuth + bridge abaixo.
+  useEffect(() => {
+    localStorage.removeItem('indica_logged_user');
+  }, []);
+
   useEffect(() => {
     // 1. Load database from localStorage or seed
     const cachedProducts = localStorage.getItem('indica_products');
@@ -663,9 +664,11 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setLoggedUser(null);
-    localStorage.removeItem('indica_logged_user');
+    // Fonte da verdade é o Supabase. O bridge acima limpa loggedUser ao detectar sessão nula.
     void supabaseSignOut();
+    localStorage.removeItem('indica_logged_user');
+    setLoggedUser(null);
+    setCurrentRole('indicador');
     addNotification('Sessão encerrada com segurança.', 'info');
   };
 
