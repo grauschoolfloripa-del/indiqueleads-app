@@ -1,4 +1,17 @@
-export type Category = 'imovel' | 'carro' | 'moto' | 'barco' | 'jetski';
+export type Category =
+  | 'imovel'
+  | 'carro'
+  | 'moto'
+  | 'barco'
+  | 'jetski'
+  | 'saude'
+  | 'energia_solar'
+  | 'educacao'
+  | 'turismo'
+  | 'seguros'
+  | 'franquias'
+  | 'veiculos_pesados'
+  | 'imoveis_comerciais_locacao';
 
 export type ProductStatus = 'rascunho' | 'ativo' | 'reservado' | 'vendido' | 'pausado';
 
