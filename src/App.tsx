@@ -26,14 +26,9 @@ export default function App() {
   const [activeProductId, setActiveProductId] = useState<string>('prod-1');
 
   // Session / Authentication state
-  const [loggedUser, setLoggedUser] = useState<{ id: string; name: string; email: string; role: 'indicador' | 'anunciante' | 'admin' } | null>(() => {
-    try {
-      const cached = localStorage.getItem('indica_logged_user');
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Sessão real vem exclusivamente do Supabase (useAuth) via bridge abaixo.
+  // Nunca lemos de localStorage para evitar sessões fantasmas de fluxos antigos.
+  const [loggedUser, setLoggedUser] = useState<{ id: string; name: string; email: string; role: 'indicador' | 'anunciante' | 'admin' } | null>(null);
 
   // Core Db States
   const [products, setProducts] = useState<Product[]>(() => {
