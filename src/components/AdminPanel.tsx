@@ -33,7 +33,7 @@ export default function AdminPanel({
   onAddNotification
 }: AdminPanelProps) {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'geral' | 'categorias' | 'fraudes' | 'taxas' | 'admins'>('geral');
+  const [activeTab, setActiveTab] = useState<'geral' | 'categorias' | 'verticais' | 'fraudes' | 'taxas' | 'admins'>('geral');
 
   // Criação de novos administradores
   const createAdminFn = useServerFn(createAdminUser);
