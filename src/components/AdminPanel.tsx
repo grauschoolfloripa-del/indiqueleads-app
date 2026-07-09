@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { createAdminUser } from '@/lib/admin-users.functions';
 import { Product, Advertiser, Indicator, Lead, Category, PlatformConfig } from '../types';
+import { VERTICALS, VERTICALS_ORDER } from '../lib/verticals';
 
 interface AdminPanelProps {
   products: Product[];
