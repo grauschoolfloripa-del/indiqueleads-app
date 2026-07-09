@@ -658,9 +658,11 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setLoggedUser(null);
-    localStorage.removeItem('indica_logged_user');
+    // Fonte da verdade é o Supabase. O bridge acima limpa loggedUser ao detectar sessão nula.
     void supabaseSignOut();
+    localStorage.removeItem('indica_logged_user');
+    setLoggedUser(null);
+    setCurrentRole('indicador');
     addNotification('Sessão encerrada com segurança.', 'info');
   };
 
