@@ -5,17 +5,17 @@ import App from "../App";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "IndicaAqui — Plataforma de Indicações" },
+      { title: "Indiqueleads — Plataforma de Indicações" },
       {
         name: "description",
         content:
           "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
       },
-      { property: "og:title", content: "IndicaAqui — Plataforma de Indicações" },
+      { property: "og:title", content: "Indiqueleads — Plataforma de Indicações" },
       {
         property: "og:description",
         content:
-          "Conecte anunciantes a indicadores autônomos com links rastreáveis e comissões.",
+          "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
       },
     ],
   }),

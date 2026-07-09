@@ -77,21 +77,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "IndicaAqui — Plataforma de Indicações" },
+      { title: "Indiqueleads — Plataforma de Indicações" },
       {
         name: "description",
         content:
-          "Plataforma que conecta anunciantes a indicadores autônomos com links rastreáveis e comissionamento em camadas.",
+          "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
       },
-      { property: "og:title", content: "IndicaAqui — Plataforma de Indicações" },
+      { property: "og:title", content: "Indiqueleads — Plataforma de Indicações" },
       {
         property: "og:description",
         content:
-          "Conecte anunciantes a indicadores autônomos com links rastreáveis e comissões.",
+          "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "IndicaAqui — Plataforma de Indicações" },
+      { name: "twitter:title", content: "Indiqueleads — Plataforma de Indicações" },
       { name: "description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
       { property: "og:description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
       { name: "twitter:description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
