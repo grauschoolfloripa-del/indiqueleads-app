@@ -1,8 +1,10 @@
 import { useState, FormEvent } from 'react';
+import { useServerFn } from '@tanstack/react-start';
 import { 
   ShieldAlert, Settings, TrendingUp, AlertTriangle, ListFilter, Play, Sparkles,
-  Layers, Plus, Trash2, CheckCircle2, DollarSign, Users, FileText
+  Layers, Plus, Trash2, CheckCircle2, DollarSign, Users, FileText, UserPlus, Loader2
 } from 'lucide-react';
+import { createAdminUser } from '@/lib/admin-users.functions';
 import { Product, Advertiser, Indicator, Lead, Category, PlatformConfig } from '../types';
 
 interface AdminPanelProps {
@@ -31,7 +33,15 @@ export default function AdminPanel({
   onAddNotification
 }: AdminPanelProps) {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'geral' | 'categorias' | 'fraudes' | 'taxas'>('geral');
+  const [activeTab, setActiveTab] = useState<'geral' | 'categorias' | 'fraudes' | 'taxas' | 'admins'>('geral');
+
+  // Criação de novos administradores
+  const createAdminFn = useServerFn(createAdminUser);
+  const [newAdminName, setNewAdminName] = useState('');
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [adminFormError, setAdminFormError] = useState<string | null>(null);
   
   // Dynamic Category Form
   const [newCatId, setNewCatId] = useState('');
@@ -154,6 +164,14 @@ export default function AdminPanel({
           }`}
         >
           Taxas & Comissões
+        </button>
+        <button
+          onClick={() => setActiveTab('admins')}
+          className={`pb-3 px-4 border-b-2 transition-all ${
+            activeTab === 'admins' ? 'border-orange-600 text-orange-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          Administradores
         </button>
       </div>
 
