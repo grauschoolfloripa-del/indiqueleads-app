@@ -5,6 +5,7 @@ import {
   TrendingUp, Coins, Users, Home, Car, Compass, Calendar, Play, Calculator, Percent
 } from 'lucide-react';
 import { Category, Indicator, Advertiser } from '../types';
+import { VERTICALS, VERTICALS_ORDER } from '../lib/verticals';
 
 interface LandingPageProps {
   indicators: Indicator[];
