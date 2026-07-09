@@ -276,11 +276,92 @@ export default function App() {
       (supaUser.user_metadata?.name as string) ||
       supaUser.email?.split("@")[0] ||
       "Usuário";
+    const emailLc = (supaUser.email ?? "").toLowerCase();
+    const phone = (supaUser.user_metadata?.phone as string) || (supaUser.phone as string) || "";
     const userObj = { id: supaUser.id, name: displayName, email: supaUser.email ?? "", role };
     setLoggedUser(userObj);
     setCurrentRole(role);
     localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
+
+    // Garantir que o registro de Anunciante/Indicador reflita o usuário real logado.
+    if (role === "anunciante") {
+      setAdvertisers((prev) => {
+        const byId = prev.find((a) => a.id === supaUser.id);
+        if (byId) {
+          // Sincroniza nome/email/telefone com o cadastro real do usuário logado.
+          const next = prev.map((a) =>
+            a.id === supaUser.id
+              ? { ...a, name: displayName, email: supaUser.email ?? a.email, phone: phone || a.phone }
+              : a,
+          );
+          saveToStorage("indica_advertisers", next);
+          return next;
+        }
+        const byEmail = prev.findIndex((a) => a.email.toLowerCase() === emailLc && emailLc);
+        if (byEmail >= 0) {
+          // Migra o registro existente (mesmo email) para o id do Supabase.
+          const next = [...prev];
+          next[byEmail] = { ...next[byEmail], id: supaUser.id, name: displayName, email: supaUser.email ?? next[byEmail].email };
+          saveToStorage("indica_advertisers", next);
+          return next;
+        }
+        // Cria um novo registro real a partir do usuário Supabase (sem mock).
+        const created: Advertiser = {
+          id: supaUser.id,
+          name: displayName,
+          cnpjOrCpf: "",
+          type: "PJ",
+          phone,
+          email: supaUser.email ?? "",
+          plan: "gratuito",
+          categoriesSelected: [],
+          hasAcceptedTerms: true,
+        };
+        const next = [...prev, created];
+        saveToStorage("indica_advertisers", next);
+        return next;
+      });
+    } else if (role === "indicador") {
+      setIndicators((prev) => {
+        const byId = prev.find((i) => i.id === supaUser.id);
+        if (byId) {
+          const next = prev.map((i) =>
+            i.id === supaUser.id
+              ? { ...i, name: displayName, email: supaUser.email ?? i.email, phone: phone || i.phone }
+              : i,
+          );
+          saveToStorage("indica_indicators", next);
+          return next;
+        }
+        const byEmail = prev.findIndex((i) => i.email.toLowerCase() === emailLc && emailLc);
+        if (byEmail >= 0) {
+          const next = [...prev];
+          next[byEmail] = { ...next[byEmail], id: supaUser.id, name: displayName, email: supaUser.email ?? next[byEmail].email };
+          saveToStorage("indica_indicators", next);
+          return next;
+        }
+        const created: Indicator = {
+          id: supaUser.id,
+          name: displayName,
+          cpf: "",
+          phone,
+          email: supaUser.email ?? "",
+          pixKey: supaUser.email ?? "",
+          pixType: "email",
+          league: "bronze",
+          score: 0,
+          clicks: 0,
+          hasAcceptedTerms: true,
+          balanceAvailable: 0,
+          balancePending: 0,
+        };
+        const next = [...prev, created];
+        saveToStorage("indica_indicators", next);
+        return next;
+      });
+    }
   }, [supaUser, supaRoles, supaLoading]);
+
 
   // Sync state helpers
   const saveToStorage = (key: string, data: any) => {
