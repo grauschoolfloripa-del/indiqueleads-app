@@ -576,6 +576,7 @@ export type Database = {
           city: string | null
           commission_digital_pct: number | null
           commission_digital_value: number | null
+          commission_model: string | null
           commission_presencial_pct: number | null
           commission_presencial_value: number | null
           cover_image: string | null
@@ -600,6 +601,7 @@ export type Database = {
           city?: string | null
           commission_digital_pct?: number | null
           commission_digital_value?: number | null
+          commission_model?: string | null
           commission_presencial_pct?: number | null
           commission_presencial_value?: number | null
           cover_image?: string | null
@@ -624,6 +626,7 @@ export type Database = {
           city?: string | null
           commission_digital_pct?: number | null
           commission_digital_value?: number | null
+          commission_model?: string | null
           commission_presencial_pct?: number | null
           commission_presencial_value?: number | null
           cover_image?: string | null
@@ -774,9 +777,36 @@ export type Database = {
         | "visita_confirmada"
         | "proposta"
         | "venda_concluida"
+        | "triagem"
+        | "avaliacao_agendada"
+        | "avaliacao_confirmada"
+        | "orcamento_emitido"
+        | "tratamento_iniciado"
+        | "visita_tecnica_agendada"
+        | "visita_tecnica_realizada"
+        | "projeto_aprovado"
+        | "contrato_assinado"
+        | "matricula_efetivada"
+        | "pacote_fechado"
+        | "apolice_emitida"
+        | "contrato_franquia"
+        | "locacao_assinada"
       payout_status: "pending" | "processing" | "paid" | "failed"
       pix_type: "cpf" | "email" | "phone" | "random"
-      product_category: "imovel" | "carro" | "moto" | "barco" | "jetski"
+      product_category:
+        | "imovel"
+        | "carro"
+        | "moto"
+        | "barco"
+        | "jetski"
+        | "saude"
+        | "energia_solar"
+        | "educacao"
+        | "turismo"
+        | "seguros"
+        | "franquias"
+        | "veiculos_pesados"
+        | "imoveis_comerciais_locacao"
       product_status: "rascunho" | "ativo" | "reservado" | "vendido" | "pausado"
     }
     CompositeTypes: {
@@ -925,10 +955,38 @@ export const Constants = {
         "visita_confirmada",
         "proposta",
         "venda_concluida",
+        "triagem",
+        "avaliacao_agendada",
+        "avaliacao_confirmada",
+        "orcamento_emitido",
+        "tratamento_iniciado",
+        "visita_tecnica_agendada",
+        "visita_tecnica_realizada",
+        "projeto_aprovado",
+        "contrato_assinado",
+        "matricula_efetivada",
+        "pacote_fechado",
+        "apolice_emitida",
+        "contrato_franquia",
+        "locacao_assinada",
       ],
       payout_status: ["pending", "processing", "paid", "failed"],
       pix_type: ["cpf", "email", "phone", "random"],
-      product_category: ["imovel", "carro", "moto", "barco", "jetski"],
+      product_category: [
+        "imovel",
+        "carro",
+        "moto",
+        "barco",
+        "jetski",
+        "saude",
+        "energia_solar",
+        "educacao",
+        "turismo",
+        "seguros",
+        "franquias",
+        "veiculos_pesados",
+        "imoveis_comerciais_locacao",
+      ],
       product_status: ["rascunho", "ativo", "reservado", "vendido", "pausado"],
     },
   },
