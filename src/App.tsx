@@ -102,6 +102,12 @@ export default function App() {
   const [notifications, setNotifications] = useState<Array<{ id: string; msg: string; type: 'success' | 'info' }>>([]);
 
   // --- INITIALIZATION & REFERRAL COOKIE READING ---
+  // Limpa qualquer sessão legada em localStorage do fluxo antigo (mock).
+  // A autenticação real é 100% Supabase via useAuth + bridge abaixo.
+  useEffect(() => {
+    localStorage.removeItem('indica_logged_user');
+  }, []);
+
   useEffect(() => {
     // 1. Load database from localStorage or seed
     const cachedProducts = localStorage.getItem('indica_products');
