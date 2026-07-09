@@ -634,27 +634,28 @@ export default function LandingPage({
                 {/* 1. Niche selector */}
                 <div>
                   <label className="block text-xs text-slate-500 font-bold uppercase mb-2">Selecione o Nicho do Produto</label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {(['imovel', 'carro', 'moto', 'barco', 'jetski'] as Category[]).map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => {
-                          setCalcNiche(cat);
-                          if (cat === 'imovel') { setCalcSaleValue(450000); setCalcCommPct(5); }
-                          if (cat === 'carro') { setCalcSaleValue(120000); setCalcCommPct(3); }
-                          if (cat === 'moto') { setCalcSaleValue(45000); setCalcCommPct(2.5); }
-                          if (cat === 'barco') { setCalcSaleValue(250000); setCalcCommPct(4); }
-                          if (cat === 'jetski') { setCalcSaleValue(65000); setCalcCommPct(3.5); }
-                        }}
-                        className={`py-2 px-1 rounded-xl text-xs font-bold border capitalize transition-all ${
-                          calcNiche === cat 
-                            ? 'bg-orange-600 border-orange-600 text-white' 
-                            : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
-                        }`}
-                      >
-                        {cat === 'imovel' ? '🏠 Imóvel' : cat === 'carro' ? '🚗 Carro' : cat === 'moto' ? '🏍️ Moto' : cat === 'barco' ? '🛥️ Barco' : '🎿 Jetski'}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                    {VERTICALS_ORDER.map((cat) => {
+                      const v = VERTICALS[cat];
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setCalcNiche(cat);
+                            setCalcSaleValue(v.calc.saleValue);
+                            setCalcCommPct(v.calc.commPct);
+                          }}
+                          className={`py-2 px-1 rounded-xl text-xs font-bold border transition-all ${
+                            calcNiche === cat 
+                              ? 'bg-orange-600 border-orange-600 text-white' 
+                              : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
+                          }`}
+                          title={v.label}
+                        >
+                          {v.emoji} {v.shortLabel}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -666,14 +667,15 @@ export default function LandingPage({
                   </div>
                   <input 
                     type="range" 
-                    min={calcNiche === 'imovel' ? 100000 : calcNiche === 'carro' ? 30000 : calcNiche === 'moto' ? 10000 : calcNiche === 'barco' ? 80000 : 20000}
-                    max={calcNiche === 'imovel' ? 3000000 : calcNiche === 'carro' ? 900000 : calcNiche === 'moto' ? 200000 : calcNiche === 'barco' ? 2000000 : 250000}
+                    min={VERTICALS[calcNiche].calc.min}
+                    max={VERTICALS[calcNiche].calc.max}
                     step={1000}
                     value={calcSaleValue}
                     onChange={(e) => setCalcSaleValue(Number(e.target.value))}
                     className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
                   />
                 </div>
+
 
                 {/* 3. Commission slider */}
                 <div>
