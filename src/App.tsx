@@ -82,17 +82,14 @@ export default function App() {
   });
   
   // Dynamic Categories (fonte: src/lib/verticals.ts — verticais oficiais da plataforma)
-  const [categories, setCategories] = useState<Array<{ id: Category | string; name: string; icon: string; fields: string[] }>>(() => {
-    // Importado dinamicamente para evitar ciclo de import em build; usamos require-style via módulo estático.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { VERTICALS, VERTICALS_ORDER } = require('./lib/verticals') as typeof import('./lib/verticals');
-    return VERTICALS_ORDER.map((id) => ({
+  const [categories, setCategories] = useState<Array<{ id: Category | string; name: string; icon: string; fields: string[] }>>(
+    () => VERTICALS_ORDER.map((id) => ({
       id,
       name: VERTICALS[id].shortLabel,
       icon: VERTICALS[id].emoji,
       fields: VERTICALS[id].attributes.map((a) => a.label),
-    }));
-  });
+    }))
+  );
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
     try {
