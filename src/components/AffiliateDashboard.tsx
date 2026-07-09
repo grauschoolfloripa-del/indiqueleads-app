@@ -5,6 +5,7 @@ import {
   Landmark, Plus, Clock, User, Calendar, TrendingUp, Send, Percent, Eye, MessageSquare, ShieldCheck
 } from 'lucide-react';
 import { Product, Indicator, Lead, Category, FinancingSimulation, BankSimulationResponse, ApprovedContract, Advertiser, ChatMessage } from '../types';
+import { VERTICALS, VERTICALS_ORDER, verticalBadge } from '../lib/verticals';
 
 interface AffiliateDashboardProps {
   indicator: Indicator;
