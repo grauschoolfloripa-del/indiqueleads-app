@@ -25,7 +25,7 @@ export default function DynamicAttributesFields({
     mode === "lead" ? (vertical.leadFields ?? []) : vertical.attributes;
   if (fields.length === 0) return null;
 
-  const setField = (key: string, value: any) => onChange({ ...values, [key]: value });
+  const setField = (key: string, value: unknown) => onChange({ ...values, [key]: value });
 
   return (
     <div className="space-y-3">
