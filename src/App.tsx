@@ -377,7 +377,118 @@ export default function App() {
         return next;
       });
     }
+
+    // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
+    void (async () => {
+      try {
+        if (role === "anunciante") {
+          const advId = await ensureAdvertiserRow(supaUser.id, {
+            name: displayName,
+            email: supaUser.email ?? "",
+            phone,
+          });
+          if (!advId) return;
+          const [cloudProducts, cloudLeads] = await Promise.all([
+            fetchProductsForAdvertiser(advId),
+            fetchLeadsForAdvertiser(advId),
+          ]);
+          if (cloudProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
+              saveToStorage("indica_products", merged);
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            setLeads((prev) => {
+              const ids = new Set(prev.map((l) => l.id));
+              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              saveToStorage("indica_leads", merged);
+              return merged;
+            });
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            if (chats.length) {
+              setChatMessages((prev) => {
+                const ids = new Set(prev.map((m) => m.id));
+                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
+                saveToStorage("indica_chat_messages", merged);
+                return merged;
+              });
+            }
+          }
+        } else if (role === "indicador") {
+          const indId = await ensureIndicatorRow(supaUser.id, {
+            name: displayName,
+            email: supaUser.email ?? "",
+            phone,
+          });
+          if (!indId) return;
+          // Also refresh public active products (so indicator sees new advertisers' items).
+          const [activeProducts, cloudLeads] = await Promise.all([
+            fetchAllActiveProducts(),
+            fetchLeadsForIndicator(indId),
+          ]);
+          if (activeProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
+              saveToStorage("indica_products", merged);
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            setLeads((prev) => {
+              const ids = new Set(prev.map((l) => l.id));
+              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              saveToStorage("indica_leads", merged);
+              return merged;
+            });
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            if (chats.length) {
+              setChatMessages((prev) => {
+                const ids = new Set(prev.map((m) => m.id));
+                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
+                saveToStorage("indica_chat_messages", merged);
+                return merged;
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[App] cloud hydrate failed", e);
+      }
+    })();
   }, [supaUser, supaRoles, supaLoading]);
+
+  // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
+  useEffect(() => {
+    if (!loggedUser || loggedUser.role === "admin") return;
+    const offChat = subscribeChatMessagesAll((msg) => {
+      setChatMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        const next = [...prev, msg];
+        saveToStorage("indica_chat_messages", next);
+        return next;
+      });
+    });
+    const offLeads = subscribeLeads((lead) => {
+      setLeads((prev) => {
+        const idx = prev.findIndex((l) => l.id === lead.id);
+        // preserve local product/indicator names when db payload lacks join info
+        const next = idx >= 0
+          ? prev.map((l) => (l.id === lead.id ? { ...l, ...lead, productTitle: lead.productTitle || l.productTitle, indicatorName: lead.indicatorName || l.indicatorName } : l))
+          : [lead, ...prev];
+        saveToStorage("indica_leads", next);
+        return next;
+      });
+    });
+    return () => {
+      offChat();
+      offLeads();
+    };
+  }, [loggedUser?.id, loggedUser?.role]);
+
 
 
   // Sync state helpers
