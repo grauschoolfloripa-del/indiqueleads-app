@@ -640,7 +640,7 @@ export default function App() {
     }
 
     const systemMsg: ChatMessage = {
-      id: "msg-sys-" + Date.now(),
+      id: crypto.randomUUID(),
       leadId,
       senderId: "system",
       senderName: "Sistema",
@@ -655,6 +655,10 @@ export default function App() {
       saveToStorage("indica_chat_messages", updated);
       return updated;
     });
+
+    // Persist status + system message to cloud (best-effort).
+    void cloudUpdateLead(leadId, { status, ...(extra || {}) });
+    void pushChatMessage(systemMsg);
 
     addNotification(`Etapa do funil alterada: ${status.replace("_", " ")}`, "success");
   };
