@@ -212,6 +212,22 @@ export async function fetchAllActiveProducts(): Promise<Product[]> {
   return (data ?? []).map(productFromDb);
 }
 
+/** Busca um produto específico por id (para links compartilhados). */
+export async function fetchProductById(id: string): Promise<Product | null> {
+  if (!isUuid(id)) return null;
+  const { data, error } = await supabase
+    .from("products")
+    .select("*, product_images(url, position), advertisers(name)")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) {
+    console.error("[cloudSync] fetchProductById", error);
+    return null;
+  }
+  return data ? productFromDb(data) : null;
+}
+
+
 // ---------------- Leads ----------------
 
 export function leadFromDb(row: any): Lead {

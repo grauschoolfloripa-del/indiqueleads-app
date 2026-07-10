@@ -72,6 +72,9 @@ export default function App() {
   >("indicador");
   const [activeReferralId, setActiveReferralId] = useState<string | null>(null);
   const [activeProductId, setActiveProductId] = useState<string>("prod-1");
+  // Quando true, o visitante chegou via link único (?p=). Impede navegação para outros anúncios.
+  const [lockedToSharedProduct, setLockedToSharedProduct] = useState<boolean>(false);
+
 
   // Session / Authentication state
   // Sessão real vem exclusivamente do Supabase (useAuth) via bridge abaixo.
@@ -237,7 +240,26 @@ export default function App() {
     if (prodParam) {
       setActiveProductId(prodParam);
       setCurrentRole("visitante");
+      setLockedToSharedProduct(true);
+      // Se o produto não está no estado local (link vindo de outro dispositivo),
+      // busca no banco e injeta para que a página do produto abra correta.
+      const existsLocal = (cachedProducts ? JSON.parse(cachedProducts) : INITIAL_PRODUCTS)
+        .some((p: Product) => p.id === prodParam);
+      if (!existsLocal && isUuid(prodParam)) {
+        void import("./lib/cloudSync").then(({ fetchProductById }) =>
+          fetchProductById(prodParam).then((prod) => {
+            if (prod) {
+              setProducts((prev) =>
+                prev.some((p) => p.id === prod.id) ? prev : [prod, ...prev],
+              );
+            } else {
+              addNotification("Este anúncio não está mais disponível.", "info");
+            }
+          }),
+        );
+      }
     }
+
 
     const roleParam = params.get("role");
     if (roleParam === "anunciante") {
@@ -1139,7 +1161,9 @@ export default function App() {
 
   // Find active promoter info for Visitor View
   const referralIndicator = indicators.find((i) => i.id === activeReferralId);
-  const activeProductForVisitor = products.find((p) => p.id === activeProductId) || products[0];
+  // Sem fallback para products[0] — se o produto do link não existir localmente,
+  // renderiza uma tela informativa em vez de outro anúncio qualquer.
+  const activeProductForVisitor = products.find((p) => p.id === activeProductId) || null;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-orange-500 selection:text-white">
@@ -1179,7 +1203,8 @@ export default function App() {
         {currentRole === "visitante" && activeProductForVisitor ? (
           <VisitorView
             product={activeProductForVisitor}
-            products={products}
+            /* Quando o visitante chega via link único, só vê esse produto — não pode navegar pelos outros. */
+            products={lockedToSharedProduct ? [activeProductForVisitor] : products}
             referralId={
               activeReferralId ||
               (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null)
@@ -1188,29 +1213,48 @@ export default function App() {
               referralIndicator?.name ||
               (loggedUser && loggedUser.role === "indicador" ? loggedUser.name : undefined)
             }
-            onGoBack={() => {
-              const stored = localStorage.getItem("indica_logged_user");
-              if (stored) {
-                try {
-                  const parsed = JSON.parse(stored);
-                  if (parsed && parsed.role) {
-                    setCurrentRole(parsed.role);
-                    setLoggedUser(parsed);
-                    return;
+            /* Só permite "voltar" quando NÃO chegou via link compartilhado. */
+            onGoBack={
+              lockedToSharedProduct
+                ? undefined
+                : () => {
+                    const stored = localStorage.getItem("indica_logged_user");
+                    if (stored) {
+                      try {
+                        const parsed = JSON.parse(stored);
+                        if (parsed && parsed.role) {
+                          setCurrentRole(parsed.role);
+                          setLoggedUser(parsed);
+                          return;
+                        }
+                      } catch (e) {
+                        // Ignore
+                      }
+                    }
+                    setCurrentRole("indicador");
+                    setLoggedUser(null);
                   }
-                } catch (e) {
-                  // Ignore
-                }
-              }
-              setCurrentRole("indicador");
-              setLoggedUser(null);
-            }}
+            }
             onSubmitLead={handleSubmitLeadFromVisitor}
             onAddNotification={addNotification}
             chatMessages={chatMessages}
             onSendChatMessage={handleSendChatMessage}
             leads={leads}
           />
+        ) : currentRole === "visitante" ? (
+          /* Link único aberto mas produto ainda não carregado (ou removido). */
+          <div className="flex-1 min-h-[60vh] flex items-center justify-center p-8">
+            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
+              <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                <RefreshCw className="w-6 h-6 animate-spin" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Carregando anúncio…</h2>
+              <p className="text-sm text-slate-500">
+                Se esta mensagem persistir, o anúncio pode ter sido removido ou o link está incorreto.
+              </p>
+            </div>
+          </div>
+
         ) : !loggedUser || loggedUser.role !== currentRole ? (
           /* Render beautiful complete Landing Page with Login Forms if no user is authenticated for this role */
           <LandingPage

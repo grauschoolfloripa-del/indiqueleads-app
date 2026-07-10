@@ -2637,21 +2637,70 @@ export default function AffiliateDashboard({
                             <p className="text-[10px] text-slate-500 mb-2">
                               Clique para abrir o aplicativo e criar sua publicação.
                             </p>
-                            <a
-                              href={platformUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() =>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const gallery = sharingProduct.gallery?.length
+                                  ? sharingProduct.gallery
+                                  : [sharingProduct.coverImage].filter(Boolean);
+                                // Web Share Level 2: abre a sheet nativa do dispositivo
+                                // já com legenda + link + imagens em carrossel (Instagram
+                                // reconhece múltiplas imagens; WhatsApp anexa como mídia).
+                                try {
+                                  const files: File[] = [];
+                                  for (let i = 0; i < gallery.length; i++) {
+                                    try {
+                                      const res = await fetch(gallery[i], { mode: "cors" });
+                                      const blob = await res.blob();
+                                      files.push(
+                                        new File([blob], `foto-${i + 1}.jpg`, {
+                                          type: blob.type || "image/jpeg",
+                                        }),
+                                      );
+                                    } catch {
+                                      /* ignora imagem que falhar (CORS) */
+                                    }
+                                  }
+                                  const nav = navigator as Navigator & {
+                                    canShare?: (d: ShareData) => boolean;
+                                  };
+                                  if (
+                                    files.length > 0 &&
+                                    typeof nav.share === "function" &&
+                                    nav.canShare?.({ files })
+                                  ) {
+                                    await nav.share({
+                                      title: sharingProduct.title,
+                                      text: captionText,
+                                      files,
+                                    });
+                                    onAddNotification(
+                                      `Compartilhando ${files.length} imagem(ns) via ${selectedSocialPlatform}…`,
+                                      "success",
+                                    );
+                                    return;
+                                  }
+                                } catch {
+                                  /* usuário cancelou ou não suportado — cai no fallback */
+                                }
+                                // Fallback (desktop / navegadores sem Web Share Level 2)
+                                try {
+                                  await navigator.clipboard.writeText(captionText);
+                                } catch {
+                                  /* ignore */
+                                }
+                                window.open(platformUrl, "_blank", "noopener,noreferrer");
                                 onAddNotification(
-                                  `Redirecionando para o ${selectedSocialPlatform.toUpperCase()}...`,
+                                  `Legenda copiada. Abrindo ${selectedSocialPlatform.toUpperCase()} — cole o texto e anexe as imagens baixadas.`,
                                   "success",
-                                )
-                              }
+                                );
+                              }}
                               className="inline-flex bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] py-1.5 px-3 rounded-lg items-center gap-1 shadow-sm transition-all uppercase tracking-wide animate-bounce"
                             >
                               Abrir {selectedSocialPlatform}{" "}
                               {selectedPlacement ? `(${selectedPlacement})` : ""} 🚀
-                            </a>
+                            </button>
+
                           </div>
                         </div>
                       </div>
@@ -2725,15 +2774,40 @@ export default function AffiliateDashboard({
                 </div>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setDownloadingKit(true);
-                    setTimeout(() => {
-                      setDownloadingKit(false);
+                    const gallery = sharingProduct.gallery?.length
+                      ? sharingProduct.gallery
+                      : sharingProduct.coverImage
+                        ? [sharingProduct.coverImage]
+                        : [];
+                    try {
+                      // 1) Baixa TODAS as imagens do produto (carrossel) no dispositivo.
+                      for (let i = 0; i < gallery.length; i++) {
+                        const url = gallery[i];
+                        try {
+                          const res = await fetch(url, { mode: "cors" });
+                          const blob = await res.blob();
+                          const objectUrl = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = objectUrl;
+                          a.download = `${sharingProduct.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${i + 1}.jpg`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+                        } catch {
+                          // fallback: abre em nova aba para o usuário salvar
+                          window.open(url, "_blank");
+                        }
+                      }
                       onAddNotification(
-                        "Arte do Kit de Divulgação baixada com sucesso!",
+                        `Kit baixado: ${gallery.length} imagem(ns) do carrossel prontas para postar!`,
                         "success",
                       );
-                    }, 1200);
+                    } finally {
+                      setDownloadingKit(false);
+                    }
                   }}
                   className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 px-4 rounded-xl transition-all shadow flex items-center justify-center gap-1.5 self-center"
                 >
@@ -2749,6 +2823,7 @@ export default function AffiliateDashboard({
                     </>
                   )}
                 </button>
+
               </div>
             </div>
           </div>
