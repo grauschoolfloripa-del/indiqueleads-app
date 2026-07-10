@@ -38,6 +38,24 @@ import {
 } from "./types";
 import { sanitizeChatMessage, getSecurityWarningMessage } from "./lib/chatSecurity";
 import { VERTICALS, VERTICALS_ORDER } from "./lib/verticals";
+import {
+  ensureAdvertiserRow,
+  ensureIndicatorRow,
+  fetchProductsForAdvertiser,
+  fetchAllActiveProducts,
+  fetchLeadsForAdvertiser,
+  fetchLeadsForIndicator,
+  fetchChatsForLeads,
+  pushProduct,
+  updateProductStatus as cloudUpdateProductStatus,
+  pushLead,
+  updateLead as cloudUpdateLead,
+  pushChatMessage,
+  subscribeChatMessagesAll,
+  subscribeLeads,
+  isUuid,
+} from "./lib/cloudSync";
+import { supabase } from "./integrations/supabase/client";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
@@ -360,7 +378,118 @@ export default function App() {
         return next;
       });
     }
+
+    // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
+    void (async () => {
+      try {
+        if (role === "anunciante") {
+          const advId = await ensureAdvertiserRow(supaUser.id, {
+            name: displayName,
+            email: supaUser.email ?? "",
+            phone,
+          });
+          if (!advId) return;
+          const [cloudProducts, cloudLeads] = await Promise.all([
+            fetchProductsForAdvertiser(advId),
+            fetchLeadsForAdvertiser(advId),
+          ]);
+          if (cloudProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
+              saveToStorage("indica_products", merged);
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            setLeads((prev) => {
+              const ids = new Set(prev.map((l) => l.id));
+              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              saveToStorage("indica_leads", merged);
+              return merged;
+            });
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            if (chats.length) {
+              setChatMessages((prev) => {
+                const ids = new Set(prev.map((m) => m.id));
+                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
+                saveToStorage("indica_chat_messages", merged);
+                return merged;
+              });
+            }
+          }
+        } else if (role === "indicador") {
+          const indId = await ensureIndicatorRow(supaUser.id, {
+            name: displayName,
+            email: supaUser.email ?? "",
+            phone,
+          });
+          if (!indId) return;
+          // Also refresh public active products (so indicator sees new advertisers' items).
+          const [activeProducts, cloudLeads] = await Promise.all([
+            fetchAllActiveProducts(),
+            fetchLeadsForIndicator(indId),
+          ]);
+          if (activeProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
+              saveToStorage("indica_products", merged);
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            setLeads((prev) => {
+              const ids = new Set(prev.map((l) => l.id));
+              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              saveToStorage("indica_leads", merged);
+              return merged;
+            });
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            if (chats.length) {
+              setChatMessages((prev) => {
+                const ids = new Set(prev.map((m) => m.id));
+                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
+                saveToStorage("indica_chat_messages", merged);
+                return merged;
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[App] cloud hydrate failed", e);
+      }
+    })();
   }, [supaUser, supaRoles, supaLoading]);
+
+  // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
+  useEffect(() => {
+    if (!loggedUser || loggedUser.role === "admin") return;
+    const offChat = subscribeChatMessagesAll((msg) => {
+      setChatMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        const next = [...prev, msg];
+        saveToStorage("indica_chat_messages", next);
+        return next;
+      });
+    });
+    const offLeads = subscribeLeads((lead) => {
+      setLeads((prev) => {
+        const idx = prev.findIndex((l) => l.id === lead.id);
+        // preserve local product/indicator names when db payload lacks join info
+        const next = idx >= 0
+          ? prev.map((l) => (l.id === lead.id ? { ...l, ...lead, productTitle: lead.productTitle || l.productTitle, indicatorName: lead.indicatorName || l.indicatorName } : l))
+          : [lead, ...prev];
+        saveToStorage("indica_leads", next);
+        return next;
+      });
+    });
+    return () => {
+      offChat();
+      offLeads();
+    };
+  }, [loggedUser?.id, loggedUser?.role]);
+
 
 
   // Sync state helpers
@@ -405,6 +534,23 @@ export default function App() {
       saveToStorage("indica_indicators", next);
       return next;
     });
+    // Persist edits to cloud for real users.
+    if (isUuid(updated.id)) {
+      void supabase
+        .from("indicators")
+        .update({
+          name: updated.name,
+          cpf: updated.cpf,
+          phone: updated.phone,
+          email: updated.email,
+          pix_key: updated.pixKey,
+          pix_type: updated.pixType,
+          city: updated.city ?? null,
+          state: updated.state ?? null,
+        })
+        .eq("id", updated.id)
+        .then(({ error }: { error: unknown }) => error && console.error("[App] update indicator", error));
+    }
   };
 
   const handleUpdateAdvertiser = (updated: Advertiser) => {
@@ -413,14 +559,41 @@ export default function App() {
       saveToStorage("indica_advertisers", next);
       return next;
     });
+    if (isUuid(updated.id)) {
+      void supabase
+        .from("advertisers")
+        .update({
+          name: updated.name,
+          cnpj_or_cpf: updated.cnpjOrCpf,
+          type: updated.type,
+          phone: updated.phone,
+          email: updated.email,
+          plan: updated.plan,
+          categories: updated.categoriesSelected,
+          city: updated.city ?? null,
+          state: updated.state ?? null,
+        })
+        .eq("id", updated.id)
+        .then(({ error }: { error: unknown }) => error && console.error("[App] update advertiser", error));
+    }
   };
 
   const handleAddProduct = (newProd: Product) => {
+    // Garante UUID para persistência em nuvem (mocks começam com "prod-").
+    const normalized: Product = isUuid(newProd.id)
+      ? newProd
+      : { ...newProd, id: crypto.randomUUID() };
     setProducts((prev) => {
-      const next = [newProd, ...prev];
+      const next = [normalized, ...prev];
       saveToStorage("indica_products", next);
       return next;
     });
+    // Espelha no banco (não bloqueia a UI). Só grava se o anunciante for real.
+    if (isUuid(normalized.advertiserId)) {
+      void pushProduct(normalized).catch(() =>
+        addNotification("Não foi possível salvar o anúncio na nuvem. Verifique sua conexão.", "info"),
+      );
+    }
   };
 
   const handleUpdateProductStatus = (productId: string, status: any) => {
@@ -429,6 +602,7 @@ export default function App() {
       saveToStorage("indica_products", next);
       return next;
     });
+    void cloudUpdateProductStatus(productId, status);
     addNotification(`Status do produto atualizado para: ${status}`, "info");
   };
 
@@ -501,7 +675,7 @@ export default function App() {
     }
 
     const systemMsg: ChatMessage = {
-      id: "msg-sys-" + Date.now(),
+      id: crypto.randomUUID(),
       leadId,
       senderId: "system",
       senderName: "Sistema",
@@ -516,6 +690,10 @@ export default function App() {
       saveToStorage("indica_chat_messages", updated);
       return updated;
     });
+
+    // Persist status + system message to cloud (best-effort).
+    void cloudUpdateLead(leadId, { status, ...(extra || {}) });
+    void pushChatMessage(systemMsg);
 
     addNotification(`Etapa do funil alterada: ${status.replace("_", " ")}`, "success");
   };
@@ -542,7 +720,7 @@ export default function App() {
 
           // Create system message for chat timeline
           const systemMsg: ChatMessage = {
-            id: "msg-sys-contract-" + Date.now(),
+            id: crypto.randomUUID(),
             leadId,
             senderId: "system",
             senderName: "Sistema",
@@ -557,6 +735,10 @@ export default function App() {
             saveToStorage("indica_chat_messages", updated);
             return updated;
           });
+
+          // Persist to cloud.
+          void cloudUpdateLead(leadId, { contractUrl: url, notes, commissionPaid: true, status: "venda_concluida" });
+          void pushChatMessage(systemMsg);
 
           return {
             ...l,
@@ -581,9 +763,8 @@ export default function App() {
     text: string,
   ) => {
     const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
-    const mainMsgId = "msg-" + Date.now();
     const newMsg: ChatMessage = {
-      id: mainMsgId,
+      id: crypto.randomUUID(),
       leadId,
       senderId,
       senderName,
@@ -592,13 +773,14 @@ export default function App() {
       ...(hasLeakage ? { originalText: text } : {}),
       createdAt: new Date().toISOString(),
     };
+    let warningMsg: ChatMessage | null = null;
 
     setChatMessages((prev) => {
       const updated = [...prev, newMsg];
 
       if (hasLeakage) {
-        const warningMsg: ChatMessage = {
-          id: "msg-warn-" + Date.now(),
+        warningMsg = {
+          id: crypto.randomUUID(),
           leadId,
           senderId: "system",
           senderName: "Sistema (Segurança)",
@@ -614,6 +796,10 @@ export default function App() {
       saveToStorage("indica_chat_messages", updated);
       return updated;
     });
+
+    // Persist to cloud (only for leads that live in the DB).
+    void pushChatMessage(newMsg);
+    if (warningMsg) void pushChatMessage(warningMsg);
 
     if (hasLeakage) {
       addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
@@ -664,7 +850,7 @@ export default function App() {
     else if (currentSrc === "linkedin") channelLabel = "LinkedIn Publicação";
 
     const newLead: Lead = {
-      id: `lead-${Date.now()}`,
+      id: crypto.randomUUID(),
       productId: viewedProduct.id,
       productTitle: viewedProduct.title,
       productCategory: viewedProduct.category,
@@ -693,7 +879,7 @@ export default function App() {
     // Initialize Chat messages for the new lead
     const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator.name}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
     const initialMsg: ChatMessage = {
-      id: `msg-${Date.now()}-1`,
+      id: crypto.randomUUID(),
       leadId: newLead.id,
       senderId: "system",
       senderName: "Sistema",
@@ -706,7 +892,7 @@ export default function App() {
     const msgs = [initialMsg];
     if (leadData.notes) {
       msgs.push({
-        id: `msg-${Date.now()}-2`,
+        id: crypto.randomUUID(),
         leadId: newLead.id,
         senderId: "client",
         senderName: leadData.clientName,
@@ -721,6 +907,16 @@ export default function App() {
       saveToStorage("indica_chat_messages", nextMsgs);
       return nextMsgs;
     });
+
+    // Persist to cloud (async, best-effort). Chat messages depend on lead existing.
+    void (async () => {
+      try {
+        await pushLead(newLead);
+        for (const m of msgs) await pushChatMessage(m);
+      } catch (err) {
+        console.error("[App] persist lead failed", err);
+      }
+    })();
 
     addNotification(
       `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator.name}!`,
