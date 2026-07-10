@@ -533,6 +533,23 @@ export default function App() {
       saveToStorage("indica_indicators", next);
       return next;
     });
+    // Persist edits to cloud for real users.
+    if (isUuid(updated.id)) {
+      void supabase
+        .from("indicators")
+        .update({
+          name: updated.name,
+          cpf: updated.cpf,
+          phone: updated.phone,
+          email: updated.email,
+          pix_key: updated.pixKey,
+          pix_type: updated.pixType,
+          city: updated.city ?? null,
+          state: updated.state ?? null,
+        })
+        .eq("id", updated.id)
+        .then(({ error }) => error && console.error("[App] update indicator", error));
+    }
   };
 
   const handleUpdateAdvertiser = (updated: Advertiser) => {
@@ -541,6 +558,23 @@ export default function App() {
       saveToStorage("indica_advertisers", next);
       return next;
     });
+    if (isUuid(updated.id)) {
+      void supabase
+        .from("advertisers")
+        .update({
+          name: updated.name,
+          cnpj_or_cpf: updated.cnpjOrCpf,
+          type: updated.type,
+          phone: updated.phone,
+          email: updated.email,
+          plan: updated.plan,
+          categories: updated.categoriesSelected,
+          city: updated.city ?? null,
+          state: updated.state ?? null,
+        })
+        .eq("id", updated.id)
+        .then(({ error }) => error && console.error("[App] update advertiser", error));
+    }
   };
 
   const handleAddProduct = (newProd: Product) => {
