@@ -72,6 +72,9 @@ export default function App() {
   >("indicador");
   const [activeReferralId, setActiveReferralId] = useState<string | null>(null);
   const [activeProductId, setActiveProductId] = useState<string>("prod-1");
+  // Quando true, o visitante chegou via link único (?p=). Impede navegação para outros anúncios.
+  const [lockedToSharedProduct, setLockedToSharedProduct] = useState<boolean>(false);
+
 
   // Session / Authentication state
   // Sessão real vem exclusivamente do Supabase (useAuth) via bridge abaixo.
