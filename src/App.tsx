@@ -815,7 +815,7 @@ export default function App() {
     else if (currentSrc === "linkedin") channelLabel = "LinkedIn Publicação";
 
     const newLead: Lead = {
-      id: `lead-${Date.now()}`,
+      id: crypto.randomUUID(),
       productId: viewedProduct.id,
       productTitle: viewedProduct.title,
       productCategory: viewedProduct.category,
@@ -844,7 +844,7 @@ export default function App() {
     // Initialize Chat messages for the new lead
     const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator.name}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
     const initialMsg: ChatMessage = {
-      id: `msg-${Date.now()}-1`,
+      id: crypto.randomUUID(),
       leadId: newLead.id,
       senderId: "system",
       senderName: "Sistema",
@@ -857,7 +857,7 @@ export default function App() {
     const msgs = [initialMsg];
     if (leadData.notes) {
       msgs.push({
-        id: `msg-${Date.now()}-2`,
+        id: crypto.randomUUID(),
         leadId: newLead.id,
         senderId: "client",
         senderName: leadData.clientName,
@@ -872,6 +872,16 @@ export default function App() {
       saveToStorage("indica_chat_messages", nextMsgs);
       return nextMsgs;
     });
+
+    // Persist to cloud (async, best-effort). Chat messages depend on lead existing.
+    void (async () => {
+      try {
+        await pushLead(newLead);
+        for (const m of msgs) await pushChatMessage(m);
+      } catch (err) {
+        console.error("[App] persist lead failed", err);
+      }
+    })();
 
     addNotification(
       `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator.name}!`,
