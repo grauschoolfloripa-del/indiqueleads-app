@@ -685,7 +685,7 @@ export default function App() {
 
           // Create system message for chat timeline
           const systemMsg: ChatMessage = {
-            id: "msg-sys-contract-" + Date.now(),
+            id: crypto.randomUUID(),
             leadId,
             senderId: "system",
             senderName: "Sistema",
@@ -700,6 +700,10 @@ export default function App() {
             saveToStorage("indica_chat_messages", updated);
             return updated;
           });
+
+          // Persist to cloud.
+          void cloudUpdateLead(leadId, { contractUrl: url, notes, commissionPaid: true, status: "venda_concluida" });
+          void pushChatMessage(systemMsg);
 
           return {
             ...l,
