@@ -38,6 +38,23 @@ import {
 } from "./types";
 import { sanitizeChatMessage, getSecurityWarningMessage } from "./lib/chatSecurity";
 import { VERTICALS, VERTICALS_ORDER } from "./lib/verticals";
+import {
+  ensureAdvertiserRow,
+  ensureIndicatorRow,
+  fetchProductsForAdvertiser,
+  fetchAllActiveProducts,
+  fetchLeadsForAdvertiser,
+  fetchLeadsForIndicator,
+  fetchChatsForLeads,
+  pushProduct,
+  updateProductStatus as cloudUpdateProductStatus,
+  pushLead,
+  updateLead as cloudUpdateLead,
+  pushChatMessage,
+  subscribeChatMessagesAll,
+  subscribeLeads,
+  isUuid,
+} from "./lib/cloudSync";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
