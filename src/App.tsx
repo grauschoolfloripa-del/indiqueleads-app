@@ -55,6 +55,7 @@ import {
   subscribeLeads,
   isUuid,
 } from "./lib/cloudSync";
+import { supabase } from "./integrations/supabase/client";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
