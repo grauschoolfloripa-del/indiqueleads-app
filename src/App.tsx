@@ -728,9 +728,8 @@ export default function App() {
     text: string,
   ) => {
     const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
-    const mainMsgId = "msg-" + Date.now();
     const newMsg: ChatMessage = {
-      id: mainMsgId,
+      id: crypto.randomUUID(),
       leadId,
       senderId,
       senderName,
@@ -739,13 +738,14 @@ export default function App() {
       ...(hasLeakage ? { originalText: text } : {}),
       createdAt: new Date().toISOString(),
     };
+    let warningMsg: ChatMessage | null = null;
 
     setChatMessages((prev) => {
       const updated = [...prev, newMsg];
 
       if (hasLeakage) {
-        const warningMsg: ChatMessage = {
-          id: "msg-warn-" + Date.now(),
+        warningMsg = {
+          id: crypto.randomUUID(),
           leadId,
           senderId: "system",
           senderName: "Sistema (Segurança)",
@@ -761,6 +761,10 @@ export default function App() {
       saveToStorage("indica_chat_messages", updated);
       return updated;
     });
+
+    // Persist to cloud (only for leads that live in the DB).
+    void pushChatMessage(newMsg);
+    if (warningMsg) void pushChatMessage(warningMsg);
 
     if (hasLeakage) {
       addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
