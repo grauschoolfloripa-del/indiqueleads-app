@@ -240,7 +240,26 @@ export default function App() {
     if (prodParam) {
       setActiveProductId(prodParam);
       setCurrentRole("visitante");
+      setLockedToSharedProduct(true);
+      // Se o produto não está no estado local (link vindo de outro dispositivo),
+      // busca no banco e injeta para que a página do produto abra correta.
+      const existsLocal = (cachedProducts ? JSON.parse(cachedProducts) : INITIAL_PRODUCTS)
+        .some((p: Product) => p.id === prodParam);
+      if (!existsLocal && isUuid(prodParam)) {
+        void import("./lib/cloudSync").then(({ fetchProductById }) =>
+          fetchProductById(prodParam).then((prod) => {
+            if (prod) {
+              setProducts((prev) =>
+                prev.some((p) => p.id === prod.id) ? prev : [prod, ...prev],
+              );
+            } else {
+              addNotification("Este anúncio não está mais disponível.", "info");
+            }
+          }),
+        );
+      }
     }
+
 
     const roleParam = params.get("role");
     if (roleParam === "anunciante") {
