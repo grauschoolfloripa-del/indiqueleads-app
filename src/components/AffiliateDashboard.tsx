@@ -2637,21 +2637,70 @@ export default function AffiliateDashboard({
                             <p className="text-[10px] text-slate-500 mb-2">
                               Clique para abrir o aplicativo e criar sua publicação.
                             </p>
-                            <a
-                              href={platformUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() =>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const gallery = sharingProduct.gallery?.length
+                                  ? sharingProduct.gallery
+                                  : [sharingProduct.coverImage].filter(Boolean);
+                                // Web Share Level 2: abre a sheet nativa do dispositivo
+                                // já com legenda + link + imagens em carrossel (Instagram
+                                // reconhece múltiplas imagens; WhatsApp anexa como mídia).
+                                try {
+                                  const files: File[] = [];
+                                  for (let i = 0; i < gallery.length; i++) {
+                                    try {
+                                      const res = await fetch(gallery[i], { mode: "cors" });
+                                      const blob = await res.blob();
+                                      files.push(
+                                        new File([blob], `foto-${i + 1}.jpg`, {
+                                          type: blob.type || "image/jpeg",
+                                        }),
+                                      );
+                                    } catch {
+                                      /* ignora imagem que falhar (CORS) */
+                                    }
+                                  }
+                                  const nav = navigator as Navigator & {
+                                    canShare?: (d: ShareData) => boolean;
+                                  };
+                                  if (
+                                    files.length > 0 &&
+                                    typeof nav.share === "function" &&
+                                    nav.canShare?.({ files })
+                                  ) {
+                                    await nav.share({
+                                      title: sharingProduct.title,
+                                      text: captionText,
+                                      files,
+                                    });
+                                    onAddNotification(
+                                      `Compartilhando ${files.length} imagem(ns) via ${selectedSocialPlatform}…`,
+                                      "success",
+                                    );
+                                    return;
+                                  }
+                                } catch {
+                                  /* usuário cancelou ou não suportado — cai no fallback */
+                                }
+                                // Fallback (desktop / navegadores sem Web Share Level 2)
+                                try {
+                                  await navigator.clipboard.writeText(captionText);
+                                } catch {
+                                  /* ignore */
+                                }
+                                window.open(platformUrl, "_blank", "noopener,noreferrer");
                                 onAddNotification(
-                                  `Redirecionando para o ${selectedSocialPlatform.toUpperCase()}...`,
+                                  `Legenda copiada. Abrindo ${selectedSocialPlatform.toUpperCase()} — cole o texto e anexe as imagens baixadas.`,
                                   "success",
-                                )
-                              }
+                                );
+                              }}
                               className="inline-flex bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] py-1.5 px-3 rounded-lg items-center gap-1 shadow-sm transition-all uppercase tracking-wide animate-bounce"
                             >
                               Abrir {selectedSocialPlatform}{" "}
                               {selectedPlacement ? `(${selectedPlacement})` : ""} 🚀
-                            </a>
+                            </button>
+
                           </div>
                         </div>
                       </div>
