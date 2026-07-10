@@ -268,7 +268,14 @@ export async function pushLead(l: Lead): Promise<void> {
 
 export async function updateLead(id: string, patch: Partial<Lead>): Promise<void> {
   if (!isUuid(id)) return;
-  const dbPatch: Record<string, unknown> = {};
+  const dbPatch: {
+    status?: Lead["status"];
+    visit_date?: string | null;
+    notes?: string | null;
+    check_in_requested?: boolean;
+    contract_url?: string | null;
+    commission_paid?: boolean;
+  } = {};
   if (patch.status !== undefined) dbPatch.status = patch.status;
   if (patch.visitDate !== undefined) dbPatch.visit_date = patch.visitDate;
   if (patch.notes !== undefined) dbPatch.notes = patch.notes;
