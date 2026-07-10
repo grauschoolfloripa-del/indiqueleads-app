@@ -544,11 +544,21 @@ export default function App() {
   };
 
   const handleAddProduct = (newProd: Product) => {
+    // Garante UUID para persistência em nuvem (mocks começam com "prod-").
+    const normalized: Product = isUuid(newProd.id)
+      ? newProd
+      : { ...newProd, id: crypto.randomUUID() };
     setProducts((prev) => {
-      const next = [newProd, ...prev];
+      const next = [normalized, ...prev];
       saveToStorage("indica_products", next);
       return next;
     });
+    // Espelha no banco (não bloqueia a UI). Só grava se o anunciante for real.
+    if (isUuid(normalized.advertiserId)) {
+      void pushProduct(normalized).catch(() =>
+        addNotification("Não foi possível salvar o anúncio na nuvem. Verifique sua conexão.", "info"),
+      );
+    }
   };
 
   const handleUpdateProductStatus = (productId: string, status: any) => {
@@ -557,6 +567,7 @@ export default function App() {
       saveToStorage("indica_products", next);
       return next;
     });
+    void cloudUpdateProductStatus(productId, status);
     addNotification(`Status do produto atualizado para: ${status}`, "info");
   };
 
