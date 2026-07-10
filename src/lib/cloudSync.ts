@@ -332,7 +332,7 @@ export function chatFromDb(row: any): ChatMessage {
 export async function pushChatMessage(m: ChatMessage): Promise<void> {
   if (!isUuid(m.leadId)) return; // não persiste chat de leads mock
   const senderId = isUuid(m.senderId) ? m.senderId : null;
-  const payload: Record<string, unknown> = {
+  const payload = {
     lead_id: m.leadId,
     sender_id: senderId,
     sender_name: m.senderName,
@@ -341,9 +341,9 @@ export async function pushChatMessage(m: ChatMessage): Promise<void> {
     original_text: m.originalText ?? null,
     is_system: m.isSystem ?? false,
     is_blocked_by_security: m.isBlockedBySecurity ?? false,
+    ...(isUuid(m.id) ? { id: m.id } : {}),
   };
-  if (isUuid(m.id)) payload.id = m.id;
-  const { error } = await supabase.from("chat_messages").insert(payload as never);
+  const { error } = await supabase.from("chat_messages").insert(payload);
   if (error) console.error("[cloudSync] pushChatMessage", error);
 }
 
