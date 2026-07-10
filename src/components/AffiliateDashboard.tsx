@@ -2725,15 +2725,40 @@ export default function AffiliateDashboard({
                 </div>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setDownloadingKit(true);
-                    setTimeout(() => {
-                      setDownloadingKit(false);
+                    const gallery = sharingProduct.gallery?.length
+                      ? sharingProduct.gallery
+                      : sharingProduct.coverImage
+                        ? [sharingProduct.coverImage]
+                        : [];
+                    try {
+                      // 1) Baixa TODAS as imagens do produto (carrossel) no dispositivo.
+                      for (let i = 0; i < gallery.length; i++) {
+                        const url = gallery[i];
+                        try {
+                          const res = await fetch(url, { mode: "cors" });
+                          const blob = await res.blob();
+                          const objectUrl = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = objectUrl;
+                          a.download = `${sharingProduct.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${i + 1}.jpg`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          setTimeout(() => URL.revokeObjectURL(objectUrl), 4000);
+                        } catch {
+                          // fallback: abre em nova aba para o usuário salvar
+                          window.open(url, "_blank");
+                        }
+                      }
                       onAddNotification(
-                        "Arte do Kit de Divulgação baixada com sucesso!",
+                        `Kit baixado: ${gallery.length} imagem(ns) do carrossel prontas para postar!`,
                         "success",
                       );
-                    }, 1200);
+                    } finally {
+                      setDownloadingKit(false);
+                    }
                   }}
                   className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 px-4 rounded-xl transition-all shadow flex items-center justify-center gap-1.5 self-center"
                 >
@@ -2749,6 +2774,7 @@ export default function AffiliateDashboard({
                     </>
                   )}
                 </button>
+
               </div>
             </div>
           </div>
