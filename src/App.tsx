@@ -549,7 +549,7 @@ export default function App() {
           state: updated.state ?? null,
         })
         .eq("id", updated.id)
-        .then(({ error }) => error && console.error("[App] update indicator", error));
+        .then(({ error }: { error: unknown }) => error && console.error("[App] update indicator", error));
     }
   };
 
@@ -574,7 +574,7 @@ export default function App() {
           state: updated.state ?? null,
         })
         .eq("id", updated.id)
-        .then(({ error }) => error && console.error("[App] update advertiser", error));
+        .then(({ error }: { error: unknown }) => error && console.error("[App] update advertiser", error));
     }
   };
 
