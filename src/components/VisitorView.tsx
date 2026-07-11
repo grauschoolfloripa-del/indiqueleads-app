@@ -548,10 +548,13 @@ export default function VisitorView({
           ) : (() => {
             const normalizedKey = portalLookupPhoneOrEmail.toLowerCase().trim();
             const digitsOnlyKey = normalizedKey.replace(/\D/g, '');
-            const matchingLeads = leads.filter(lead => {
-              const emailMatch = lead.clientEmail.toLowerCase().includes(normalizedKey);
-              const phoneDigits = lead.clientPhone.replace(/\D/g, '');
-              const phoneMatch = digitsOnlyKey && phoneDigits.includes(digitsOnlyKey);
+            // Isolamento por cliente: exige chave e faz match exato de e-mail
+            // ou de telefone (>= 8 dígitos) para nunca exibir o chat de outros.
+            const matchingLeads = normalizedKey.length < 3 ? [] : leads.filter(lead => {
+              const leadEmail = lead.clientEmail.toLowerCase().trim();
+              const leadPhoneDigits = lead.clientPhone.replace(/\D/g, '');
+              const emailMatch = normalizedKey.includes('@') && leadEmail === normalizedKey;
+              const phoneMatch = digitsOnlyKey.length >= 8 && leadPhoneDigits === digitsOnlyKey;
               return emailMatch || phoneMatch;
             });
 
