@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { 
   MapPin, Phone, Send, CheckCircle2, Star, ShieldCheck, Tag, Info, 
   ChevronRight, ArrowLeft, Grid, HelpCircle, Eye, Calendar, MessageSquare, Lock, AlertCircle
@@ -16,6 +16,7 @@ interface VisitorViewProps {
   chatMessages: ChatMessage[];
   onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string) => void;
   leads: Lead[];
+  onSyncClientChats?: (lookup: string, productId?: string) => Promise<unknown>;
 }
 
 export default function VisitorView({
@@ -28,7 +29,8 @@ export default function VisitorView({
   onAddNotification,
   chatMessages,
   onSendChatMessage,
-  leads
+  leads,
+  onSyncClientChats
 }: VisitorViewProps) {
   // Gallery selection
   const [activeImage, setActiveImage] = useState<string>(product.coverImage);
@@ -64,6 +66,40 @@ export default function VisitorView({
   // Statuses
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!onSyncClientChats) return;
+    const lookup = (portalLookupPhoneOrEmail || clientEmail || clientPhone).trim();
+    const normalizedLookup = lookup.toLowerCase();
+    const digitLookup = lookup.replace(/\D/g, '');
+    const canLookup = normalizedLookup.includes('@') || digitLookup.length >= 8;
+    if (!canLookup) return;
+    if (activeTab !== 'portal' && !submitted && !activeClientLeadId) return;
+
+    let cancelled = false;
+    const sync = () => {
+      if (cancelled) return;
+      void onSyncClientChats(lookup, product.id).catch(() => undefined);
+    };
+
+    const timeout = window.setTimeout(sync, 250);
+    const interval = window.setInterval(sync, 6000);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      window.clearInterval(interval);
+    };
+  }, [
+    activeClientLeadId,
+    activeTab,
+    clientEmail,
+    clientPhone,
+    onSyncClientChats,
+    portalLookupPhoneOrEmail,
+    product.id,
+    submitted,
+  ]);
 
   const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -196,10 +232,12 @@ export default function VisitorView({
               Acompanhar Atendimento
               {(() => {
                 const key = (portalLookupPhoneOrEmail || localStorage.getItem('indica_client_lookup_key') || '').toLowerCase().trim();
-                const matchedCount = key ? leads.filter(l => 
-                  l.clientEmail.toLowerCase().includes(key) || 
-                  l.clientPhone.replace(/\D/g, '').includes(key.replace(/\D/g, ''))
-                ).length : 0;
+                const keyDigits = key.replace(/\D/g, '');
+                const matchedCount = key.length >= 3 ? leads.filter(l => {
+                  const emailMatch = key.includes('@') && l.clientEmail.toLowerCase().trim() === key;
+                  const phoneMatch = keyDigits.length >= 8 && l.clientPhone.replace(/\D/g, '') === keyDigits;
+                  return emailMatch || phoneMatch;
+                }).length : 0;
                 if (matchedCount > 0) {
                   return (
                     <span className="bg-orange-600 text-white font-mono font-bold text-[9px] rounded-full h-4 min-w-4 px-1.5 flex items-center justify-center animate-bounce">
