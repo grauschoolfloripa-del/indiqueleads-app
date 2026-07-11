@@ -99,6 +99,41 @@ export async function ensureIndicatorRow(
   return userId;
 }
 
+export function indicatorFromDb(row: any): Indicator {
+  return {
+    id: row.id,
+    name: row.name,
+    cpf: row.cpf ?? "",
+    phone: row.phone ?? "",
+    email: row.email ?? "",
+    pixKey: row.pix_key ?? row.email ?? "",
+    pixType: row.pix_type ?? "email",
+    league: row.league ?? "bronze",
+    score: row.score ?? 0,
+    clicks: row.clicks ?? 0,
+    balanceAvailable: Number(row.balance_available ?? 0),
+    balancePending: Number(row.balance_pending ?? 0),
+    hasAcceptedTerms: !!row.has_accepted_terms,
+    termsAcceptedAt: row.terms_accepted_at ?? undefined,
+    city: row.city ?? undefined,
+    state: row.state ?? undefined,
+  };
+}
+
+export async function fetchIndicatorsByIds(ids: string[]): Promise<Indicator[]> {
+  const uniqueIds = Array.from(new Set(ids.filter(isUuid)));
+  if (!uniqueIds.length) return [];
+  const { data, error } = await supabase
+    .from("indicators")
+    .select("*")
+    .in("id", uniqueIds);
+  if (error) {
+    console.error("[cloudSync] fetchIndicatorsByIds", error);
+    return [];
+  }
+  return (data ?? []).map(indicatorFromDb);
+}
+
 // ---------------- Products ----------------
 
 export function productFromDb(row: any): Product {

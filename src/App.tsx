@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Sparkles,
   Award,
@@ -46,6 +47,7 @@ import {
   fetchLeadsForAdvertiser,
   fetchLeadsForIndicator,
   fetchChatsForLeads,
+  fetchIndicatorsByIds,
   pushProduct,
   updateProductStatus as cloudUpdateProductStatus,
   pushLead,
@@ -56,6 +58,7 @@ import {
   isUuid,
 } from "./lib/cloudSync";
 import { supabase } from "./integrations/supabase/client";
+import { getVisitorLeadChats } from "./lib/visitor-chat.functions";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
@@ -161,6 +164,44 @@ export default function App() {
   const [notifications, setNotifications] = useState<
     Array<{ id: string; msg: string; type: "success" | "info" }>
   >([]);
+  const getVisitorLeadChatsFn = useServerFn(getVisitorLeadChats);
+
+  const mergeLeadsIntoState = useCallback((incoming: Lead[]) => {
+    if (!incoming.length) return;
+    setLeads((prev) => {
+      const incomingIds = new Set(incoming.map((lead) => lead.id));
+      const next = [...incoming, ...prev.filter((lead) => !incomingIds.has(lead.id))];
+      saveToStorage("indica_leads", next);
+      return next;
+    });
+  }, []);
+
+  const mergeChatMessagesIntoState = useCallback((incoming: ChatMessage[]) => {
+    if (!incoming.length) return;
+    setChatMessages((prev) => {
+      const ids = new Set(prev.map((message) => message.id));
+      const next = [...prev, ...incoming.filter((message) => !ids.has(message.id))].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      saveToStorage("indica_chat_messages", next);
+      return next;
+    });
+  }, []);
+
+  const handleSyncVisitorChats = useCallback(
+    async (lookup: string, productId?: string) => {
+      const result = await getVisitorLeadChatsFn({
+        data: {
+          lookup,
+          productId: productId && isUuid(productId) ? productId : undefined,
+        },
+      });
+      mergeLeadsIntoState(result.leads);
+      mergeChatMessagesIntoState(result.messages);
+      return result;
+    },
+    [getVisitorLeadChatsFn, mergeChatMessagesIntoState, mergeLeadsIntoState],
+  );
 
   // --- INITIALIZATION & REFERRAL COOKIE READING ---
   // Limpa qualquer sessão legada em localStorage do fluxo antigo (mock).
@@ -424,21 +465,25 @@ export default function App() {
             });
           }
           if (cloudLeads.length) {
-            setLeads((prev) => {
-              const ids = new Set(prev.map((l) => l.id));
-              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
-              saveToStorage("indica_leads", merged);
-              return merged;
-            });
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            if (chats.length) {
-              setChatMessages((prev) => {
-                const ids = new Set(prev.map((m) => m.id));
-                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
-                saveToStorage("indica_chat_messages", merged);
+            mergeLeadsIntoState(cloudLeads);
+
+            const relatedIndicators = await fetchIndicatorsByIds(
+              cloudLeads.map((lead) => lead.indicatorId),
+            );
+            if (relatedIndicators.length) {
+              setIndicators((prev) => {
+                const incomingIds = new Set(relatedIndicators.map((indicator) => indicator.id));
+                const merged = [
+                  ...relatedIndicators,
+                  ...prev.filter((indicator) => !incomingIds.has(indicator.id)),
+                ];
+                saveToStorage("indica_indicators", merged);
                 return merged;
               });
             }
+
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            mergeChatMessagesIntoState(chats);
           }
         } else if (role === "indicador") {
           const indId = await ensureIndicatorRow(supaUser.id, {
@@ -461,28 +506,16 @@ export default function App() {
             });
           }
           if (cloudLeads.length) {
-            setLeads((prev) => {
-              const ids = new Set(prev.map((l) => l.id));
-              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
-              saveToStorage("indica_leads", merged);
-              return merged;
-            });
+            mergeLeadsIntoState(cloudLeads);
             const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            if (chats.length) {
-              setChatMessages((prev) => {
-                const ids = new Set(prev.map((m) => m.id));
-                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
-                saveToStorage("indica_chat_messages", merged);
-                return merged;
-              });
-            }
+            mergeChatMessagesIntoState(chats);
           }
         }
       } catch (e) {
         console.error("[App] cloud hydrate failed", e);
       }
     })();
-  }, [supaUser, supaRoles, supaLoading]);
+  }, [supaUser, supaRoles, supaLoading, mergeChatMessagesIntoState, mergeLeadsIntoState]);
 
   // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
   useEffect(() => {
@@ -854,12 +887,15 @@ export default function App() {
     const viewedProduct = products.find((p) => p.id === activeProductId);
     if (!viewedProduct) return;
 
-    // 2. Identify promoter ID (either cookie activeReferralId, logged-in indicator ID, or default to Gabriel ind-1 for simulation)
+    // 2. Identify promoter ID from the unique referral link or the logged-in indicator.
     const currentRefId =
       activeReferralId ||
-      (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null) ||
-      "ind-1";
-    const associatedIndicator = indicators.find((i) => i.id === currentRefId) || indicators[0];
+      (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null);
+    const associatedIndicator = indicators.find((i) => i.id === currentRefId);
+    const indicatorId = currentRefId && isUuid(currentRefId)
+      ? currentRefId
+      : associatedIndicator?.id ?? "";
+    const indicatorName = associatedIndicator?.name || "Indicador parceiro";
 
     // Determine commission tier value (defaults to digital unless they specified presence interest)
     const comVal = viewedProduct.commissionDigitalValue || 0;
@@ -876,8 +912,8 @@ export default function App() {
       productId: viewedProduct.id,
       productTitle: viewedProduct.title,
       productCategory: viewedProduct.category,
-      indicatorId: associatedIndicator.id,
-      indicatorName: associatedIndicator.name || "Gabriel Martins (Indicador Demo)",
+      indicatorId,
+      indicatorName,
       advertiserId: viewedProduct.advertiserId,
       clientName: leadData.clientName,
       clientPhone: leadData.clientPhone,
@@ -899,7 +935,7 @@ export default function App() {
     });
 
     // Initialize Chat messages for the new lead
-    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator.name}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
+    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${indicatorName}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
     const initialMsg: ChatMessage = {
       id: crypto.randomUUID(),
       leadId: newLead.id,
@@ -941,7 +977,7 @@ export default function App() {
     })();
 
     addNotification(
-      `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator.name}!`,
+      `Novo Lead registrado com sucesso sob indicação de: ${indicatorName}!`,
       "success",
     );
   };
@@ -1240,6 +1276,7 @@ export default function App() {
             chatMessages={chatMessages}
             onSendChatMessage={handleSendChatMessage}
             leads={leads}
+            onSyncClientChats={handleSyncVisitorChats}
           />
         ) : currentRole === "visitante" ? (
           /* Link único aberto mas produto ainda não carregado (ou removido). */
