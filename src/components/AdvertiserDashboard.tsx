@@ -4373,8 +4373,8 @@ export default function AdvertiserDashboard({
           }
 
           return (
-            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-              <div className="bg-white rounded-3xl max-w-2xl w-full p-6 relative font-sans shadow-2xl my-8">
+            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-start sm:items-center justify-center p-4 z-50 overflow-y-auto">
+              <div className="bg-white rounded-3xl max-w-2xl w-full p-6 relative font-sans shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
                 <button
                   onClick={() => setViewingLead(null)}
                   className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
