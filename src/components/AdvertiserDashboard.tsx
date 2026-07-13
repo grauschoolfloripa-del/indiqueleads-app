@@ -1164,8 +1164,8 @@ export default function AdvertiserDashboard({
                   Plano {advertiser.plan}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5 font-mono flex items-center gap-2 flex-wrap">
-                <span>
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1 font-mono flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 sm:flex-wrap">
+                <span className="truncate">
                   {advertiser.email} • WhatsApp: {advertiser.phone}
                 </span>
                 {advertiser.city && !isEditingLocation && (
