@@ -336,6 +336,81 @@ export default function App() {
 
   // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
   const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
+
+  // Reusable cloud hydrate — safe to call multiple times (merges by id).
+  const hydrateFromCloud = useCallback(
+    async (
+      role: "anunciante" | "indicador" | "admin",
+      userId: string,
+      displayName: string,
+      email: string,
+      phone: string,
+    ) => {
+      try {
+        if (role === "anunciante") {
+          const advId = await ensureAdvertiserRow(userId, { name: displayName, email, phone });
+          if (!advId) return;
+          const [cloudProducts, cloudLeads] = await Promise.all([
+            fetchProductsForAdvertiser(advId),
+            fetchLeadsForAdvertiser(advId),
+          ]);
+          console.log("[App] hydrate anunciante", { advId, products: cloudProducts.length, leads: cloudLeads.length });
+          if (cloudProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
+              localStorage.setItem("indica_products", JSON.stringify(merged));
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            mergeLeadsIntoState(cloudLeads);
+            const relatedIndicators = await fetchIndicatorsByIds(
+              cloudLeads.map((lead) => lead.indicatorId),
+            );
+            if (relatedIndicators.length) {
+              setIndicators((prev) => {
+                const incomingIds = new Set(relatedIndicators.map((indicator) => indicator.id));
+                const merged = [
+                  ...relatedIndicators,
+                  ...prev.filter((indicator) => !incomingIds.has(indicator.id)),
+                ];
+                localStorage.setItem("indica_indicators", JSON.stringify(merged));
+                return merged;
+              });
+            }
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            mergeChatMessagesIntoState(chats);
+          }
+        } else if (role === "indicador") {
+          const indId = await ensureIndicatorRow(userId, { name: displayName, email, phone });
+          if (!indId) return;
+          const [activeProducts, cloudLeads] = await Promise.all([
+            fetchAllActiveProducts(),
+            fetchLeadsForIndicator(indId),
+          ]);
+          console.log("[App] hydrate indicador", { indId, products: activeProducts.length, leads: cloudLeads.length });
+          if (activeProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
+              localStorage.setItem("indica_products", JSON.stringify(merged));
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            mergeLeadsIntoState(cloudLeads);
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            mergeChatMessagesIntoState(chats);
+          }
+        }
+      } catch (e) {
+        console.error("[App] cloud hydrate failed", e);
+      }
+    },
+    [mergeChatMessagesIntoState, mergeLeadsIntoState],
+  );
+
   useEffect(() => {
     if (supaLoading) return;
     if (!supaUser) {
