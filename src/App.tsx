@@ -336,6 +336,81 @@ export default function App() {
 
   // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
   const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
+
+  // Reusable cloud hydrate — safe to call multiple times (merges by id).
+  const hydrateFromCloud = useCallback(
+    async (
+      role: "anunciante" | "indicador" | "admin",
+      userId: string,
+      displayName: string,
+      email: string,
+      phone: string,
+    ) => {
+      try {
+        if (role === "anunciante") {
+          const advId = await ensureAdvertiserRow(userId, { name: displayName, email, phone });
+          if (!advId) return;
+          const [cloudProducts, cloudLeads] = await Promise.all([
+            fetchProductsForAdvertiser(advId),
+            fetchLeadsForAdvertiser(advId),
+          ]);
+          console.log("[App] hydrate anunciante", { advId, products: cloudProducts.length, leads: cloudLeads.length });
+          if (cloudProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
+              localStorage.setItem("indica_products", JSON.stringify(merged));
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            mergeLeadsIntoState(cloudLeads);
+            const relatedIndicators = await fetchIndicatorsByIds(
+              cloudLeads.map((lead) => lead.indicatorId),
+            );
+            if (relatedIndicators.length) {
+              setIndicators((prev) => {
+                const incomingIds = new Set(relatedIndicators.map((indicator) => indicator.id));
+                const merged = [
+                  ...relatedIndicators,
+                  ...prev.filter((indicator) => !incomingIds.has(indicator.id)),
+                ];
+                localStorage.setItem("indica_indicators", JSON.stringify(merged));
+                return merged;
+              });
+            }
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            mergeChatMessagesIntoState(chats);
+          }
+        } else if (role === "indicador") {
+          const indId = await ensureIndicatorRow(userId, { name: displayName, email, phone });
+          if (!indId) return;
+          const [activeProducts, cloudLeads] = await Promise.all([
+            fetchAllActiveProducts(),
+            fetchLeadsForIndicator(indId),
+          ]);
+          console.log("[App] hydrate indicador", { indId, products: activeProducts.length, leads: cloudLeads.length });
+          if (activeProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
+              localStorage.setItem("indica_products", JSON.stringify(merged));
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            mergeLeadsIntoState(cloudLeads);
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            mergeChatMessagesIntoState(chats);
+          }
+        }
+      } catch (e) {
+        console.error("[App] cloud hydrate failed", e);
+      }
+    },
+    [mergeChatMessagesIntoState, mergeLeadsIntoState],
+  );
+
   useEffect(() => {
     if (supaLoading) return;
     if (!supaUser) {
@@ -443,79 +518,38 @@ export default function App() {
     }
 
     // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
-    void (async () => {
-      try {
-        if (role === "anunciante") {
-          const advId = await ensureAdvertiserRow(supaUser.id, {
-            name: displayName,
-            email: supaUser.email ?? "",
-            phone,
-          });
-          if (!advId) return;
-          const [cloudProducts, cloudLeads] = await Promise.all([
-            fetchProductsForAdvertiser(advId),
-            fetchLeadsForAdvertiser(advId),
-          ]);
-          if (cloudProducts.length) {
-            setProducts((prev) => {
-              const ids = new Set(prev.map((p) => p.id));
-              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
-              saveToStorage("indica_products", merged);
-              return merged;
-            });
-          }
-          if (cloudLeads.length) {
-            mergeLeadsIntoState(cloudLeads);
+    void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
+  }, [supaUser, supaRoles, supaLoading, hydrateFromCloud]);
 
-            const relatedIndicators = await fetchIndicatorsByIds(
-              cloudLeads.map((lead) => lead.indicatorId),
-            );
-            if (relatedIndicators.length) {
-              setIndicators((prev) => {
-                const incomingIds = new Set(relatedIndicators.map((indicator) => indicator.id));
-                const merged = [
-                  ...relatedIndicators,
-                  ...prev.filter((indicator) => !incomingIds.has(indicator.id)),
-                ];
-                saveToStorage("indica_indicators", merged);
-                return merged;
-              });
-            }
 
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            mergeChatMessagesIntoState(chats);
-          }
-        } else if (role === "indicador") {
-          const indId = await ensureIndicatorRow(supaUser.id, {
-            name: displayName,
-            email: supaUser.email ?? "",
-            phone,
-          });
-          if (!indId) return;
-          // Also refresh public active products (so indicator sees new advertisers' items).
-          const [activeProducts, cloudLeads] = await Promise.all([
-            fetchAllActiveProducts(),
-            fetchLeadsForIndicator(indId),
-          ]);
-          if (activeProducts.length) {
-            setProducts((prev) => {
-              const ids = new Set(prev.map((p) => p.id));
-              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
-              saveToStorage("indica_products", merged);
-              return merged;
-            });
-          }
-          if (cloudLeads.length) {
-            mergeLeadsIntoState(cloudLeads);
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            mergeChatMessagesIntoState(chats);
-          }
-        }
-      } catch (e) {
-        console.error("[App] cloud hydrate failed", e);
+  // Re-hydrate on tab focus / visibility (fixes stale state after cache clear on mobile).
+  useEffect(() => {
+    if (!supaUser || supaLoading) return;
+    const role: "indicador" | "anunciante" | "admin" = supaRoles.includes("admin")
+      ? "admin"
+      : supaRoles.includes("advertiser")
+        ? "anunciante"
+        : "indicador";
+    if (role === "admin") return;
+    const displayName =
+      (supaUser.user_metadata?.full_name as string) ||
+      (supaUser.user_metadata?.name as string) ||
+      supaUser.email?.split("@")[0] ||
+      "Usuário";
+    const phone =
+      (supaUser.user_metadata?.phone as string) || (supaUser.phone as string) || "";
+    const onFocus = () => {
+      if (document.visibilityState === "visible") {
+        void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
       }
-    })();
-  }, [supaUser, supaRoles, supaLoading, mergeChatMessagesIntoState, mergeLeadsIntoState]);
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [supaUser, supaRoles, supaLoading, hydrateFromCloud]);
 
   // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
   useEffect(() => {

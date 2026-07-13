@@ -1149,23 +1149,23 @@ export default function AdvertiserDashboard({
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 font-sans">
       {/* Header Info */}
-      <div className="bg-gradient-to-r from-orange-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-orange-900/20">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-orange-600 rounded-xl flex items-center justify-center font-bold text-xl uppercase shadow border border-orange-500">
+      <div className="bg-gradient-to-r from-orange-950 via-slate-900 to-slate-950 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white mb-6 sm:mb-8 shadow-xl border border-orange-900/20">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 shrink-0 bg-orange-600 rounded-xl flex items-center justify-center font-bold text-lg sm:text-xl uppercase shadow border border-orange-500">
               {advertiser.name.substring(0, 2)}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display font-bold text-lg text-white">{advertiser.name}</h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-950/40 border border-orange-800 text-orange-300 uppercase tracking-wider">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display font-bold text-base sm:text-lg text-white truncate max-w-full">{advertiser.name}</h2>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-950/40 border border-orange-800 text-orange-300 uppercase tracking-wider shrink-0">
                   Plano {advertiser.plan}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5 font-mono flex items-center gap-2 flex-wrap">
-                <span>
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1 font-mono flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 sm:flex-wrap">
+                <span className="truncate">
                   {advertiser.email} • WhatsApp: {advertiser.phone}
                 </span>
                 {advertiser.city && !isEditingLocation && (
