@@ -443,19 +443,27 @@ export default function App() {
     }
 
     // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
-    void (async () => {
+    void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
+  }, [supaUser, supaRoles, supaLoading, mergeChatMessagesIntoState, mergeLeadsIntoState]);
+
+  // Reusable cloud hydrate — safe to call multiple times (merges by id).
+  const hydrateFromCloud = useCallback(
+    async (
+      role: "anunciante" | "indicador" | "admin",
+      userId: string,
+      displayName: string,
+      email: string,
+      phone: string,
+    ) => {
       try {
         if (role === "anunciante") {
-          const advId = await ensureAdvertiserRow(supaUser.id, {
-            name: displayName,
-            email: supaUser.email ?? "",
-            phone,
-          });
+          const advId = await ensureAdvertiserRow(userId, { name: displayName, email, phone });
           if (!advId) return;
           const [cloudProducts, cloudLeads] = await Promise.all([
             fetchProductsForAdvertiser(advId),
             fetchLeadsForAdvertiser(advId),
           ]);
+          console.log("[App] hydrate anunciante", { advId, products: cloudProducts.length, leads: cloudLeads.length });
           if (cloudProducts.length) {
             setProducts((prev) => {
               const ids = new Set(prev.map((p) => p.id));
@@ -466,7 +474,6 @@ export default function App() {
           }
           if (cloudLeads.length) {
             mergeLeadsIntoState(cloudLeads);
-
             const relatedIndicators = await fetchIndicatorsByIds(
               cloudLeads.map((lead) => lead.indicatorId),
             );
@@ -481,22 +488,17 @@ export default function App() {
                 return merged;
               });
             }
-
             const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
             mergeChatMessagesIntoState(chats);
           }
         } else if (role === "indicador") {
-          const indId = await ensureIndicatorRow(supaUser.id, {
-            name: displayName,
-            email: supaUser.email ?? "",
-            phone,
-          });
+          const indId = await ensureIndicatorRow(userId, { name: displayName, email, phone });
           if (!indId) return;
-          // Also refresh public active products (so indicator sees new advertisers' items).
           const [activeProducts, cloudLeads] = await Promise.all([
             fetchAllActiveProducts(),
             fetchLeadsForIndicator(indId),
           ]);
+          console.log("[App] hydrate indicador", { indId, products: activeProducts.length, leads: cloudLeads.length });
           if (activeProducts.length) {
             setProducts((prev) => {
               const ids = new Set(prev.map((p) => p.id));
@@ -514,8 +516,38 @@ export default function App() {
       } catch (e) {
         console.error("[App] cloud hydrate failed", e);
       }
-    })();
-  }, [supaUser, supaRoles, supaLoading, mergeChatMessagesIntoState, mergeLeadsIntoState]);
+    },
+    [mergeChatMessagesIntoState, mergeLeadsIntoState],
+  );
+
+  // Re-hydrate on tab focus / visibility (fixes stale state after cache clear on mobile).
+  useEffect(() => {
+    if (!supaUser || supaLoading) return;
+    const role: "indicador" | "anunciante" | "admin" = supaRoles.includes("admin")
+      ? "admin"
+      : supaRoles.includes("advertiser")
+        ? "anunciante"
+        : "indicador";
+    if (role === "admin") return;
+    const displayName =
+      (supaUser.user_metadata?.full_name as string) ||
+      (supaUser.user_metadata?.name as string) ||
+      supaUser.email?.split("@")[0] ||
+      "Usuário";
+    const phone =
+      (supaUser.user_metadata?.phone as string) || (supaUser.phone as string) || "";
+    const onFocus = () => {
+      if (document.visibilityState === "visible") {
+        void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
+      }
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [supaUser, supaRoles, supaLoading, hydrateFromCloud]);
 
   // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
   useEffect(() => {
