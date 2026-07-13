@@ -444,7 +444,7 @@ export default function App() {
 
     // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
     void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
-  }, [supaUser, supaRoles, supaLoading, mergeChatMessagesIntoState, mergeLeadsIntoState]);
+  }, [supaUser, supaRoles, supaLoading, hydrateFromCloud]);
 
   // Reusable cloud hydrate — safe to call multiple times (merges by id).
   const hydrateFromCloud = useCallback(
