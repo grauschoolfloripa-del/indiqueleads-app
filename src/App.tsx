@@ -58,7 +58,7 @@ import {
   isUuid,
 } from "./lib/cloudSync";
 import { supabase } from "./integrations/supabase/client";
-import { getVisitorLeadChats } from "./lib/visitor-chat.functions";
+import { getVisitorLeadChats, sendVisitorChatMessage } from "./lib/visitor-chat.functions";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
@@ -165,6 +165,7 @@ export default function App() {
     Array<{ id: string; msg: string; type: "success" | "info" }>
   >([]);
   const getVisitorLeadChatsFn = useServerFn(getVisitorLeadChats);
+  const sendVisitorChatMessageFn = useServerFn(sendVisitorChatMessage);
 
   const mergeLeadsIntoState = useCallback((incoming: Lead[]) => {
     if (!incoming.length) return;
