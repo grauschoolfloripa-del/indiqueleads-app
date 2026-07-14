@@ -50,9 +50,6 @@ export const getVisitorLeadChats = createServerFn({ method: "POST" })
 
     if (isEmailLookup) {
       leadsQuery = leadsQuery.ilike("client_email", lookup);
-    } else {
-      const phoneCandidates = Array.from(new Set([lookupRaw, digits].filter(Boolean)));
-      leadsQuery = leadsQuery.in("client_phone", phoneCandidates);
     }
 
     const { data: leadRows, error: leadsError } = await leadsQuery;
