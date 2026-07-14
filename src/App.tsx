@@ -573,12 +573,15 @@ export default function App() {
         saveToStorage("indica_leads", next);
         return next;
       });
+      void fetchChatsForLeads([lead.id]).then(mergeChatMessagesIntoState).catch((error) => {
+        console.error("[App] lead chat resync failed", error);
+      });
     });
     return () => {
       offChat();
       offLeads();
     };
-  }, [loggedUser?.id, loggedUser?.role]);
+  }, [loggedUser?.id, loggedUser?.role, mergeChatMessagesIntoState]);
 
 
 
