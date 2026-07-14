@@ -1,105 +1,69 @@
-# Plano de Expansão Multi-Vertical (3 Ondas)
+## Diagnóstico
 
-## Verticais a adicionar
+O problema está concentrado no fluxo de persistência/sincronização do chat:
 
-| Slug | Label | Funil | Modelo comissão |
-|---|---|---|---|
-| `saude` | Saúde, Bem-Estar & Estética | customizado | presencial (avaliação) + digital (tratamento) |
-| `energia_solar` | Energia Solar | customizado | digital (contrato assinado), gatilho opcional na visita técnica |
-| `educacao` | Educação Premium | padrão adaptado | digital (matrícula efetivada) |
-| `turismo` | Turismo de Luxo & Eventos | padrão adaptado | digital (pacote fechado) |
-| `seguros` | Seguros | recorrente | % sobre prêmio, recorrente |
-| `franquias` | Franquias | customizado | digital (contrato de franquia) |
-| `veiculos_pesados` | Veículos Pesados & Máquinas | padrão | presencial + digital |
-| `imoveis_comerciais_locacao` | Imóveis Comerciais (Locação) | padrão adaptado | digital (contrato de locação = 1 aluguel) |
+- A criação inicial do lead e da primeira mensagem está funcionando.
+- Mensagens posteriores do cliente aparecem no banco, mas dependem de sincronização frágil no painel do anunciante.
+- A resposta do anunciante para o lead `contato@bolinha.com` não foi salva no banco, o que indica falha no envio/persistência da mensagem do anunciante, provavelmente por regra de acesso ou por envio “best-effort” sem feedback de erro.
+- O chat hoje mistura estado local (`localStorage`) com banco, então em celular/cache limpo a UI pode parecer atualizada localmente sem garantir que a mensagem realmente foi salva e entregue ao outro lado.
 
-Somam-se aos 5 atuais (`imovel`, `carro`, `moto`, `barco`, `jetski`) → **13 categorias**.
+## Plano de correção
 
----
+1. **Tornar o envio de mensagens confiável**
+   - Alterar o envio do chat para aguardar a gravação no banco antes de confirmar sucesso.
+   - Se a gravação falhar, mostrar erro claro ao usuário e não fingir que a mensagem foi entregue.
+   - Manter atualização otimista apenas quando houver persistência garantida ou rollback em caso de falha.
 
-## Onda 1 — Infraestrutura multi-vertical
+2. **Corrigir autorização do chat para os dois lados**
+   - Revisar e ajustar as regras do banco para permitir:
+     - Cliente/lead enviar mensagens apenas no próprio atendimento.
+     - Anunciante responder apenas aos leads dos seus anúncios.
+     - Indicador continuar acompanhando apenas os leads atribuídos a ele.
+   - Preservar o bloqueio de dados de outros clientes.
 
-**Objetivo:** um único lugar para descrever cada vertical; resto do código consome.
+3. **Criar uma função segura para enviar mensagens do cliente visitante**
+   - Em vez de depender de inserção direta anônima ampla, criar um fluxo controlado: o cliente informa e-mail/telefone + lead, e o servidor valida que aquele lead pertence àquele cliente antes de salvar a mensagem.
+   - Isso mantém privacidade e resolve o caso do cliente em celular/cache limpo.
 
-1. **Migração SQL**
-   - Ampliar coluna `category` em `products` para aceitar todos os slugs novos (converter para `text` com CHECK, ou ampliar enum se existir).
-   - Ampliar `lead_status` (enum ou text + CHECK) com novos status usados pelos funis customizados: `triagem`, `avaliacao_agendada`, `avaliacao_confirmada`, `orcamento_emitido`, `tratamento_iniciado`, `visita_tecnica_agendada`, `visita_tecnica_realizada`, `projeto_aprovado`, `contrato_assinado`, `matricula_efetivada`, `pacote_fechado`, `apolice_emitida`, `contrato_franquia`, `locacao_assinada`.
-   - Adicionar `vertical_meta jsonb` em `products` e `leads` (atributos livres por vertical).
-   - Adicionar `commission_model text` em `products` (`presencial_digital` | `digital` | `recorrente`).
-   - GRANTs mantidos como estão (só ALTER, nenhuma tabela nova).
+4. **Forçar ressincronização após cada mensagem**
+   - Após anunciante ou cliente enviar uma mensagem, recarregar as mensagens daquele lead do banco.
+   - No portal do cliente, manter polling curto enquanto o chat estiver aberto para receber respostas do anunciante.
+   - No painel do anunciante, recarregar chats quando abrir o dossiê do lead e ao voltar o foco no celular.
 
-2. **`src/lib/verticals.ts` (novo)** — fonte única:
-   ```ts
-   export const VERTICALS: Record<Category, VerticalConfig> = {
-     saude: { label, icon, color, attributes: ZodSchema, statusFlow: [...], commissionModel, disclaimer? },
-     energia_solar: {...},
-     ...
-   }
-   ```
-   Inclui: label PT-BR, ícone lucide, cor Tailwind semântica, schema Zod dos atributos específicos, array ordenado de status do funil, modelo de comissão, disclaimer opcional (Saúde: "agendamento de avaliação, não venda de procedimento").
+5. **Auditar o caso real do bolinha**
+   - Usar o lead `contato@bolinha.com` como teste de regressão.
+   - Confirmar que a resposta do anunciante passa a ser gravada e aparece no portal do cliente.
+   - Confirmar que nova mensagem do cliente aparece no dossiê do anunciante.
 
-3. **`src/types.ts`** — ampliar `Category` e `LeadStatus` com todos os novos slugs; manter compat com os 5 atuais.
+6. **Ajuste mobile mínimo relacionado ao chat**
+   - Garantir que o modal/dossiê do lead e a janela de chat no celular tenham rolagem correta, largura estável e input visível.
+   - Sem redesenhar o painel inteiro nesta etapa, focando no fluxo quebrado.
 
-4. **Refactor de consumo** — trocar `switch(category)` espalhados por `VERTICALS[category].xxx` em: `ProductCard`, `VisitorView` (filtros), `AffiliateDashboard`, `AdminPanel`.
+## Arquivos que serão alterados
 
----
-
-## Onda 2 — Formulários e funis customizados
-
-1. **`ProductForm` dinâmico:** ao escolher categoria, renderiza campos a partir de `VERTICALS[cat].attributes` (Zod → react-hook-form). Exemplos:
-   - Saúde: procedimento, duração estimada, requer avaliação presencial (bool), faixa etária.
-   - Energia Solar: potência estimada (kWp), tipo de imóvel, upload conta de luz (bucket `product-images` ou novo `attachments`).
-   - Educação: modalidade (presencial/online/híbrido), carga horária, próxima turma.
-   - Turismo: destino, datas, nº pessoas.
-   - Seguros: tipo (vida/patrimonial/saúde-empresarial), % comissão recorrente.
-   - Franquias: investimento inicial, faturamento médio, prazo de retorno.
-   - Veículos Pesados: tipo, ano, horímetro, capacidade.
-   - Locação Comercial: metragem, tipo (sala/galpão/loja), valor mensal.
-
-2. **`LeadForm`:** campos adicionais por vertical (Saúde: melhor horário; Energia Solar: anexo conta de luz; Educação: interesse/curso; Seguros: bens a segurar).
-
-3. **Kanban / status:** `LeadPipeline` lê `statusFlow` da vertical. Transições permitidas seguem a ordem. Regras de comissão:
-   - Saúde: libera parcial em `avaliacao_confirmada`, final em `tratamento_iniciado`.
-   - Energia Solar: gatilho opcional em `visita_tecnica_realizada`, final em `contrato_assinado`.
-   - Seguros: cria registro recorrente em `apolice_emitida` (marca comissão recorrente no `payouts`).
-   - Demais: mantêm liberação única no status terminal.
-
-4. **Conformidade Saúde (mínima nesta onda):** banner obrigatório no formulário e no card ("Este anúncio destina-se ao agendamento de avaliação clínica..."), termos aceitos no cadastro de anunciante Saúde. LGPD reforçada fica para depois, conforme pedido.
-
----
-
-## Onda 3 — Ativação comercial
-
-1. **LandingPage:** nova seção "Verticais atendidas" — grid de 13 cards (ícone + label + micro-copy) gerado a partir de `VERTICALS`.
-2. **`VisitorView`:** filtro por vertical (chips), busca respeita a categoria selecionada, ordenação por comissão/ticket.
-3. **Onboarding do anunciante:** primeiro passo escolhe vertical → formulário seguinte já mostra só campos daquela vertical.
-4. **AdminPanel:** aba "Verticais" com métricas por categoria — nº anúncios ativos, leads gerados, conversão, comissão paga; tabela ordenável.
-5. **AffiliateDashboard:** filtro por vertical no catálogo de ofertas + tag visual da vertical em cada lead.
-
----
-
-## Detalhes técnicos
-
-**Ordem de execução:** Onda 1 → migração SQL primeiro (aprovação do usuário), depois `verticals.ts` + `types.ts` + refactors. Onda 2 depende da Onda 1. Onda 3 depende da Onda 2.
-
-**Arquivos novos:**
-- `supabase/migrations/<timestamp>_expand_verticals.sql`
-- `src/lib/verticals.ts`
-- `src/components/product/DynamicAttributesFields.tsx`
-- `src/components/lead/DynamicLeadFields.tsx`
-- `src/components/admin/VerticalMetrics.tsx`
-
-**Arquivos alterados:**
-- `src/types.ts`, `src/App.tsx`, `src/components/LandingPage.tsx`, `src/components/VisitorView.tsx`, `src/components/AffiliateDashboard.tsx`, `src/components/AdminPanel.tsx`
-- Formulários de produto/lead existentes
-- `src/lib/repositories.ts` (helpers de consulta por vertical)
-
-**Compatibilidade:** dados existentes (categorias atuais) continuam válidos — nada é removido, só ampliado. Nenhuma quebra em anúncios ou leads já cadastrados.
-
-**Ícones:** lucide-react — Heart (saúde), Sun (solar), GraduationCap (educação), Plane (turismo), Shield (seguros), Store (franquias), Truck (pesados), Building2 (locação comercial).
+- `src/App.tsx`
+- `src/lib/cloudSync.ts`
+- `src/lib/visitor-chat.functions.ts`
+- `src/components/VisitorView.tsx`
+- `src/components/AdvertiserDashboard.tsx`
+- Migração do banco para regras/funções de chat, se necessário
 
 ## Resultado esperado
-- 13 verticais operacionais, cada uma com seus atributos, funil e regras de comissão próprios.
-- Cadastro de produto/lead adaptável sem código duplicado (tudo dirigido por `verticals.ts`).
-- Landing e catálogo comunicando o portfólio completo.
-- Base pronta para receber LGPD reforçada de Saúde em fase futura.
+
+Depois da correção, o chat ficará realmente bidirecional:
+
+```text
+Cliente lead envia mensagem
+        ↓
+Mensagem salva no banco
+        ↓
+Anunciante vê no dossiê do lead
+        ↓
+Anunciante responde
+        ↓
+Resposta salva no banco
+        ↓
+Cliente vê no portal pelo mesmo e-mail/telefone
+```
+
+E nenhuma conversa de outro cliente será exibida no portal do lead.

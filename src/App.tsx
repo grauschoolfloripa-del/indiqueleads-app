@@ -58,7 +58,7 @@ import {
   isUuid,
 } from "./lib/cloudSync";
 import { supabase } from "./integrations/supabase/client";
-import { getVisitorLeadChats } from "./lib/visitor-chat.functions";
+import { getVisitorLeadChats, sendVisitorChatMessage } from "./lib/visitor-chat.functions";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
@@ -165,6 +165,7 @@ export default function App() {
     Array<{ id: string; msg: string; type: "success" | "info" }>
   >([]);
   const getVisitorLeadChatsFn = useServerFn(getVisitorLeadChats);
+  const sendVisitorChatMessageFn = useServerFn(sendVisitorChatMessage);
 
   const mergeLeadsIntoState = useCallback((incoming: Lead[]) => {
     if (!incoming.length) return;
@@ -572,12 +573,15 @@ export default function App() {
         saveToStorage("indica_leads", next);
         return next;
       });
+      void fetchChatsForLeads([lead.id]).then(mergeChatMessagesIntoState).catch((error) => {
+        console.error("[App] lead chat resync failed", error);
+      });
     });
     return () => {
       offChat();
       offLeads();
     };
-  }, [loggedUser?.id, loggedUser?.role]);
+  }, [loggedUser?.id, loggedUser?.role, mergeChatMessagesIntoState]);
 
 
 
@@ -844,13 +848,13 @@ export default function App() {
     });
   };
 
-  const handleSendChatMessage = (
+  const handleSendChatMessage = async (
     leadId: string,
     senderId: string,
     senderName: string,
     senderRole: "client" | "advertiser",
     text: string,
-  ) => {
+  ): Promise<boolean> => {
     const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
     const newMsg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -862,13 +866,8 @@ export default function App() {
       ...(hasLeakage ? { originalText: text } : {}),
       createdAt: new Date().toISOString(),
     };
-    let warningMsg: ChatMessage | null = null;
-
-    setChatMessages((prev) => {
-      const updated = [...prev, newMsg];
-
-      if (hasLeakage) {
-        warningMsg = {
+    const warningMsg: ChatMessage | null = hasLeakage
+      ? {
           id: crypto.randomUUID(),
           leadId,
           senderId: "system",
@@ -878,22 +877,69 @@ export default function App() {
           isSystem: true,
           isBlockedBySecurity: true,
           createdAt: new Date(Date.now() + 1000).toISOString(),
-        };
-        updated.push(warningMsg);
+        }
+      : null;
+    const messagesToSend = warningMsg ? [newMsg, warningMsg] : [newMsg];
+
+    const appendMessages = (messages: ChatMessage[]) => {
+      setChatMessages((prev) => {
+        const existingIds = new Set(prev.map((message) => message.id));
+        const updated = [...prev, ...messages.filter((message) => !existingIds.has(message.id))].sort(
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        );
+        saveToStorage("indica_chat_messages", updated);
+        return updated;
+      });
+    };
+
+    if (!isUuid(leadId)) {
+      appendMessages(messagesToSend);
+      addNotification("Mensagem enviada com sucesso!", "success");
+      return true;
+    }
+
+    try {
+      if (senderRole === "client") {
+        const lead = leads.find((item) => item.id === leadId);
+        const lookup = lead?.clientEmail || lead?.clientPhone || "";
+        if (!lead || !lookup) throw new Error("Atendimento do cliente não encontrado.");
+
+        const result = await sendVisitorChatMessageFn({
+          data: {
+            lookup,
+            leadId,
+            productId: isUuid(lead.productId) ? lead.productId : undefined,
+            messages: messagesToSend.map((message) => ({
+              id: message.id,
+              senderName: message.senderName,
+              senderRole: message.senderRole === "system" ? ("system" as const) : ("client" as const),
+              text: message.text,
+              originalText: message.originalText ?? null,
+              isSystem: message.isSystem ?? false,
+              isBlockedBySecurity: message.isBlockedBySecurity ?? false,
+              createdAt: message.createdAt,
+            })),
+          },
+        });
+        mergeChatMessagesIntoState(result.messages);
+      } else {
+        for (const message of messagesToSend) {
+          await pushChatMessage(message);
+        }
+        const freshMessages = await fetchChatsForLeads([leadId]);
+        mergeChatMessagesIntoState(freshMessages.length ? freshMessages : messagesToSend);
       }
 
-      saveToStorage("indica_chat_messages", updated);
-      return updated;
-    });
-
-    // Persist to cloud (only for leads that live in the DB).
-    void pushChatMessage(newMsg);
-    if (warningMsg) void pushChatMessage(warningMsg);
-
-    if (hasLeakage) {
-      addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
-    } else {
-      addNotification("Mensagem enviada com sucesso!", "success");
+      if (hasLeakage) {
+        addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
+      } else {
+        addNotification("Mensagem enviada com sucesso!", "success");
+      }
+      return true;
+    } catch (error) {
+      console.error("[App] chat send failed", error);
+      addNotification("Não foi possível entregar a mensagem. Tente novamente em alguns segundos.", "info");
+      return false;
     }
   };
 

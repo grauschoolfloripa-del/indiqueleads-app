@@ -82,7 +82,7 @@ interface AdvertiserDashboardProps {
     senderName: string,
     senderRole: "client" | "advertiser",
     text: string,
-  ) => void;
+  ) => Promise<boolean> | boolean | void;
 }
 
 export default function AdvertiserDashboard({
@@ -4767,17 +4767,17 @@ export default function AdvertiserDashboard({
 
                     {/* Chat input footer */}
                     <form
-                      onSubmit={(e) => {
+                      onSubmit={async (e) => {
                         e.preventDefault();
                         if (!advertiserChatText.trim()) return;
-                        onSendChatMessage(
+                        const sent = await onSendChatMessage(
                           viewingLead.id,
                           advertiser.id,
                           advertiser.name,
                           "advertiser",
                           advertiserChatText.trim(),
                         );
-                        setAdvertiserChatText("");
+                        if (sent !== false) setAdvertiserChatText("");
                       }}
                       className="p-2 bg-white border-t border-slate-200 flex gap-1.5"
                     >
