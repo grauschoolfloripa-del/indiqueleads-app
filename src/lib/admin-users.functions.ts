@@ -13,12 +13,14 @@ export const createAdminUser = createServerFn({ method: "POST" })
   .inputValidator((raw) => CreateAdminSchema.parse(raw))
   .handler(async ({ data, context }) => {
     // 1. Verificar que o chamador é admin
-    const { data: isAdmin, error: roleErr } = await context.supabase.rpc(
-      "has_role",
-      { _user_id: context.userId, _role: "admin" },
-    );
+    const { data: ownAdminRole, error: roleErr } = await context.supabase
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
     if (roleErr) throw new Error("Falha ao verificar permissão.");
-    if (!isAdmin) throw new Error("Apenas administradores podem criar novos administradores.");
+    if (!ownAdminRole) throw new Error("Apenas administradores podem criar novos administradores.");
 
     // 2. Criar usuário via Admin API + atribuir role admin
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
