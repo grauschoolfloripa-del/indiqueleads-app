@@ -51,13 +51,20 @@ export const getVisitorLeadChats = createServerFn({ method: "POST" })
     if (isEmailLookup) {
       leadsQuery = leadsQuery.ilike("client_email", lookup);
     } else {
-      leadsQuery = leadsQuery.eq("client_phone_digits", digits);
+      const phoneCandidates = Array.from(new Set([lookupRaw, digits].filter(Boolean)));
+      leadsQuery = leadsQuery.in("client_phone", phoneCandidates);
     }
 
     const { data: leadRows, error: leadsError } = await leadsQuery;
     if (leadsError) throw new Error(leadsError.message);
 
-    const leads: Lead[] = (leadRows ?? []).map((row: any) => ({
+    const matchedRows = isEmailLookup
+      ? (leadRows ?? [])
+      : (leadRows ?? []).filter(
+          (row: any) => String(row.client_phone ?? "").replace(/\D/g, "") === digits,
+        );
+
+    const leads: Lead[] = matchedRows.map((row: any) => ({
       id: row.id,
       productId: row.product_id,
       productTitle: row.products?.title ?? "",
