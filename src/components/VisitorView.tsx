@@ -14,7 +14,7 @@ interface VisitorViewProps {
   onSubmitLead: (leadData: { clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
   onAddNotification: (msg: string, type: 'success' | 'info') => void;
   chatMessages: ChatMessage[];
-  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string) => void;
+  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string) => Promise<boolean> | boolean | void;
   leads: Lead[];
   onSyncClientChats?: (lookup: string, productId?: string) => Promise<unknown>;
 }
@@ -361,11 +361,11 @@ export default function VisitorView({
             {submitted && activeLead ? (() => {
               const activeLeadMessages = chatMessages.filter(msg => msg.leadId === activeLead.id);
               
-              const handleChatSubmit = (e: FormEvent) => {
+              const handleChatSubmit = async (e: FormEvent) => {
                 e.preventDefault();
                 if (!chatText.trim()) return;
-                onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim());
-                setChatText('');
+                const sent = await onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim());
+                if (sent !== false) setChatText('');
               };
 
               return (
@@ -770,11 +770,11 @@ export default function VisitorView({
 
                               {/* Send form */}
                               <form 
-                                onSubmit={(e) => {
+                                onSubmit={async (e) => {
                                   e.preventDefault();
                                   if (!portalChatText.trim()) return;
-                                  onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim());
-                                  setPortalChatText('');
+                                  const sent = await onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim());
+                                  if (sent !== false) setPortalChatText('');
                                 }}
                                 className="p-2 bg-white border-t border-slate-200 flex gap-2"
                               >
