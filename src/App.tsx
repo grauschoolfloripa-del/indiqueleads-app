@@ -869,6 +869,7 @@ export default function App() {
     senderName: string,
     senderRole: "client" | "advertiser",
     text: string,
+    clientLookup?: string,
   ): Promise<boolean> => {
     const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
     const newMsg: ChatMessage = {
