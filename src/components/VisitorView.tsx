@@ -408,7 +408,8 @@ export default function VisitorView({
               const handleChatSubmit = async (e: FormEvent) => {
                 e.preventDefault();
                 if (!chatText.trim()) return;
-                const sent = await onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim());
+                const clientLookup = (clientEmail || clientPhone || activeLead.clientEmail || activeLead.clientPhone || '').trim();
+                const sent = await onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim(), clientLookup);
                 if (sent !== false) setChatText('');
               };
 
