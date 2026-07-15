@@ -187,6 +187,30 @@ export default function VisitorView({
     includesTrailer: 'Acompanha Carretinha'
   };
 
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
+        <div className="max-w-md mx-auto bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
+          <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900">Anúncio indisponível</h2>
+          <p className="text-sm text-slate-500">
+            Este link pode ter expirado ou o anúncio foi removido. Peça um novo link ao indicador.
+          </p>
+          {onGoBack && (
+            <button
+              onClick={onGoBack}
+              className="mt-2 inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" /> Voltar
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
       
