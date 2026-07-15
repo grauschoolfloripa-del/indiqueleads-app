@@ -6,15 +6,15 @@ import {
 import { Product, Lead, Category, ChatMessage } from '../types';
 
 interface VisitorViewProps {
-  product: Product;
+  product: Product | null;
   products: Product[];
-  referralId: string | null;
+  referralId?: string | null;
   referralIndicatorName?: string;
   onGoBack?: () => void;
-  onSubmitLead: (leadData: { clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
+  onSubmitLead: (leadData: { productId: string; clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
   onAddNotification: (msg: string, type: 'success' | 'info') => void;
   chatMessages: ChatMessage[];
-  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string) => Promise<boolean> | boolean | void;
+  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string, clientLookup?: string) => Promise<boolean> | boolean | void;
   leads: Lead[];
   onSyncClientChats?: (lookup: string, productId?: string) => Promise<unknown>;
 }
@@ -32,14 +32,12 @@ export default function VisitorView({
   leads,
   onSyncClientChats
 }: VisitorViewProps) {
-  // Gallery selection
-  const [activeImage, setActiveImage] = useState<string>(product.coverImage);
-  const [prevProductId, setPrevProductId] = useState<string>(product.id);
+  // Gallery selection — inicializa vazio; efeito abaixo sincroniza com product.
+  const [activeImage, setActiveImage] = useState<string>('');
 
-  if (product.id !== prevProductId) {
-    setPrevProductId(product.id);
-    setActiveImage(product.coverImage);
-  }
+  useEffect(() => {
+    if (product?.coverImage) setActiveImage(product.coverImage);
+  }, [product?.id, product?.coverImage]);
   
   // Form states
   const [clientName, setClientName] = useState('');
@@ -57,15 +55,32 @@ export default function VisitorView({
   const [activeClientLeadId, setActiveClientLeadId] = useState<string | null>(null);
   const [portalChatText, setPortalChatText] = useState('');
 
-  const activeLead = leads.find(l => 
-    l.productId === product.id && 
-    l.clientEmail.toLowerCase().trim() === clientEmail.toLowerCase().trim() && 
-    l.clientName.toLowerCase().trim() === clientName.toLowerCase().trim()
-  );
+  // activeLead sincronizado via useEffect para evitar janelas onde submitted=true
+  // mas o lead recém-criado ainda não apareceu no array `leads` (mobile / SSR).
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+  useEffect(() => {
+    if (!product) {
+      setActiveLead(null);
+      return;
+    }
+    const emailKey = clientEmail.toLowerCase().trim();
+    const nameKey = clientName.toLowerCase().trim();
+    if (!emailKey || !nameKey) {
+      setActiveLead(null);
+      return;
+    }
+    const found = leads.find(l =>
+      l.productId === product.id &&
+      l.clientEmail.toLowerCase().trim() === emailKey &&
+      l.clientName.toLowerCase().trim() === nameKey
+    );
+    setActiveLead(found ?? null);
+  }, [leads, product?.id, clientEmail, clientName]);
   
   // Statuses
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
 
   useEffect(() => {
     if (!onSyncClientChats) return;
