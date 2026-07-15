@@ -91,10 +91,12 @@ export default function VisitorView({
     if (!canLookup) return;
     if (activeTab !== 'portal' && !submitted && !activeClientLeadId) return;
 
+    if (!product) return;
+    const prodId = product.id;
     let cancelled = false;
     const sync = () => {
       if (cancelled) return;
-      void onSyncClientChats(lookup, product.id).catch(() => undefined);
+      void onSyncClientChats(lookup, prodId).catch(() => undefined);
     };
 
     const timeout = window.setTimeout(sync, 250);
@@ -112,7 +114,7 @@ export default function VisitorView({
     clientPhone,
     onSyncClientChats,
     portalLookupPhoneOrEmail,
-    product.id,
+    product?.id,
     submitted,
   ]);
 
