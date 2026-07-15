@@ -916,15 +916,26 @@ export default function App() {
 
     try {
       if (senderRole === "client") {
-        const lead = leads.find((item) => item.id === leadId);
-        const lookup = lead?.clientEmail || lead?.clientPhone || "";
-        if (!lead || !lookup) throw new Error("Atendimento do cliente não encontrado.");
+        let lead = leads.find((item) => item.id === leadId);
+        // Fallback: se o lead ainda não propagou para o estado local (mobile,
+        // login recém-feito), hidrata via server fn usando o lookup enviado
+        // pelo VisitorView antes de desistir.
+        if (!lead && clientLookup) {
+          try {
+            const synced = await handleSyncVisitorChats(clientLookup);
+            lead = synced.leads.find((l) => l.id === leadId);
+          } catch (syncErr) {
+            console.warn("[App] chat client hydrate failed", syncErr);
+          }
+        }
+        const lookup = clientLookup || lead?.clientEmail || lead?.clientPhone || "";
+        if (!lookup) throw new Error("Atendimento do cliente não encontrado.");
 
         const result = await sendVisitorChatMessageFn({
           data: {
             lookup,
             leadId,
-            productId: isUuid(lead.productId) ? lead.productId : undefined,
+            productId: lead && isUuid(lead.productId) ? lead.productId : undefined,
             messages: messagesToSend.map((message) => ({
               id: message.id,
               senderName: message.senderName,
