@@ -350,6 +350,10 @@ export default function App() {
       localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
       addNotification(`Painel do Indicador ativado via link!`, "success");
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
