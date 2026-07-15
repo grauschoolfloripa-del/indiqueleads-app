@@ -818,7 +818,8 @@ export default function VisitorView({
                                 onSubmit={async (e) => {
                                   e.preventDefault();
                                   if (!portalChatText.trim()) return;
-                                  const sent = await onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim());
+                                  const portalLookup = (portalLookupPhoneOrEmail || lead.clientEmail || lead.clientPhone || '').trim();
+                                  const sent = await onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim(), portalLookup);
                                   if (sent !== false) setPortalChatText('');
                                 }}
                                 className="p-2 bg-white border-t border-slate-200 flex gap-2"
