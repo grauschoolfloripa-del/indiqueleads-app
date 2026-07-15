@@ -288,6 +288,8 @@ export default function App() {
       setCurrentRole("visitante");
     }
 
+    let cancelled = false;
+
     if (prodParam) {
       setActiveProductId(prodParam);
       setCurrentRole("visitante");
@@ -299,12 +301,18 @@ export default function App() {
       if (!existsLocal && isUuid(prodParam)) {
         void import("./lib/cloudSync").then(({ fetchProductById }) =>
           fetchProductById(prodParam).then((prod) => {
+            if (cancelled) return;
             if (prod) {
               setProducts((prev) =>
                 prev.some((p) => p.id === prod.id) ? prev : [prod, ...prev],
               );
             } else {
+              // Produto removido/inacessível: destrava o visitante para não ficar
+              // preso no spinner e mostra a landing pública.
               addNotification("Este anúncio não está mais disponível.", "info");
+              setLockedToSharedProduct(false);
+              setActiveProductId("");
+              setCurrentRole("indicador");
             }
           }),
         );
