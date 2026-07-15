@@ -599,14 +599,8 @@ export default function App() {
     localStorage.setItem(key, JSON.stringify(data));
   };
 
-  // --- TOAST NOTIFICATIONS HELPER ---
-  const addNotification = (msg: string, type: "success" | "info" = "info") => {
-    const id = `notif-${Date.now()}`;
-    setNotifications((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 4000);
-  };
+  // (addNotification foi movido para o topo do componente para evitar TDZ em useEffects)
+
 
   // --- HANDLERS ---
   const handleSimulateReferral = (refId: string, prodId: string) => {
