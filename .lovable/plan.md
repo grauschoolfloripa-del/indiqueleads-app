@@ -1,40 +1,105 @@
+# Plano de Expansão Multi-Vertical (3 Ondas)
 
-## Objetivo
+## Verticais a adicionar
 
-Consertar os 10 bugs remanescentes do último merge que quebraram o chat entre anunciante e cliente, travam o visitante em spinner quando o produto do link não existe mais e geram warnings/estados inconsistentes no painel do indicador.
+| Slug | Label | Funil | Modelo comissão |
+|---|---|---|---|
+| `saude` | Saúde, Bem-Estar & Estética | customizado | presencial (avaliação) + digital (tratamento) |
+| `energia_solar` | Energia Solar | customizado | digital (contrato assinado), gatilho opcional na visita técnica |
+| `educacao` | Educação Premium | padrão adaptado | digital (matrícula efetivada) |
+| `turismo` | Turismo de Luxo & Eventos | padrão adaptado | digital (pacote fechado) |
+| `seguros` | Seguros | recorrente | % sobre prêmio, recorrente |
+| `franquias` | Franquias | customizado | digital (contrato de franquia) |
+| `veiculos_pesados` | Veículos Pesados & Máquinas | padrão | presencial + digital |
+| `imoveis_comerciais_locacao` | Imóveis Comerciais (Locação) | padrão adaptado | digital (contrato de locação = 1 aluguel) |
 
-## Correções em `src/App.tsx`
+Somam-se aos 5 atuais (`imovel`, `carro`, `moto`, `barco`, `jetski`) → **13 categorias**.
 
-1. **Spinner infinito quando produto do link não existe** — no callback de `fetchProductById(prodParam)` (linhas ~291-301): quando `prod` vier `null`, além do `addNotification`, sair do modo visitante — `setLockedToSharedProduct(false)`, `setActiveProductId(null)` e voltar para landing/role anterior. Isso destrava a tela.
-2. **Cleanup do import assíncrono** — envolver o `void import("./lib/cloudSync")...` com uma flag `cancelled` local ao `useEffect` de bootstrap (e `return () => { cancelled = true; }`) para não chamar `setProducts`/`setCurrentRole` em componente desmontado.
-3. **Guard extra do render** — na linha 1319, tratar explicitamente o caso `currentRole === "visitante" && !activeProductForVisitor`: se `lockedToSharedProduct`, renderizar mensagem "Anúncio não disponível" com botão para voltar à landing (em vez de cair no spinner/branch vazio).
-4. **`addNotification` fora da TDZ** — mover a declaração de `addNotification` (linha 594) para antes do primeiro `useEffect` que a referencia (o de bootstrap na ~280), eliminando dependência de hoisting.
-5. **Fallback do chat do cliente** — em `handleSendChatMessage` (linha 902-905), quando `senderRole === "client"` e o lead não estiver em `leads`, chamar `getVisitorLeadChatsFn` com o `lookup` conhecido do estado do VisitorView antes de lançar erro; se ainda assim não achar, aí sim mostrar erro.
-6. **`productId` explícito no submit do visitante** — mudar assinatura de `handleSubmitLeadFromVisitor` para receber `productId` no payload em vez de ler `activeProductId` da closure; atualizar chamada em `VisitorView`.
+---
 
-## Correções em `src/components/VisitorView.tsx`
+## Onda 1 — Infraestrutura multi-vertical
 
-7. **Aceitar `product: Product | null`** — mudar a interface e adicionar guard no topo do componente: se `product` é `null`, retornar um fallback simples ("Anúncio indisponível"). Elimina crashes em `product.coverImage`/`product.id`.
-8. **`referralId` opcional** — mudar prop para `referralId?: string | null` para casar com o `undefined` que o App pode passar.
-9. **`activeLead` em `useState` + `useEffect`** — trocar o cálculo inline por `const [activeLead, setActiveLead] = useState<Lead | null>(null)` sincronizado num `useEffect` que roda em `[leads, product?.id, clientEmail, clientName]`. Elimina a janela em que `submitted === true` mas `activeLead === undefined`, que atualmente esconde o chat após envio do lead.
-10. **Reset de `activeImage` em `useEffect`** — remover o `setState` durante render (`if (product.id !== prevProductId)...`); substituir por `useEffect(() => { setActiveImage(product.coverImage); }, [product?.id])`. Elimina warning do React e potenciais loops.
-11. **Passar `productId` no `onSubmitLead`** — incluir `productId: product.id` no payload enviado ao App (par do item 6).
+**Objetivo:** um único lugar para descrever cada vertical; resto do código consome.
 
-## Correções em `src/components/AffiliateDashboard.tsx`
+1. **Migração SQL**
+   - Ampliar coluna `category` em `products` para aceitar todos os slugs novos (converter para `text` com CHECK, ou ampliar enum se existir).
+   - Ampliar `lead_status` (enum ou text + CHECK) com novos status usados pelos funis customizados: `triagem`, `avaliacao_agendada`, `avaliacao_confirmada`, `orcamento_emitido`, `tratamento_iniciado`, `visita_tecnica_agendada`, `visita_tecnica_realizada`, `projeto_aprovado`, `contrato_assinado`, `matricula_efetivada`, `pacote_fechado`, `apolice_emitida`, `contrato_franquia`, `locacao_assinada`.
+   - Adicionar `vertical_meta jsonb` em `products` e `leads` (atributos livres por vertical).
+   - Adicionar `commission_model text` em `products` (`presencial_digital` | `digital` | `recorrente`).
+   - GRANTs mantidos como estão (só ALTER, nenhuma tabela nova).
 
-12. **`onAddNotification` com 3 argumentos** — nas duas chamadas afetadas, remover o argumento extra e manter apenas `(mensagem, tipo)` conforme a assinatura.
-13. **Botão duplicado de compartilhar** — remover a `<a>` antiga; manter apenas o `<button>` com o fluxo Web Share atual.
-14. **`setTimeout` órfão do kit** — remover o `setTimeout(() => setDownloadingKit(false), 1200)` residual; o `finally { setDownloadingKit(false) }` já cobre o reset.
+2. **`src/lib/verticals.ts` (novo)** — fonte única:
+   ```ts
+   export const VERTICALS: Record<Category, VerticalConfig> = {
+     saude: { label, icon, color, attributes: ZodSchema, statusFlow: [...], commissionModel, disclaimer? },
+     energia_solar: {...},
+     ...
+   }
+   ```
+   Inclui: label PT-BR, ícone lucide, cor Tailwind semântica, schema Zod dos atributos específicos, array ordenado de status do funil, modelo de comissão, disclaimer opcional (Saúde: "agendamento de avaliação, não venda de procedimento").
 
-## Verificação
+3. **`src/types.ts`** — ampliar `Category` e `LeadStatus` com todos os novos slugs; manter compat com os 5 atuais.
 
-- Build TS deve passar (VisitorView aceita nullable, App satisfaz assinatura).
-- Fluxo manual: (a) abrir link de produto inexistente → ver mensagem, não spinner; (b) cliente cadastra lead → chat aparece imediatamente após submit; (c) cliente envia msg logo em seguida → entrega sem "Atendimento não encontrado"; (d) anunciante responde → cliente vê no chat via realtime/refetch já existente.
+4. **Refactor de consumo** — trocar `switch(category)` espalhados por `VERTICALS[category].xxx` em: `ProductCard`, `VisitorView` (filtros), `AffiliateDashboard`, `AdminPanel`.
 
-## Arquivos alterados
+---
 
-- `src/App.tsx`
-- `src/components/VisitorView.tsx`
-- `src/components/AffiliateDashboard.tsx`
+## Onda 2 — Formulários e funis customizados
 
-Sem migrações novas — o backend/RLS/functions já estão corretos das rodadas anteriores.
+1. **`ProductForm` dinâmico:** ao escolher categoria, renderiza campos a partir de `VERTICALS[cat].attributes` (Zod → react-hook-form). Exemplos:
+   - Saúde: procedimento, duração estimada, requer avaliação presencial (bool), faixa etária.
+   - Energia Solar: potência estimada (kWp), tipo de imóvel, upload conta de luz (bucket `product-images` ou novo `attachments`).
+   - Educação: modalidade (presencial/online/híbrido), carga horária, próxima turma.
+   - Turismo: destino, datas, nº pessoas.
+   - Seguros: tipo (vida/patrimonial/saúde-empresarial), % comissão recorrente.
+   - Franquias: investimento inicial, faturamento médio, prazo de retorno.
+   - Veículos Pesados: tipo, ano, horímetro, capacidade.
+   - Locação Comercial: metragem, tipo (sala/galpão/loja), valor mensal.
+
+2. **`LeadForm`:** campos adicionais por vertical (Saúde: melhor horário; Energia Solar: anexo conta de luz; Educação: interesse/curso; Seguros: bens a segurar).
+
+3. **Kanban / status:** `LeadPipeline` lê `statusFlow` da vertical. Transições permitidas seguem a ordem. Regras de comissão:
+   - Saúde: libera parcial em `avaliacao_confirmada`, final em `tratamento_iniciado`.
+   - Energia Solar: gatilho opcional em `visita_tecnica_realizada`, final em `contrato_assinado`.
+   - Seguros: cria registro recorrente em `apolice_emitida` (marca comissão recorrente no `payouts`).
+   - Demais: mantêm liberação única no status terminal.
+
+4. **Conformidade Saúde (mínima nesta onda):** banner obrigatório no formulário e no card ("Este anúncio destina-se ao agendamento de avaliação clínica..."), termos aceitos no cadastro de anunciante Saúde. LGPD reforçada fica para depois, conforme pedido.
+
+---
+
+## Onda 3 — Ativação comercial
+
+1. **LandingPage:** nova seção "Verticais atendidas" — grid de 13 cards (ícone + label + micro-copy) gerado a partir de `VERTICALS`.
+2. **`VisitorView`:** filtro por vertical (chips), busca respeita a categoria selecionada, ordenação por comissão/ticket.
+3. **Onboarding do anunciante:** primeiro passo escolhe vertical → formulário seguinte já mostra só campos daquela vertical.
+4. **AdminPanel:** aba "Verticais" com métricas por categoria — nº anúncios ativos, leads gerados, conversão, comissão paga; tabela ordenável.
+5. **AffiliateDashboard:** filtro por vertical no catálogo de ofertas + tag visual da vertical em cada lead.
+
+---
+
+## Detalhes técnicos
+
+**Ordem de execução:** Onda 1 → migração SQL primeiro (aprovação do usuário), depois `verticals.ts` + `types.ts` + refactors. Onda 2 depende da Onda 1. Onda 3 depende da Onda 2.
+
+**Arquivos novos:**
+- `supabase/migrations/<timestamp>_expand_verticals.sql`
+- `src/lib/verticals.ts`
+- `src/components/product/DynamicAttributesFields.tsx`
+- `src/components/lead/DynamicLeadFields.tsx`
+- `src/components/admin/VerticalMetrics.tsx`
+
+**Arquivos alterados:**
+- `src/types.ts`, `src/App.tsx`, `src/components/LandingPage.tsx`, `src/components/VisitorView.tsx`, `src/components/AffiliateDashboard.tsx`, `src/components/AdminPanel.tsx`
+- Formulários de produto/lead existentes
+- `src/lib/repositories.ts` (helpers de consulta por vertical)
+
+**Compatibilidade:** dados existentes (categorias atuais) continuam válidos — nada é removido, só ampliado. Nenhuma quebra em anúncios ou leads já cadastrados.
+
+**Ícones:** lucide-react — Heart (saúde), Sun (solar), GraduationCap (educação), Plane (turismo), Shield (seguros), Store (franquias), Truck (pesados), Building2 (locação comercial).
+
+## Resultado esperado
+- 13 verticais operacionais, cada uma com seus atributos, funil e regras de comissão próprios.
+- Cadastro de produto/lead adaptável sem código duplicado (tudo dirigido por `verticals.ts`).
+- Landing e catálogo comunicando o portfólio completo.
+- Base pronta para receber LGPD reforçada de Saúde em fase futura.

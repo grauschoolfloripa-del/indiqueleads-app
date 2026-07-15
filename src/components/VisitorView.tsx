@@ -1,4 +1,4 @@
-import { useEffect, useState, FormEvent } from 'react';
+import { useState, FormEvent } from 'react';
 import { 
   MapPin, Phone, Send, CheckCircle2, Star, ShieldCheck, Tag, Info, 
   ChevronRight, ArrowLeft, Grid, HelpCircle, Eye, Calendar, MessageSquare, Lock, AlertCircle
@@ -6,17 +6,16 @@ import {
 import { Product, Lead, Category, ChatMessage } from '../types';
 
 interface VisitorViewProps {
-  product: Product | null;
+  product: Product;
   products: Product[];
-  referralId?: string | null;
+  referralId: string | null;
   referralIndicatorName?: string;
   onGoBack?: () => void;
-  onSubmitLead: (leadData: { productId: string; clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
+  onSubmitLead: (leadData: { clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
   onAddNotification: (msg: string, type: 'success' | 'info') => void;
   chatMessages: ChatMessage[];
-  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string, clientLookup?: string) => Promise<boolean> | boolean | void;
+  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string) => void;
   leads: Lead[];
-  onSyncClientChats?: (lookup: string, productId?: string) => Promise<unknown>;
 }
 
 export default function VisitorView({
@@ -29,15 +28,16 @@ export default function VisitorView({
   onAddNotification,
   chatMessages,
   onSendChatMessage,
-  leads,
-  onSyncClientChats
+  leads
 }: VisitorViewProps) {
-  // Gallery selection — inicializa vazio; efeito abaixo sincroniza com product.
-  const [activeImage, setActiveImage] = useState<string>('');
+  // Gallery selection
+  const [activeImage, setActiveImage] = useState<string>(product.coverImage);
+  const [prevProductId, setPrevProductId] = useState<string>(product.id);
 
-  useEffect(() => {
-    if (product?.coverImage) setActiveImage(product.coverImage);
-  }, [product?.id, product?.coverImage]);
+  if (product.id !== prevProductId) {
+    setPrevProductId(product.id);
+    setActiveImage(product.coverImage);
+  }
   
   // Form states
   const [clientName, setClientName] = useState('');
@@ -55,82 +55,26 @@ export default function VisitorView({
   const [activeClientLeadId, setActiveClientLeadId] = useState<string | null>(null);
   const [portalChatText, setPortalChatText] = useState('');
 
-  // activeLead sincronizado via useEffect para evitar janelas onde submitted=true
-  // mas o lead recém-criado ainda não apareceu no array `leads` (mobile / SSR).
-  const [activeLead, setActiveLead] = useState<Lead | null>(null);
-  useEffect(() => {
-    if (!product) {
-      setActiveLead(null);
-      return;
-    }
-    const emailKey = clientEmail.toLowerCase().trim();
-    const nameKey = clientName.toLowerCase().trim();
-    if (!emailKey || !nameKey) {
-      setActiveLead(null);
-      return;
-    }
-    const found = leads.find(l =>
-      l.productId === product.id &&
-      l.clientEmail.toLowerCase().trim() === emailKey &&
-      l.clientName.toLowerCase().trim() === nameKey
-    );
-    setActiveLead(found ?? null);
-  }, [leads, product?.id, clientEmail, clientName]);
+  const activeLead = leads.find(l => 
+    l.productId === product.id && 
+    l.clientEmail.toLowerCase().trim() === clientEmail.toLowerCase().trim() && 
+    l.clientName.toLowerCase().trim() === clientName.toLowerCase().trim()
+  );
   
   // Statuses
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-
-  useEffect(() => {
-    if (!onSyncClientChats) return;
-    const lookup = (portalLookupPhoneOrEmail || clientEmail || clientPhone).trim();
-    const normalizedLookup = lookup.toLowerCase();
-    const digitLookup = lookup.replace(/\D/g, '');
-    const canLookup = normalizedLookup.includes('@') || digitLookup.length >= 8;
-    if (!canLookup) return;
-    if (activeTab !== 'portal' && !submitted && !activeClientLeadId) return;
-
-    if (!product) return;
-    const prodId = product.id;
-    let cancelled = false;
-    const sync = () => {
-      if (cancelled) return;
-      void onSyncClientChats(lookup, prodId).catch(() => undefined);
-    };
-
-    const timeout = window.setTimeout(sync, 250);
-    const interval = window.setInterval(sync, 6000);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-      window.clearInterval(interval);
-    };
-  }, [
-    activeClientLeadId,
-    activeTab,
-    clientEmail,
-    clientPhone,
-    onSyncClientChats,
-    portalLookupPhoneOrEmail,
-    product?.id,
-    submitted,
-  ]);
-
   const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!product) return;
     if (!clientName || !clientPhone || !clientEmail) {
       onAddNotification('Por favor, preencha todos os campos obrigatórios.', 'info');
       return;
     }
 
-    const productId = product.id;
     setSubmitting(true);
     setTimeout(() => {
       onSubmitLead({
-        productId,
         clientName,
         clientPhone,
         clientEmail,
@@ -186,30 +130,6 @@ export default function VisitorView({
     hours: 'Horas de Uso',
     includesTrailer: 'Acompanha Carretinha'
   };
-
-  if (!product) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
-        <div className="max-w-md mx-auto bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
-          <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
-            <AlertCircle className="w-6 h-6" />
-          </div>
-          <h2 className="text-lg font-bold text-slate-900">Anúncio indisponível</h2>
-          <p className="text-sm text-slate-500">
-            Este link pode ter expirado ou o anúncio foi removido. Peça um novo link ao indicador.
-          </p>
-          {onGoBack && (
-            <button
-              onClick={onGoBack}
-              className="mt-2 inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all"
-            >
-              <ArrowLeft className="w-4 h-4" /> Voltar
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
@@ -276,12 +196,10 @@ export default function VisitorView({
               Acompanhar Atendimento
               {(() => {
                 const key = (portalLookupPhoneOrEmail || localStorage.getItem('indica_client_lookup_key') || '').toLowerCase().trim();
-                const keyDigits = key.replace(/\D/g, '');
-                const matchedCount = key.length >= 3 ? leads.filter(l => {
-                  const emailMatch = key.includes('@') && l.clientEmail.toLowerCase().trim() === key;
-                  const phoneMatch = keyDigits.length >= 8 && l.clientPhone.replace(/\D/g, '') === keyDigits;
-                  return emailMatch || phoneMatch;
-                }).length : 0;
+                const matchedCount = key ? leads.filter(l => 
+                  l.clientEmail.toLowerCase().includes(key) || 
+                  l.clientPhone.replace(/\D/g, '').includes(key.replace(/\D/g, ''))
+                ).length : 0;
                 if (matchedCount > 0) {
                   return (
                     <span className="bg-orange-600 text-white font-mono font-bold text-[9px] rounded-full h-4 min-w-4 px-1.5 flex items-center justify-center animate-bounce">
@@ -405,12 +323,11 @@ export default function VisitorView({
             {submitted && activeLead ? (() => {
               const activeLeadMessages = chatMessages.filter(msg => msg.leadId === activeLead.id);
               
-              const handleChatSubmit = async (e: FormEvent) => {
+              const handleChatSubmit = (e: FormEvent) => {
                 e.preventDefault();
                 if (!chatText.trim()) return;
-                const clientLookup = (clientEmail || clientPhone || activeLead.clientEmail || activeLead.clientPhone || '').trim();
-                const sent = await onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim(), clientLookup);
-                if (sent !== false) setChatText('');
+                onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim());
+                setChatText('');
               };
 
               return (
@@ -631,13 +548,10 @@ export default function VisitorView({
           ) : (() => {
             const normalizedKey = portalLookupPhoneOrEmail.toLowerCase().trim();
             const digitsOnlyKey = normalizedKey.replace(/\D/g, '');
-            // Isolamento por cliente: exige chave e faz match exato de e-mail
-            // ou de telefone (>= 8 dígitos) para nunca exibir o chat de outros.
-            const matchingLeads = normalizedKey.length < 3 ? [] : leads.filter(lead => {
-              const leadEmail = lead.clientEmail.toLowerCase().trim();
-              const leadPhoneDigits = lead.clientPhone.replace(/\D/g, '');
-              const emailMatch = normalizedKey.includes('@') && leadEmail === normalizedKey;
-              const phoneMatch = digitsOnlyKey.length >= 8 && leadPhoneDigits === digitsOnlyKey;
+            const matchingLeads = leads.filter(lead => {
+              const emailMatch = lead.clientEmail.toLowerCase().includes(normalizedKey);
+              const phoneDigits = lead.clientPhone.replace(/\D/g, '');
+              const phoneMatch = digitsOnlyKey && phoneDigits.includes(digitsOnlyKey);
               return emailMatch || phoneMatch;
             });
 
@@ -815,12 +729,11 @@ export default function VisitorView({
 
                               {/* Send form */}
                               <form 
-                                onSubmit={async (e) => {
+                                onSubmit={(e) => {
                                   e.preventDefault();
                                   if (!portalChatText.trim()) return;
-                                  const portalLookup = (portalLookupPhoneOrEmail || lead.clientEmail || lead.clientPhone || '').trim();
-                                  const sent = await onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim(), portalLookup);
-                                  if (sent !== false) setPortalChatText('');
+                                  onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim());
+                                  setPortalChatText('');
                                 }}
                                 className="p-2 bg-white border-t border-slate-200 flex gap-2"
                               >

@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState, useEffect } from "react";
 import {
   Sparkles,
   Award,
@@ -47,7 +46,6 @@ import {
   fetchLeadsForAdvertiser,
   fetchLeadsForIndicator,
   fetchChatsForLeads,
-  fetchIndicatorsByIds,
   pushProduct,
   updateProductStatus as cloudUpdateProductStatus,
   pushLead,
@@ -58,7 +56,6 @@ import {
   isUuid,
 } from "./lib/cloudSync";
 import { supabase } from "./integrations/supabase/client";
-import { getVisitorLeadChats, sendVisitorChatMessage } from "./lib/visitor-chat.functions";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
@@ -164,54 +161,6 @@ export default function App() {
   const [notifications, setNotifications] = useState<
     Array<{ id: string; msg: string; type: "success" | "info" }>
   >([]);
-  const getVisitorLeadChatsFn = useServerFn(getVisitorLeadChats);
-  const sendVisitorChatMessageFn = useServerFn(sendVisitorChatMessage);
-
-  // --- TOAST NOTIFICATIONS HELPER (declarado cedo para eliminar TDZ em effects) ---
-  const addNotification = useCallback((msg: string, type: "success" | "info" = "info") => {
-    const id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    setNotifications((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 4000);
-  }, []);
-
-  const mergeLeadsIntoState = useCallback((incoming: Lead[]) => {
-    if (!incoming.length) return;
-    setLeads((prev) => {
-      const incomingIds = new Set(incoming.map((lead) => lead.id));
-      const next = [...incoming, ...prev.filter((lead) => !incomingIds.has(lead.id))];
-      saveToStorage("indica_leads", next);
-      return next;
-    });
-  }, []);
-
-  const mergeChatMessagesIntoState = useCallback((incoming: ChatMessage[]) => {
-    if (!incoming.length) return;
-    setChatMessages((prev) => {
-      const ids = new Set(prev.map((message) => message.id));
-      const next = [...prev, ...incoming.filter((message) => !ids.has(message.id))].sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-      saveToStorage("indica_chat_messages", next);
-      return next;
-    });
-  }, []);
-
-  const handleSyncVisitorChats = useCallback(
-    async (lookup: string, productId?: string) => {
-      const result = await getVisitorLeadChatsFn({
-        data: {
-          lookup,
-          productId: productId && isUuid(productId) ? productId : undefined,
-        },
-      });
-      mergeLeadsIntoState(result.leads);
-      mergeChatMessagesIntoState(result.messages);
-      return result;
-    },
-    [getVisitorLeadChatsFn, mergeChatMessagesIntoState, mergeLeadsIntoState],
-  );
 
   // --- INITIALIZATION & REFERRAL COOKIE READING ---
   // Limpa qualquer sessão legada em localStorage do fluxo antigo (mock).
@@ -288,8 +237,6 @@ export default function App() {
       setCurrentRole("visitante");
     }
 
-    let cancelled = false;
-
     if (prodParam) {
       setActiveProductId(prodParam);
       setCurrentRole("visitante");
@@ -301,18 +248,12 @@ export default function App() {
       if (!existsLocal && isUuid(prodParam)) {
         void import("./lib/cloudSync").then(({ fetchProductById }) =>
           fetchProductById(prodParam).then((prod) => {
-            if (cancelled) return;
             if (prod) {
               setProducts((prev) =>
                 prev.some((p) => p.id === prod.id) ? prev : [prod, ...prev],
               );
             } else {
-              // Produto removido/inacessível: destrava o visitante para não ficar
-              // preso no spinner e mostra a landing pública.
               addNotification("Este anúncio não está mais disponível.", "info");
-              setLockedToSharedProduct(false);
-              setActiveProductId("");
-              setCurrentRole("indicador");
             }
           }),
         );
@@ -350,89 +291,10 @@ export default function App() {
       localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
       addNotification(`Painel do Indicador ativado via link!`, "success");
     }
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
   const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
-
-  // Reusable cloud hydrate — safe to call multiple times (merges by id).
-  const hydrateFromCloud = useCallback(
-    async (
-      role: "anunciante" | "indicador" | "admin",
-      userId: string,
-      displayName: string,
-      email: string,
-      phone: string,
-    ) => {
-      try {
-        if (role === "anunciante") {
-          const advId = await ensureAdvertiserRow(userId, { name: displayName, email, phone });
-          if (!advId) return;
-          const [cloudProducts, cloudLeads] = await Promise.all([
-            fetchProductsForAdvertiser(advId),
-            fetchLeadsForAdvertiser(advId),
-          ]);
-          console.log("[App] hydrate anunciante", { advId, products: cloudProducts.length, leads: cloudLeads.length });
-          if (cloudProducts.length) {
-            setProducts((prev) => {
-              const ids = new Set(prev.map((p) => p.id));
-              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
-              localStorage.setItem("indica_products", JSON.stringify(merged));
-              return merged;
-            });
-          }
-          if (cloudLeads.length) {
-            mergeLeadsIntoState(cloudLeads);
-            const relatedIndicators = await fetchIndicatorsByIds(
-              cloudLeads.map((lead) => lead.indicatorId),
-            );
-            if (relatedIndicators.length) {
-              setIndicators((prev) => {
-                const incomingIds = new Set(relatedIndicators.map((indicator) => indicator.id));
-                const merged = [
-                  ...relatedIndicators,
-                  ...prev.filter((indicator) => !incomingIds.has(indicator.id)),
-                ];
-                localStorage.setItem("indica_indicators", JSON.stringify(merged));
-                return merged;
-              });
-            }
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            mergeChatMessagesIntoState(chats);
-          }
-        } else if (role === "indicador") {
-          const indId = await ensureIndicatorRow(userId, { name: displayName, email, phone });
-          if (!indId) return;
-          const [activeProducts, cloudLeads] = await Promise.all([
-            fetchAllActiveProducts(),
-            fetchLeadsForIndicator(indId),
-          ]);
-          console.log("[App] hydrate indicador", { indId, products: activeProducts.length, leads: cloudLeads.length });
-          if (activeProducts.length) {
-            setProducts((prev) => {
-              const ids = new Set(prev.map((p) => p.id));
-              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
-              localStorage.setItem("indica_products", JSON.stringify(merged));
-              return merged;
-            });
-          }
-          if (cloudLeads.length) {
-            mergeLeadsIntoState(cloudLeads);
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            mergeChatMessagesIntoState(chats);
-          }
-        }
-      } catch (e) {
-        console.error("[App] cloud hydrate failed", e);
-      }
-    },
-    [mergeChatMessagesIntoState, mergeLeadsIntoState],
-  );
-
   useEffect(() => {
     if (supaLoading) return;
     if (!supaUser) {
@@ -540,38 +402,87 @@ export default function App() {
     }
 
     // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
-    void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
-  }, [supaUser, supaRoles, supaLoading, hydrateFromCloud]);
-
-
-  // Re-hydrate on tab focus / visibility (fixes stale state after cache clear on mobile).
-  useEffect(() => {
-    if (!supaUser || supaLoading) return;
-    const role: "indicador" | "anunciante" | "admin" = supaRoles.includes("admin")
-      ? "admin"
-      : supaRoles.includes("advertiser")
-        ? "anunciante"
-        : "indicador";
-    if (role === "admin") return;
-    const displayName =
-      (supaUser.user_metadata?.full_name as string) ||
-      (supaUser.user_metadata?.name as string) ||
-      supaUser.email?.split("@")[0] ||
-      "Usuário";
-    const phone =
-      (supaUser.user_metadata?.phone as string) || (supaUser.phone as string) || "";
-    const onFocus = () => {
-      if (document.visibilityState === "visible") {
-        void hydrateFromCloud(role, supaUser.id, displayName, supaUser.email ?? "", phone);
+    void (async () => {
+      try {
+        if (role === "anunciante") {
+          const advId = await ensureAdvertiserRow(supaUser.id, {
+            name: displayName,
+            email: supaUser.email ?? "",
+            phone,
+          });
+          if (!advId) return;
+          const [cloudProducts, cloudLeads] = await Promise.all([
+            fetchProductsForAdvertiser(advId),
+            fetchLeadsForAdvertiser(advId),
+          ]);
+          if (cloudProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
+              saveToStorage("indica_products", merged);
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            setLeads((prev) => {
+              const ids = new Set(prev.map((l) => l.id));
+              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              saveToStorage("indica_leads", merged);
+              return merged;
+            });
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            if (chats.length) {
+              setChatMessages((prev) => {
+                const ids = new Set(prev.map((m) => m.id));
+                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
+                saveToStorage("indica_chat_messages", merged);
+                return merged;
+              });
+            }
+          }
+        } else if (role === "indicador") {
+          const indId = await ensureIndicatorRow(supaUser.id, {
+            name: displayName,
+            email: supaUser.email ?? "",
+            phone,
+          });
+          if (!indId) return;
+          // Also refresh public active products (so indicator sees new advertisers' items).
+          const [activeProducts, cloudLeads] = await Promise.all([
+            fetchAllActiveProducts(),
+            fetchLeadsForIndicator(indId),
+          ]);
+          if (activeProducts.length) {
+            setProducts((prev) => {
+              const ids = new Set(prev.map((p) => p.id));
+              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
+              saveToStorage("indica_products", merged);
+              return merged;
+            });
+          }
+          if (cloudLeads.length) {
+            setLeads((prev) => {
+              const ids = new Set(prev.map((l) => l.id));
+              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              saveToStorage("indica_leads", merged);
+              return merged;
+            });
+            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            if (chats.length) {
+              setChatMessages((prev) => {
+                const ids = new Set(prev.map((m) => m.id));
+                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
+                saveToStorage("indica_chat_messages", merged);
+                return merged;
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[App] cloud hydrate failed", e);
       }
-    };
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onFocus);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onFocus);
-    };
-  }, [supaUser, supaRoles, supaLoading, hydrateFromCloud]);
+    })();
+  }, [supaUser, supaRoles, supaLoading]);
 
   // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
   useEffect(() => {
@@ -594,15 +505,12 @@ export default function App() {
         saveToStorage("indica_leads", next);
         return next;
       });
-      void fetchChatsForLeads([lead.id]).then(mergeChatMessagesIntoState).catch((error) => {
-        console.error("[App] lead chat resync failed", error);
-      });
     });
     return () => {
       offChat();
       offLeads();
     };
-  }, [loggedUser?.id, loggedUser?.role, mergeChatMessagesIntoState]);
+  }, [loggedUser?.id, loggedUser?.role]);
 
 
 
@@ -611,8 +519,14 @@ export default function App() {
     localStorage.setItem(key, JSON.stringify(data));
   };
 
-  // (addNotification foi movido para o topo do componente para evitar TDZ em useEffects)
-
+  // --- TOAST NOTIFICATIONS HELPER ---
+  const addNotification = (msg: string, type: "success" | "info" = "info") => {
+    const id = `notif-${Date.now()}`;
+    setNotifications((prev) => [...prev, { id, msg, type }]);
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 4000);
+  };
 
   // --- HANDLERS ---
   const handleSimulateReferral = (refId: string, prodId: string) => {
@@ -863,14 +777,13 @@ export default function App() {
     });
   };
 
-  const handleSendChatMessage = async (
+  const handleSendChatMessage = (
     leadId: string,
     senderId: string,
     senderName: string,
     senderRole: "client" | "advertiser",
     text: string,
-    clientLookup?: string,
-  ): Promise<boolean> => {
+  ) => {
     const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
     const newMsg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -882,8 +795,13 @@ export default function App() {
       ...(hasLeakage ? { originalText: text } : {}),
       createdAt: new Date().toISOString(),
     };
-    const warningMsg: ChatMessage | null = hasLeakage
-      ? {
+    let warningMsg: ChatMessage | null = null;
+
+    setChatMessages((prev) => {
+      const updated = [...prev, newMsg];
+
+      if (hasLeakage) {
+        warningMsg = {
           id: crypto.randomUUID(),
           leadId,
           senderId: "system",
@@ -893,80 +811,22 @@ export default function App() {
           isSystem: true,
           isBlockedBySecurity: true,
           createdAt: new Date(Date.now() + 1000).toISOString(),
-        }
-      : null;
-    const messagesToSend = warningMsg ? [newMsg, warningMsg] : [newMsg];
+        };
+        updated.push(warningMsg);
+      }
 
-    const appendMessages = (messages: ChatMessage[]) => {
-      setChatMessages((prev) => {
-        const existingIds = new Set(prev.map((message) => message.id));
-        const updated = [...prev, ...messages.filter((message) => !existingIds.has(message.id))].sort(
-          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        );
-        saveToStorage("indica_chat_messages", updated);
-        return updated;
-      });
-    };
+      saveToStorage("indica_chat_messages", updated);
+      return updated;
+    });
 
-    if (!isUuid(leadId)) {
-      appendMessages(messagesToSend);
+    // Persist to cloud (only for leads that live in the DB).
+    void pushChatMessage(newMsg);
+    if (warningMsg) void pushChatMessage(warningMsg);
+
+    if (hasLeakage) {
+      addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
+    } else {
       addNotification("Mensagem enviada com sucesso!", "success");
-      return true;
-    }
-
-    try {
-      if (senderRole === "client") {
-        let lead = leads.find((item) => item.id === leadId);
-        // Fallback: se o lead ainda não propagou para o estado local (mobile,
-        // login recém-feito), hidrata via server fn usando o lookup enviado
-        // pelo VisitorView antes de desistir.
-        if (!lead && clientLookup) {
-          try {
-            const synced = await handleSyncVisitorChats(clientLookup);
-            lead = synced.leads.find((l) => l.id === leadId);
-          } catch (syncErr) {
-            console.warn("[App] chat client hydrate failed", syncErr);
-          }
-        }
-        const lookup = clientLookup || lead?.clientEmail || lead?.clientPhone || "";
-        if (!lookup) throw new Error("Atendimento do cliente não encontrado.");
-
-        const result = await sendVisitorChatMessageFn({
-          data: {
-            lookup,
-            leadId,
-            productId: lead && isUuid(lead.productId) ? lead.productId : undefined,
-            messages: messagesToSend.map((message) => ({
-              id: message.id,
-              senderName: message.senderName,
-              senderRole: message.senderRole === "system" ? ("system" as const) : ("client" as const),
-              text: message.text,
-              originalText: message.originalText ?? null,
-              isSystem: message.isSystem ?? false,
-              isBlockedBySecurity: message.isBlockedBySecurity ?? false,
-              createdAt: message.createdAt,
-            })),
-          },
-        });
-        mergeChatMessagesIntoState(result.messages);
-      } else {
-        for (const message of messagesToSend) {
-          await pushChatMessage(message);
-        }
-        const freshMessages = await fetchChatsForLeads([leadId]);
-        mergeChatMessagesIntoState(freshMessages.length ? freshMessages : messagesToSend);
-      }
-
-      if (hasLeakage) {
-        addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
-      } else {
-        addNotification("Mensagem enviada com sucesso!", "success");
-      }
-      return true;
-    } catch (error) {
-      console.error("[App] chat send failed", error);
-      addNotification("Não foi possível entregar a mensagem. Tente novamente em alguns segundos.", "info");
-      return false;
     }
   };
 
@@ -985,27 +845,21 @@ export default function App() {
 
   // Submit Lead from Visitor View
   const handleSubmitLeadFromVisitor = (leadData: {
-    productId?: string;
     clientName: string;
     clientPhone: string;
     clientEmail: string;
     notes?: string;
   }) => {
-    // 1. Retrieve the product being viewed — prefere o productId explícito do
-    // VisitorView (evita bug de closure com activeProductId defasado).
-    const targetProductId = leadData.productId || activeProductId;
-    const viewedProduct = products.find((p) => p.id === targetProductId);
+    // 1. Retrieve the product being viewed
+    const viewedProduct = products.find((p) => p.id === activeProductId);
     if (!viewedProduct) return;
 
-    // 2. Identify promoter ID from the unique referral link or the logged-in indicator.
+    // 2. Identify promoter ID (either cookie activeReferralId, logged-in indicator ID, or default to Gabriel ind-1 for simulation)
     const currentRefId =
       activeReferralId ||
-      (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null);
-    const associatedIndicator = indicators.find((i) => i.id === currentRefId);
-    const indicatorId = currentRefId && isUuid(currentRefId)
-      ? currentRefId
-      : associatedIndicator?.id ?? "";
-    const indicatorName = associatedIndicator?.name || "Indicador parceiro";
+      (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null) ||
+      "ind-1";
+    const associatedIndicator = indicators.find((i) => i.id === currentRefId) || indicators[0];
 
     // Determine commission tier value (defaults to digital unless they specified presence interest)
     const comVal = viewedProduct.commissionDigitalValue || 0;
@@ -1022,8 +876,8 @@ export default function App() {
       productId: viewedProduct.id,
       productTitle: viewedProduct.title,
       productCategory: viewedProduct.category,
-      indicatorId,
-      indicatorName,
+      indicatorId: associatedIndicator.id,
+      indicatorName: associatedIndicator.name || "Gabriel Martins (Indicador Demo)",
       advertiserId: viewedProduct.advertiserId,
       clientName: leadData.clientName,
       clientPhone: leadData.clientPhone,
@@ -1045,7 +899,7 @@ export default function App() {
     });
 
     // Initialize Chat messages for the new lead
-    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${indicatorName}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
+    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator.name}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
     const initialMsg: ChatMessage = {
       id: crypto.randomUUID(),
       leadId: newLead.id,
@@ -1087,7 +941,7 @@ export default function App() {
     })();
 
     addNotification(
-      `Novo Lead registrado com sucesso sob indicação de: ${indicatorName}!`,
+      `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator.name}!`,
       "success",
     );
   };
@@ -1386,37 +1240,20 @@ export default function App() {
             chatMessages={chatMessages}
             onSendChatMessage={handleSendChatMessage}
             leads={leads}
-            onSyncClientChats={handleSyncVisitorChats}
           />
         ) : currentRole === "visitante" ? (
           /* Link único aberto mas produto ainda não carregado (ou removido). */
           <div className="flex-1 min-h-[60vh] flex items-center justify-center p-8">
-            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
+            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
               <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
                 <RefreshCw className="w-6 h-6 animate-spin" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">Anúncio indisponível</h2>
+              <h2 className="text-lg font-bold text-slate-900">Carregando anúncio…</h2>
               <p className="text-sm text-slate-500">
-                Este link pode ter expirado ou o anúncio foi removido. Volte à vitrine para explorar outras oportunidades.
+                Se esta mensagem persistir, o anúncio pode ter sido removido ou o link está incorreto.
               </p>
-              <button
-                onClick={() => {
-                  setLockedToSharedProduct(false);
-                  setActiveProductId("");
-                  setCurrentRole("indicador");
-                  // Limpa query params para não re-disparar o carregamento do link inválido.
-                  if (typeof window !== "undefined" && window.history?.replaceState) {
-                    window.history.replaceState({}, "", window.location.pathname);
-                  }
-                }}
-                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all"
-              >
-                Voltar para a vitrine
-              </button>
             </div>
           </div>
-
-
 
         ) : !loggedUser || loggedUser.role !== currentRole ? (
           /* Render beautiful complete Landing Page with Login Forms if no user is authenticated for this role */
