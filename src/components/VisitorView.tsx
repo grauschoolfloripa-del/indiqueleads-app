@@ -120,14 +120,17 @@ export default function VisitorView({
 
   const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!product) return;
     if (!clientName || !clientPhone || !clientEmail) {
       onAddNotification('Por favor, preencha todos os campos obrigatórios.', 'info');
       return;
     }
 
+    const productId = product.id;
     setSubmitting(true);
     setTimeout(() => {
       onSubmitLead({
+        productId,
         clientName,
         clientPhone,
         clientEmail,
