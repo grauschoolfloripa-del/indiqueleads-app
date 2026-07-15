@@ -985,13 +985,16 @@ export default function App() {
 
   // Submit Lead from Visitor View
   const handleSubmitLeadFromVisitor = (leadData: {
+    productId?: string;
     clientName: string;
     clientPhone: string;
     clientEmail: string;
     notes?: string;
   }) => {
-    // 1. Retrieve the product being viewed
-    const viewedProduct = products.find((p) => p.id === activeProductId);
+    // 1. Retrieve the product being viewed — prefere o productId explícito do
+    // VisitorView (evita bug de closure com activeProductId defasado).
+    const targetProductId = leadData.productId || activeProductId;
+    const viewedProduct = products.find((p) => p.id === targetProductId);
     if (!viewedProduct) return;
 
     // 2. Identify promoter ID from the unique referral link or the logged-in indicator.
