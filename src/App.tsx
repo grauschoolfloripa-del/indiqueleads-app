@@ -167,6 +167,15 @@ export default function App() {
   const getVisitorLeadChatsFn = useServerFn(getVisitorLeadChats);
   const sendVisitorChatMessageFn = useServerFn(sendVisitorChatMessage);
 
+  // --- TOAST NOTIFICATIONS HELPER (declarado cedo para eliminar TDZ em effects) ---
+  const addNotification = useCallback((msg: string, type: "success" | "info" = "info") => {
+    const id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setNotifications((prev) => [...prev, { id, msg, type }]);
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 4000);
+  }, []);
+
   const mergeLeadsIntoState = useCallback((incoming: Lead[]) => {
     if (!incoming.length) return;
     setLeads((prev) => {
