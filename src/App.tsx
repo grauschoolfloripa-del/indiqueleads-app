@@ -1376,16 +1376,32 @@ export default function App() {
         ) : currentRole === "visitante" ? (
           /* Link único aberto mas produto ainda não carregado (ou removido). */
           <div className="flex-1 min-h-[60vh] flex items-center justify-center p-8">
-            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
+            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
               <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
                 <RefreshCw className="w-6 h-6 animate-spin" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">Carregando anúncio…</h2>
+              <h2 className="text-lg font-bold text-slate-900">Anúncio indisponível</h2>
               <p className="text-sm text-slate-500">
-                Se esta mensagem persistir, o anúncio pode ter sido removido ou o link está incorreto.
+                Este link pode ter expirado ou o anúncio foi removido. Volte à vitrine para explorar outras oportunidades.
               </p>
+              <button
+                onClick={() => {
+                  setLockedToSharedProduct(false);
+                  setActiveProductId("");
+                  setCurrentRole("indicador");
+                  // Limpa query params para não re-disparar o carregamento do link inválido.
+                  if (typeof window !== "undefined" && window.history?.replaceState) {
+                    window.history.replaceState({}, "", window.location.pathname);
+                  }
+                }}
+                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all"
+              >
+                Voltar para a vitrine
+              </button>
             </div>
           </div>
+
+
 
         ) : !loggedUser || loggedUser.role !== currentRole ? (
           /* Render beautiful complete Landing Page with Login Forms if no user is authenticated for this role */
