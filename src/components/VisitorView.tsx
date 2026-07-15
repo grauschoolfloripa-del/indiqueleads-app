@@ -6,15 +6,15 @@ import {
 import { Product, Lead, Category, ChatMessage } from '../types';
 
 interface VisitorViewProps {
-  product: Product;
+  product: Product | null;
   products: Product[];
-  referralId: string | null;
+  referralId?: string | null;
   referralIndicatorName?: string;
   onGoBack?: () => void;
-  onSubmitLead: (leadData: { clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
+  onSubmitLead: (leadData: { productId: string; clientName: string; clientPhone: string; clientEmail: string; notes?: string }) => void;
   onAddNotification: (msg: string, type: 'success' | 'info') => void;
   chatMessages: ChatMessage[];
-  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string) => Promise<boolean> | boolean | void;
+  onSendChatMessage: (leadId: string, senderId: string, senderName: string, senderRole: 'client' | 'advertiser', text: string, clientLookup?: string) => Promise<boolean> | boolean | void;
   leads: Lead[];
   onSyncClientChats?: (lookup: string, productId?: string) => Promise<unknown>;
 }
@@ -32,14 +32,12 @@ export default function VisitorView({
   leads,
   onSyncClientChats
 }: VisitorViewProps) {
-  // Gallery selection
-  const [activeImage, setActiveImage] = useState<string>(product.coverImage);
-  const [prevProductId, setPrevProductId] = useState<string>(product.id);
+  // Gallery selection — inicializa vazio; efeito abaixo sincroniza com product.
+  const [activeImage, setActiveImage] = useState<string>('');
 
-  if (product.id !== prevProductId) {
-    setPrevProductId(product.id);
-    setActiveImage(product.coverImage);
-  }
+  useEffect(() => {
+    if (product?.coverImage) setActiveImage(product.coverImage);
+  }, [product?.id, product?.coverImage]);
   
   // Form states
   const [clientName, setClientName] = useState('');
@@ -57,15 +55,32 @@ export default function VisitorView({
   const [activeClientLeadId, setActiveClientLeadId] = useState<string | null>(null);
   const [portalChatText, setPortalChatText] = useState('');
 
-  const activeLead = leads.find(l => 
-    l.productId === product.id && 
-    l.clientEmail.toLowerCase().trim() === clientEmail.toLowerCase().trim() && 
-    l.clientName.toLowerCase().trim() === clientName.toLowerCase().trim()
-  );
+  // activeLead sincronizado via useEffect para evitar janelas onde submitted=true
+  // mas o lead recém-criado ainda não apareceu no array `leads` (mobile / SSR).
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+  useEffect(() => {
+    if (!product) {
+      setActiveLead(null);
+      return;
+    }
+    const emailKey = clientEmail.toLowerCase().trim();
+    const nameKey = clientName.toLowerCase().trim();
+    if (!emailKey || !nameKey) {
+      setActiveLead(null);
+      return;
+    }
+    const found = leads.find(l =>
+      l.productId === product.id &&
+      l.clientEmail.toLowerCase().trim() === emailKey &&
+      l.clientName.toLowerCase().trim() === nameKey
+    );
+    setActiveLead(found ?? null);
+  }, [leads, product?.id, clientEmail, clientName]);
   
   // Statuses
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
 
   useEffect(() => {
     if (!onSyncClientChats) return;
@@ -76,10 +91,12 @@ export default function VisitorView({
     if (!canLookup) return;
     if (activeTab !== 'portal' && !submitted && !activeClientLeadId) return;
 
+    if (!product) return;
+    const prodId = product.id;
     let cancelled = false;
     const sync = () => {
       if (cancelled) return;
-      void onSyncClientChats(lookup, product.id).catch(() => undefined);
+      void onSyncClientChats(lookup, prodId).catch(() => undefined);
     };
 
     const timeout = window.setTimeout(sync, 250);
@@ -97,20 +114,23 @@ export default function VisitorView({
     clientPhone,
     onSyncClientChats,
     portalLookupPhoneOrEmail,
-    product.id,
+    product?.id,
     submitted,
   ]);
 
   const handleFormSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (!product) return;
     if (!clientName || !clientPhone || !clientEmail) {
       onAddNotification('Por favor, preencha todos os campos obrigatórios.', 'info');
       return;
     }
 
+    const productId = product.id;
     setSubmitting(true);
     setTimeout(() => {
       onSubmitLead({
+        productId,
         clientName,
         clientPhone,
         clientEmail,
@@ -166,6 +186,30 @@ export default function VisitorView({
     hours: 'Horas de Uso',
     includesTrailer: 'Acompanha Carretinha'
   };
+
+  if (!product) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
+        <div className="max-w-md mx-auto bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
+          <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900">Anúncio indisponível</h2>
+          <p className="text-sm text-slate-500">
+            Este link pode ter expirado ou o anúncio foi removido. Peça um novo link ao indicador.
+          </p>
+          {onGoBack && (
+            <button
+              onClick={onGoBack}
+              className="mt-2 inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" /> Voltar
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
@@ -364,7 +408,8 @@ export default function VisitorView({
               const handleChatSubmit = async (e: FormEvent) => {
                 e.preventDefault();
                 if (!chatText.trim()) return;
-                const sent = await onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim());
+                const clientLookup = (clientEmail || clientPhone || activeLead.clientEmail || activeLead.clientPhone || '').trim();
+                const sent = await onSendChatMessage(activeLead.id, 'client', clientName || 'Comprador', 'client', chatText.trim(), clientLookup);
                 if (sent !== false) setChatText('');
               };
 
@@ -773,7 +818,8 @@ export default function VisitorView({
                                 onSubmit={async (e) => {
                                   e.preventDefault();
                                   if (!portalChatText.trim()) return;
-                                  const sent = await onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim());
+                                  const portalLookup = (portalLookupPhoneOrEmail || lead.clientEmail || lead.clientPhone || '').trim();
+                                  const sent = await onSendChatMessage(lead.id, 'client', lead.clientName, 'client', portalChatText.trim(), portalLookup);
                                   if (sent !== false) setPortalChatText('');
                                 }}
                                 className="p-2 bg-white border-t border-slate-200 flex gap-2"

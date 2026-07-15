@@ -167,6 +167,15 @@ export default function App() {
   const getVisitorLeadChatsFn = useServerFn(getVisitorLeadChats);
   const sendVisitorChatMessageFn = useServerFn(sendVisitorChatMessage);
 
+  // --- TOAST NOTIFICATIONS HELPER (declarado cedo para eliminar TDZ em effects) ---
+  const addNotification = useCallback((msg: string, type: "success" | "info" = "info") => {
+    const id = `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setNotifications((prev) => [...prev, { id, msg, type }]);
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 4000);
+  }, []);
+
   const mergeLeadsIntoState = useCallback((incoming: Lead[]) => {
     if (!incoming.length) return;
     setLeads((prev) => {
@@ -279,6 +288,8 @@ export default function App() {
       setCurrentRole("visitante");
     }
 
+    let cancelled = false;
+
     if (prodParam) {
       setActiveProductId(prodParam);
       setCurrentRole("visitante");
@@ -290,12 +301,18 @@ export default function App() {
       if (!existsLocal && isUuid(prodParam)) {
         void import("./lib/cloudSync").then(({ fetchProductById }) =>
           fetchProductById(prodParam).then((prod) => {
+            if (cancelled) return;
             if (prod) {
               setProducts((prev) =>
                 prev.some((p) => p.id === prod.id) ? prev : [prod, ...prev],
               );
             } else {
+              // Produto removido/inacessível: destrava o visitante para não ficar
+              // preso no spinner e mostra a landing pública.
               addNotification("Este anúncio não está mais disponível.", "info");
+              setLockedToSharedProduct(false);
+              setActiveProductId("");
+              setCurrentRole("indicador");
             }
           }),
         );
@@ -333,6 +350,10 @@ export default function App() {
       localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
       addNotification(`Painel do Indicador ativado via link!`, "success");
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
@@ -590,14 +611,8 @@ export default function App() {
     localStorage.setItem(key, JSON.stringify(data));
   };
 
-  // --- TOAST NOTIFICATIONS HELPER ---
-  const addNotification = (msg: string, type: "success" | "info" = "info") => {
-    const id = `notif-${Date.now()}`;
-    setNotifications((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 4000);
-  };
+  // (addNotification foi movido para o topo do componente para evitar TDZ em useEffects)
+
 
   // --- HANDLERS ---
   const handleSimulateReferral = (refId: string, prodId: string) => {
@@ -854,6 +869,7 @@ export default function App() {
     senderName: string,
     senderRole: "client" | "advertiser",
     text: string,
+    clientLookup?: string,
   ): Promise<boolean> => {
     const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
     const newMsg: ChatMessage = {
@@ -900,15 +916,26 @@ export default function App() {
 
     try {
       if (senderRole === "client") {
-        const lead = leads.find((item) => item.id === leadId);
-        const lookup = lead?.clientEmail || lead?.clientPhone || "";
-        if (!lead || !lookup) throw new Error("Atendimento do cliente não encontrado.");
+        let lead = leads.find((item) => item.id === leadId);
+        // Fallback: se o lead ainda não propagou para o estado local (mobile,
+        // login recém-feito), hidrata via server fn usando o lookup enviado
+        // pelo VisitorView antes de desistir.
+        if (!lead && clientLookup) {
+          try {
+            const synced = await handleSyncVisitorChats(clientLookup);
+            lead = synced.leads.find((l) => l.id === leadId);
+          } catch (syncErr) {
+            console.warn("[App] chat client hydrate failed", syncErr);
+          }
+        }
+        const lookup = clientLookup || lead?.clientEmail || lead?.clientPhone || "";
+        if (!lookup) throw new Error("Atendimento do cliente não encontrado.");
 
         const result = await sendVisitorChatMessageFn({
           data: {
             lookup,
             leadId,
-            productId: isUuid(lead.productId) ? lead.productId : undefined,
+            productId: lead && isUuid(lead.productId) ? lead.productId : undefined,
             messages: messagesToSend.map((message) => ({
               id: message.id,
               senderName: message.senderName,
@@ -958,13 +985,16 @@ export default function App() {
 
   // Submit Lead from Visitor View
   const handleSubmitLeadFromVisitor = (leadData: {
+    productId?: string;
     clientName: string;
     clientPhone: string;
     clientEmail: string;
     notes?: string;
   }) => {
-    // 1. Retrieve the product being viewed
-    const viewedProduct = products.find((p) => p.id === activeProductId);
+    // 1. Retrieve the product being viewed — prefere o productId explícito do
+    // VisitorView (evita bug de closure com activeProductId defasado).
+    const targetProductId = leadData.productId || activeProductId;
+    const viewedProduct = products.find((p) => p.id === targetProductId);
     if (!viewedProduct) return;
 
     // 2. Identify promoter ID from the unique referral link or the logged-in indicator.
@@ -1361,16 +1391,32 @@ export default function App() {
         ) : currentRole === "visitante" ? (
           /* Link único aberto mas produto ainda não carregado (ou removido). */
           <div className="flex-1 min-h-[60vh] flex items-center justify-center p-8">
-            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
+            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
               <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
                 <RefreshCw className="w-6 h-6 animate-spin" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">Carregando anúncio…</h2>
+              <h2 className="text-lg font-bold text-slate-900">Anúncio indisponível</h2>
               <p className="text-sm text-slate-500">
-                Se esta mensagem persistir, o anúncio pode ter sido removido ou o link está incorreto.
+                Este link pode ter expirado ou o anúncio foi removido. Volte à vitrine para explorar outras oportunidades.
               </p>
+              <button
+                onClick={() => {
+                  setLockedToSharedProduct(false);
+                  setActiveProductId("");
+                  setCurrentRole("indicador");
+                  // Limpa query params para não re-disparar o carregamento do link inválido.
+                  if (typeof window !== "undefined" && window.history?.replaceState) {
+                    window.history.replaceState({}, "", window.location.pathname);
+                  }
+                }}
+                className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all"
+              >
+                Voltar para a vitrine
+              </button>
             </div>
           </div>
+
+
 
         ) : !loggedUser || loggedUser.role !== currentRole ? (
           /* Render beautiful complete Landing Page with Login Forms if no user is authenticated for this role */
