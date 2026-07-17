@@ -509,6 +509,18 @@ export default function App() {
     })();
   }, [supaUser, supaRoles, supaLoading]);
 
+  // --- Hidrata platform_config do banco (fonte da verdade, admin edita). ---
+  useEffect(() => {
+    void fetchPlatformConfig().then((cfg) => {
+      if (!cfg) return;
+      setPlatformConfig((prev) => {
+        const next = { ...prev, ...cfg } as PlatformConfig;
+        saveToStorage("indica_config", next);
+        return next;
+      });
+    });
+  }, []);
+
   // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
   useEffect(() => {
     if (!loggedUser || loggedUser.role === "admin") return;
