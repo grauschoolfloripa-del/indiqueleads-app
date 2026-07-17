@@ -456,6 +456,7 @@ export default function App() {
               return merged;
             });
           }
+        } else if (role === "indicador") {
           const indId = await ensureIndicatorRow(supaUser.id, {
             name: displayName,
             email: supaUser.email ?? "",
@@ -463,7 +464,7 @@ export default function App() {
           });
           if (!indId) return;
           // Also refresh public active products (so indicator sees new advertisers' items).
-          const [activeProducts, cloudLeads] = await Promise.all([
+          const [activeProducts, indLeads] = await Promise.all([
             fetchAllActiveProducts(),
             fetchLeadsForIndicator(indId),
           ]);
@@ -475,14 +476,14 @@ export default function App() {
               return merged;
             });
           }
-          if (cloudLeads.length) {
+          if (indLeads.length) {
             setLeads((prev) => {
               const ids = new Set(prev.map((l) => l.id));
-              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              const merged = [...indLeads.filter((l) => !ids.has(l.id)), ...prev];
               saveToStorage("indica_leads", merged);
               return merged;
             });
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            const chats = await fetchChatsForLeads(indLeads.map((l) => l.id));
             if (chats.length) {
               setChatMessages((prev) => {
                 const ids = new Set(prev.map((m) => m.id));
@@ -491,6 +492,15 @@ export default function App() {
                 return merged;
               });
             }
+          }
+          const indSims = await fetchSimulationsForIndicator(indId);
+          if (indSims.length) {
+            setSimulations((prev) => {
+              const ids = new Set(prev.map((s) => s.id));
+              const merged = [...indSims.filter((s) => !ids.has(s.id)), ...prev];
+              saveToStorage("indica_simulations", merged);
+              return merged;
+            });
           }
         }
       } catch (e) {
