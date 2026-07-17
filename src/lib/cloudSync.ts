@@ -497,7 +497,16 @@ export async function updateSimulationStatus(
   approvedContract?: ApprovedContract,
 ): Promise<void> {
   if (!isUuid(id)) return;
-  const patch: Record<string, unknown> = { status };
+  const patch: {
+    status: FinancingStatus;
+    approved_bank?: string;
+    approved_amount?: number;
+    approved_installments?: number;
+    approved_installment_value?: number;
+    approved_down_payment?: number;
+    approved_interest_rate?: number;
+    approved_notes?: string | null;
+  } = { status };
   if (approvedContract) {
     patch.approved_bank = approvedContract.bankName;
     patch.approved_amount = approvedContract.approvedAmount;
