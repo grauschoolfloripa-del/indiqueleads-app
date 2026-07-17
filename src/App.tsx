@@ -899,6 +899,7 @@ export default function App() {
   const handleUpdatePlatformConfig = (newConfig: PlatformConfig) => {
     setPlatformConfig(newConfig);
     saveToStorage("indica_config", newConfig);
+    void pushPlatformConfig(newConfig);
   };
 
   // Submit Lead from Visitor View
