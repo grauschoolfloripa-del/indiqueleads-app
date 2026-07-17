@@ -1161,10 +1161,10 @@ export default function App() {
   const handleAddSimulation = (
     sim: Omit<FinancingSimulation, "id" | "createdAt" | "updatedAt" | "status">,
   ) => {
-    const id = `sim-${Date.now()}`;
+    const localId = `sim-${Date.now()}`;
     const newSim: FinancingSimulation = {
       ...sim,
-      id,
+      id: localId,
       status: "pendente",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1174,6 +1174,17 @@ export default function App() {
       saveToStorage("indica_simulations", next);
       return next;
     });
+    // Persiste no banco se produto/anunciante forem reais. Reconcilia o id local com o UUID gerado pelo banco.
+    if (isUuid(sim.productId) && isUuid(sim.advertiserId)) {
+      void pushSimulation(newSim).then((dbId) => {
+        if (!dbId) return;
+        setSimulations((prev) => {
+          const next = prev.map((s) => (s.id === localId ? { ...s, id: dbId } : s));
+          saveToStorage("indica_simulations", next);
+          return next;
+        });
+      });
+    }
     addNotification(`Simulação de financiamento para ${sim.clientName} enviada à loja!`, "success");
   };
 
@@ -1200,6 +1211,7 @@ export default function App() {
       saveToStorage("indica_simulations", next);
       return next;
     });
+    void cloudUpdateSimulationStatus(simId, status, bankResponses, approvedContract);
     addNotification(`Simulação atualizada!`, "info");
   };
 
