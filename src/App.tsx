@@ -447,7 +447,15 @@ export default function App() {
               });
             }
           }
-        } else if (role === "indicador") {
+          const cloudSims = await fetchSimulationsForAdvertiser(advId);
+          if (cloudSims.length) {
+            setSimulations((prev) => {
+              const ids = new Set(prev.map((s) => s.id));
+              const merged = [...cloudSims.filter((s) => !ids.has(s.id)), ...prev];
+              saveToStorage("indica_simulations", merged);
+              return merged;
+            });
+          }
           const indId = await ensureIndicatorRow(supaUser.id, {
             name: displayName,
             email: supaUser.email ?? "",
