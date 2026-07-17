@@ -543,9 +543,30 @@ export default function App() {
         return next;
       });
     });
+    const offInd = subscribeIndicators((row) => {
+      setIndicators((prev) => {
+        const idx = prev.findIndex((i) => i.id === row.id);
+        if (idx < 0) return prev;
+        const next = prev.map((i) =>
+          i.id === row.id
+            ? {
+                ...i,
+                balanceAvailable: Number(row.balance_available ?? i.balanceAvailable),
+                balancePending: Number(row.balance_pending ?? i.balancePending),
+                score: Number(row.score ?? i.score),
+                clicks: Number(row.clicks ?? i.clicks),
+                league: row.league ?? i.league,
+              }
+            : i,
+        );
+        saveToStorage("indica_indicators", next);
+        return next;
+      });
+    });
     return () => {
       offChat();
       offLeads();
+      offInd();
     };
   }, [loggedUser?.id, loggedUser?.role]);
 
