@@ -410,3 +410,211 @@ export function subscribeLeads(onChange: (l: Lead) => void) {
     void supabase.removeChannel(channel);
   };
 }
+
+// ---------------- Financing Simulations ----------------
+
+import type {
+  FinancingSimulation,
+  FinancingStatus,
+  BankSimulationResponse,
+  ApprovedContract,
+} from "@/types";
+
+export function simulationFromDb(row: any): FinancingSimulation {
+  return {
+    id: row.id,
+    productId: row.product_id,
+    productTitle: row.products?.title ?? "",
+    productPrice: Number(row.products?.price ?? 0),
+    productImage: row.products?.cover_image ?? undefined,
+    indicatorId: row.indicator_id ?? "",
+    indicatorName: row.indicators?.name ?? "",
+    advertiserId: row.advertiser_id,
+    clientName: row.client_name,
+    clientCpf: row.client_cpf,
+    clientPhone: row.client_phone,
+    clientBirthDate: row.client_birth_date,
+    clientIncome: Number(row.client_income ?? 0),
+    downPayment: Number(row.down_payment ?? 0),
+    desiredInstallments: row.desired_installments,
+    status: row.status as FinancingStatus,
+    bankResponses: (row.financing_bank_responses ?? []).map((b: any) => ({
+      bankName: b.bank_name,
+      approvedAmount: Number(b.approved_amount ?? 0),
+      interestRate: Number(b.interest_rate ?? 0),
+      installmentValue: Number(b.installment_value ?? 0),
+      installmentsCount: b.installments_count,
+      approvedStatus: b.approved_status,
+      notes: b.notes ?? undefined,
+    })) as BankSimulationResponse[],
+    approvedContract: row.approved_bank
+      ? ({
+          bankName: row.approved_bank,
+          approvedAmount: Number(row.approved_amount ?? 0),
+          installmentsCount: row.approved_installments ?? 0,
+          installmentValue: Number(row.approved_installment_value ?? 0),
+          downPaymentRequired: Number(row.approved_down_payment ?? 0),
+          interestRate: Number(row.approved_interest_rate ?? 0),
+          additionalNotes: row.approved_notes ?? undefined,
+        } as ApprovedContract)
+      : undefined,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function pushSimulation(s: FinancingSimulation): Promise<string | null> {
+  if (!isUuid(s.productId) || !isUuid(s.advertiserId)) return null;
+  const payload = {
+    product_id: s.productId,
+    indicator_id: isUuid(s.indicatorId) ? s.indicatorId : null,
+    advertiser_id: s.advertiserId,
+    client_name: s.clientName,
+    client_cpf: s.clientCpf,
+    client_phone: s.clientPhone,
+    client_birth_date: s.clientBirthDate,
+    client_income: s.clientIncome,
+    down_payment: s.downPayment,
+    desired_installments: s.desiredInstallments,
+    status: s.status,
+  };
+  const { data, error } = await supabase
+    .from("financing_simulations")
+    .insert(payload)
+    .select("id")
+    .maybeSingle();
+  if (error) {
+    console.error("[cloudSync] pushSimulation", error);
+    return null;
+  }
+  return data?.id ?? null;
+}
+
+export async function updateSimulationStatus(
+  id: string,
+  status: FinancingStatus,
+  bankResponses?: BankSimulationResponse[],
+  approvedContract?: ApprovedContract,
+): Promise<void> {
+  if (!isUuid(id)) return;
+  const patch: {
+    status: FinancingStatus;
+    approved_bank?: string;
+    approved_amount?: number;
+    approved_installments?: number;
+    approved_installment_value?: number;
+    approved_down_payment?: number;
+    approved_interest_rate?: number;
+    approved_notes?: string | null;
+  } = { status };
+  if (approvedContract) {
+    patch.approved_bank = approvedContract.bankName;
+    patch.approved_amount = approvedContract.approvedAmount;
+    patch.approved_installments = approvedContract.installmentsCount;
+    patch.approved_installment_value = approvedContract.installmentValue;
+    patch.approved_down_payment = approvedContract.downPaymentRequired;
+    patch.approved_interest_rate = approvedContract.interestRate;
+    patch.approved_notes = approvedContract.additionalNotes ?? null;
+  }
+  const { error } = await supabase.from("financing_simulations").update(patch).eq("id", id);
+  if (error) console.error("[cloudSync] updateSimulationStatus", error);
+
+  if (bankResponses && bankResponses.length) {
+    // Substitui respostas (replace strategy)
+    await supabase.from("financing_bank_responses").delete().eq("simulation_id", id);
+    const rows = bankResponses.map((b) => ({
+      simulation_id: id,
+      bank_name: b.bankName,
+      approved_amount: b.approvedAmount,
+      interest_rate: b.interestRate,
+      installment_value: b.installmentValue,
+      installments_count: b.installmentsCount,
+      approved_status: b.approvedStatus,
+      notes: b.notes ?? null,
+    }));
+    const { error: brErr } = await supabase.from("financing_bank_responses").insert(rows);
+    if (brErr) console.error("[cloudSync] bank_responses insert", brErr);
+  }
+}
+
+export async function fetchSimulationsForAdvertiser(
+  advertiserId: string,
+): Promise<FinancingSimulation[]> {
+  const { data, error } = await supabase
+    .from("financing_simulations")
+    .select(
+      "*, products(title, price, cover_image), indicators(name), financing_bank_responses(*)",
+    )
+    .eq("advertiser_id", advertiserId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("[cloudSync] fetchSimulationsForAdvertiser", error);
+    return [];
+  }
+  return (data ?? []).map(simulationFromDb);
+}
+
+export async function fetchSimulationsForIndicator(
+  indicatorId: string,
+): Promise<FinancingSimulation[]> {
+  const { data, error } = await supabase
+    .from("financing_simulations")
+    .select(
+      "*, products(title, price, cover_image), indicators(name), financing_bank_responses(*)",
+    )
+    .eq("indicator_id", indicatorId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("[cloudSync] fetchSimulationsForIndicator", error);
+    return [];
+  }
+  return (data ?? []).map(simulationFromDb);
+}
+
+// ---------------- Platform Config ----------------
+
+import type { PlatformConfig } from "@/types";
+
+export async function fetchPlatformConfig(): Promise<Partial<PlatformConfig> | null> {
+  const { data, error } = await supabase
+    .from("platform_config")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) {
+    console.error("[cloudSync] fetchPlatformConfig", error);
+    return null;
+  }
+  if (!data) return null;
+  return {
+    feePercent: Number(data.fee_percent ?? 0),
+    feePerLead: Number(data.fee_per_lead ?? 0),
+  };
+}
+
+export async function pushPlatformConfig(cfg: PlatformConfig): Promise<void> {
+  const { error } = await supabase
+    .from("platform_config")
+    .update({
+      fee_percent: cfg.feePercent,
+      fee_per_lead: cfg.feePerLead,
+    })
+    .eq("id", 1);
+  if (error) console.error("[cloudSync] pushPlatformConfig", error);
+}
+
+/** Realtime: indicators updates (para refletir saldos alterados via trigger). */
+export function subscribeIndicators(onChange: (row: any) => void) {
+  const channel = supabase
+    .channel(`indicators-sync-${crypto.randomUUID()}`)
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "indicators" },
+      (payload) => onChange(payload.new),
+    )
+    .subscribe();
+  return () => {
+    void supabase.removeChannel(channel);
+  };
+}
+

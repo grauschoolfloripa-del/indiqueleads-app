@@ -46,13 +46,20 @@ import {
   fetchLeadsForAdvertiser,
   fetchLeadsForIndicator,
   fetchChatsForLeads,
+  fetchSimulationsForAdvertiser,
+  fetchSimulationsForIndicator,
+  fetchPlatformConfig,
   pushProduct,
   updateProductStatus as cloudUpdateProductStatus,
   pushLead,
   updateLead as cloudUpdateLead,
   pushChatMessage,
+  pushSimulation,
+  updateSimulationStatus as cloudUpdateSimulationStatus,
+  pushPlatformConfig,
   subscribeChatMessagesAll,
   subscribeLeads,
+  subscribeIndicators,
   isUuid,
 } from "./lib/cloudSync";
 import { supabase } from "./integrations/supabase/client";
@@ -440,6 +447,15 @@ export default function App() {
               });
             }
           }
+          const cloudSims = await fetchSimulationsForAdvertiser(advId);
+          if (cloudSims.length) {
+            setSimulations((prev) => {
+              const ids = new Set(prev.map((s) => s.id));
+              const merged = [...cloudSims.filter((s) => !ids.has(s.id)), ...prev];
+              saveToStorage("indica_simulations", merged);
+              return merged;
+            });
+          }
         } else if (role === "indicador") {
           const indId = await ensureIndicatorRow(supaUser.id, {
             name: displayName,
@@ -448,7 +464,7 @@ export default function App() {
           });
           if (!indId) return;
           // Also refresh public active products (so indicator sees new advertisers' items).
-          const [activeProducts, cloudLeads] = await Promise.all([
+          const [activeProducts, indLeads] = await Promise.all([
             fetchAllActiveProducts(),
             fetchLeadsForIndicator(indId),
           ]);
@@ -460,14 +476,14 @@ export default function App() {
               return merged;
             });
           }
-          if (cloudLeads.length) {
+          if (indLeads.length) {
             setLeads((prev) => {
               const ids = new Set(prev.map((l) => l.id));
-              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
+              const merged = [...indLeads.filter((l) => !ids.has(l.id)), ...prev];
               saveToStorage("indica_leads", merged);
               return merged;
             });
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
+            const chats = await fetchChatsForLeads(indLeads.map((l) => l.id));
             if (chats.length) {
               setChatMessages((prev) => {
                 const ids = new Set(prev.map((m) => m.id));
@@ -477,12 +493,33 @@ export default function App() {
               });
             }
           }
+          const indSims = await fetchSimulationsForIndicator(indId);
+          if (indSims.length) {
+            setSimulations((prev) => {
+              const ids = new Set(prev.map((s) => s.id));
+              const merged = [...indSims.filter((s) => !ids.has(s.id)), ...prev];
+              saveToStorage("indica_simulations", merged);
+              return merged;
+            });
+          }
         }
       } catch (e) {
         console.error("[App] cloud hydrate failed", e);
       }
     })();
   }, [supaUser, supaRoles, supaLoading]);
+
+  // --- Hidrata platform_config do banco (fonte da verdade, admin edita). ---
+  useEffect(() => {
+    void fetchPlatformConfig().then((cfg) => {
+      if (!cfg) return;
+      setPlatformConfig((prev) => {
+        const next = { ...prev, ...cfg } as PlatformConfig;
+        saveToStorage("indica_config", next);
+        return next;
+      });
+    });
+  }, []);
 
   // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
   useEffect(() => {
@@ -506,9 +543,30 @@ export default function App() {
         return next;
       });
     });
+    const offInd = subscribeIndicators((row) => {
+      setIndicators((prev) => {
+        const idx = prev.findIndex((i) => i.id === row.id);
+        if (idx < 0) return prev;
+        const next = prev.map((i) =>
+          i.id === row.id
+            ? {
+                ...i,
+                balanceAvailable: Number(row.balance_available ?? i.balanceAvailable),
+                balancePending: Number(row.balance_pending ?? i.balancePending),
+                score: Number(row.score ?? i.score),
+                clicks: Number(row.clicks ?? i.clicks),
+                league: row.league ?? i.league,
+              }
+            : i,
+        );
+        saveToStorage("indica_indicators", next);
+        return next;
+      });
+    });
     return () => {
       offChat();
       offLeads();
+      offInd();
     };
   }, [loggedUser?.id, loggedUser?.role]);
 
@@ -841,6 +899,7 @@ export default function App() {
   const handleUpdatePlatformConfig = (newConfig: PlatformConfig) => {
     setPlatformConfig(newConfig);
     saveToStorage("indica_config", newConfig);
+    void pushPlatformConfig(newConfig);
   };
 
   // Submit Lead from Visitor View
@@ -1103,10 +1162,10 @@ export default function App() {
   const handleAddSimulation = (
     sim: Omit<FinancingSimulation, "id" | "createdAt" | "updatedAt" | "status">,
   ) => {
-    const id = `sim-${Date.now()}`;
+    const localId = `sim-${Date.now()}`;
     const newSim: FinancingSimulation = {
       ...sim,
-      id,
+      id: localId,
       status: "pendente",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1116,6 +1175,17 @@ export default function App() {
       saveToStorage("indica_simulations", next);
       return next;
     });
+    // Persiste no banco se produto/anunciante forem reais. Reconcilia o id local com o UUID gerado pelo banco.
+    if (isUuid(sim.productId) && isUuid(sim.advertiserId)) {
+      void pushSimulation(newSim).then((dbId) => {
+        if (!dbId) return;
+        setSimulations((prev) => {
+          const next = prev.map((s) => (s.id === localId ? { ...s, id: dbId } : s));
+          saveToStorage("indica_simulations", next);
+          return next;
+        });
+      });
+    }
     addNotification(`Simulação de financiamento para ${sim.clientName} enviada à loja!`, "success");
   };
 
@@ -1142,6 +1212,7 @@ export default function App() {
       saveToStorage("indica_simulations", next);
       return next;
     });
+    void cloudUpdateSimulationStatus(simId, status, bankResponses, approvedContract);
     addNotification(`Simulação atualizada!`, "info");
   };
 
