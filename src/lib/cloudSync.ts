@@ -360,7 +360,10 @@ export async function pushChatMessage(m: ChatMessage): Promise<void> {
     ...(isUuid(m.id) ? { id: m.id } : {}),
   };
   const { error } = await supabase.from("chat_messages").insert(payload);
-  if (error) console.error("[cloudSync] pushChatMessage", error);
+  if (error) {
+    console.error("[cloudSync] pushChatMessage", error);
+    throw error;
+  }
 }
 
 export async function fetchChatsForLeads(leadIds: string[]): Promise<ChatMessage[]> {
