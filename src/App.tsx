@@ -773,7 +773,7 @@ export default function App() {
 
     // Persist status + system message to cloud (best-effort).
     void cloudUpdateLead(leadId, { status, ...(extra || {}) });
-    void pushChatMessage(systemMsg);
+    pushChatMessage(systemMsg).catch((e) => console.error("[App] pushChatMessage system", e));
 
     addNotification(`Etapa do funil alterada: ${status.replace("_", " ")}`, "success");
   };
@@ -818,7 +818,7 @@ export default function App() {
 
           // Persist to cloud.
           void cloudUpdateLead(leadId, { contractUrl: url, notes, commissionPaid: true, status: "venda_concluida" });
-          void pushChatMessage(systemMsg);
+          pushChatMessage(systemMsg).catch((e) => console.error("[App] pushChatMessage contract", e));
 
           return {
             ...l,
@@ -878,8 +878,15 @@ export default function App() {
     });
 
     // Persist to cloud (only for leads that live in the DB).
-    void pushChatMessage(newMsg);
-    if (warningMsg) void pushChatMessage(warningMsg);
+    (async () => {
+      try {
+        await pushChatMessage(newMsg);
+        if (warningMsg) await pushChatMessage(warningMsg);
+      } catch (err) {
+        console.error("[App] pushChatMessage send failed", err);
+        addNotification("Falha ao enviar mensagem — tente novamente.", "info");
+      }
+    })();
 
     if (hasLeakage) {
       addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
@@ -996,6 +1003,7 @@ export default function App() {
         for (const m of msgs) await pushChatMessage(m);
       } catch (err) {
         console.error("[App] persist lead failed", err);
+        addNotification("Falha ao sincronizar lead/mensagem com o servidor.", "info");
       }
     })();
 
