@@ -35,14 +35,15 @@ export async function ensureAdvertiserRow(
   base: Partial<Advertiser>,
 ): Promise<string | null> {
   // Se já existe uma linha pelo user_id, apenas retorna o id atual.
-  const { data: existing } = await supabase
+  const { data: existing, error: lookupError } = await supabase
     .from("advertisers")
     .select("id")
     .eq("user_id", userId)
     .maybeSingle();
   if (existing?.id) return existing.id;
+  if (lookupError) console.warn("[cloudSync] ensureAdvertiserRow lookup", lookupError);
 
-  const { error } = await supabase.from("advertisers").insert({
+  const { data, error } = await supabase.from("advertisers").upsert({
     id: userId, // alinha id local = user_id
     user_id: userId,
     name: base.name ?? "Anunciante",
@@ -56,26 +57,27 @@ export async function ensureAdvertiserRow(
     state: base.state ?? null,
     has_accepted_terms: true,
     terms_accepted_at: new Date().toISOString(),
-  });
+  }, { onConflict: "id" }).select("id").maybeSingle();
   if (error) {
     console.error("[cloudSync] ensureAdvertiserRow", error);
     return null;
   }
-  return userId;
+  return data?.id ?? userId;
 }
 
 export async function ensureIndicatorRow(
   userId: string,
   base: Partial<Indicator>,
 ): Promise<string | null> {
-  const { data: existing } = await supabase
+  const { data: existing, error: lookupError } = await supabase
     .from("indicators")
     .select("id")
     .eq("user_id", userId)
     .maybeSingle();
   if (existing?.id) return existing.id;
+  if (lookupError) console.warn("[cloudSync] ensureIndicatorRow lookup", lookupError);
 
-  const { error } = await supabase.from("indicators").insert({
+  const { data, error } = await supabase.from("indicators").upsert({
     id: userId,
     user_id: userId,
     name: base.name ?? "Indicador",
@@ -91,12 +93,12 @@ export async function ensureIndicatorRow(
     balance_pending: 0,
     has_accepted_terms: true,
     terms_accepted_at: new Date().toISOString(),
-  });
+  }, { onConflict: "id" }).select("id").maybeSingle();
   if (error) {
     console.error("[cloudSync] ensureIndicatorRow", error);
     return null;
   }
-  return userId;
+  return data?.id ?? userId;
 }
 
 // ---------------- Products ----------------
