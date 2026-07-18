@@ -1003,6 +1003,7 @@ export default function App() {
         for (const m of msgs) await pushChatMessage(m);
       } catch (err) {
         console.error("[App] persist lead failed", err);
+        addNotification("Falha ao sincronizar lead/mensagem com o servidor.", "info");
       }
     })();
 
