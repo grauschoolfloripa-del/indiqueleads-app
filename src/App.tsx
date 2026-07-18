@@ -209,6 +209,14 @@ export default function App() {
     if (cachedCategories) setCategories(JSON.parse(cachedCategories));
     if (cachedConfig) setPlatformConfig(JSON.parse(cachedConfig));
 
+    void fetchAllActiveProducts()
+      .then((cloudProducts) => {
+        if (!cloudProducts.length) return;
+        setProducts(cloudProducts);
+        saveToStorage("indica_products", cloudProducts);
+      })
+      .catch((error) => console.error("[App] public products hydrate failed", error));
+
     if (cachedCookie) {
       setActiveReferralId(cachedCookie);
     }
@@ -469,12 +477,8 @@ export default function App() {
             fetchLeadsForIndicator(indId),
           ]);
           if (activeProducts.length) {
-            setProducts((prev) => {
-              const ids = new Set(prev.map((p) => p.id));
-              const merged = [...activeProducts.filter((p) => !ids.has(p.id)), ...prev];
-              saveToStorage("indica_products", merged);
-              return merged;
-            });
+            setProducts(activeProducts);
+            saveToStorage("indica_products", activeProducts);
           }
           if (indLeads.length) {
             setLeads((prev) => {
@@ -925,7 +929,7 @@ export default function App() {
       activeReferralId ||
       (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null) ||
       "ind-1";
-    const associatedIndicator = indicators.find((i) => i.id === currentRefId) || indicators[0];
+    const associatedIndicator = indicators.find((i) => i.id === currentRefId);
 
     // Determine commission tier value (defaults to digital unless they specified presence interest)
     const comVal = viewedProduct.commissionDigitalValue || 0;
@@ -942,8 +946,8 @@ export default function App() {
       productId: viewedProduct.id,
       productTitle: viewedProduct.title,
       productCategory: viewedProduct.category,
-      indicatorId: associatedIndicator.id,
-      indicatorName: associatedIndicator.name || "Gabriel Martins (Indicador Demo)",
+      indicatorId: currentRefId,
+      indicatorName: associatedIndicator?.name || "Indicador parceiro",
       advertiserId: viewedProduct.advertiserId,
       clientName: leadData.clientName,
       clientPhone: leadData.clientPhone,
@@ -965,7 +969,7 @@ export default function App() {
     });
 
     // Initialize Chat messages for the new lead
-    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator.name}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
+    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator?.name || "Indicador parceiro"}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
     const initialMsg: ChatMessage = {
       id: crypto.randomUUID(),
       leadId: newLead.id,
@@ -1008,7 +1012,7 @@ export default function App() {
     })();
 
     addNotification(
-      `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator.name}!`,
+      `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator?.name || "Indicador parceiro"}!`,
       "success",
     );
   };
