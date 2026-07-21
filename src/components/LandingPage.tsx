@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Category, Indicator, Advertiser } from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
+import SponsorSlot from "./SponsorSlot";
 
 interface LandingPageProps {
   indicators: Indicator[];
@@ -502,6 +503,13 @@ export default function LandingPage({
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* SPONSOR BAND */}
+      <section className="py-8 sm:py-10 bg-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SponsorSlot variant="banner" label="Patrocinadores oficiais" />
         </div>
       </section>
 

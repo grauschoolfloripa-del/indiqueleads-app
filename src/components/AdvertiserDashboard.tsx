@@ -51,6 +51,7 @@ import {
   ChatMessage,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, getVertical } from "@/lib/verticals";
+import SponsorSlot from "./SponsorSlot";
 import DynamicAttributesFields from "@/components/product/DynamicAttributesFields";
 
 interface AdvertiserDashboardProps {
@@ -1277,7 +1278,13 @@ export default function AdvertiserDashboard({
         </div>
       </div>
 
+      {/* Sponsor slot — top of advertiser dashboard */}
+      <div className="mb-6">
+        <SponsorSlot variant="card" label="Patrocinadores" />
+      </div>
+
       {/* Navigation tabs inside dashboard */}
+
       <div className="flex border-b border-slate-200 mb-6 font-display font-medium text-sm">
         <button
           onClick={() => setActiveTab("funnel")}

@@ -41,6 +41,7 @@ import {
   ChatMessage,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, verticalBadge } from "../lib/verticals";
+import SponsorSlot from "./SponsorSlot";
 
 interface AffiliateDashboardProps {
   indicator: Indicator;
@@ -874,7 +875,13 @@ export default function AffiliateDashboard({
         </div>
       </div>
 
+      {/* Sponsor slot — top of affiliate dashboard */}
+      <div className="mb-6">
+        <SponsorSlot variant="card" label="Patrocinadores" />
+      </div>
+
       {/* Dashboard Sub-navigation Tabs */}
+
       <div className="flex border-b border-slate-200 mb-6 font-display font-medium text-sm">
         <button
           onClick={() => setActiveTab("vitrine")}
