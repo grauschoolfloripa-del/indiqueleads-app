@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Category, Indicator, Advertiser } from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
+import SponsorSlot from "./SponsorSlot";
 
 interface LandingPageProps {
   indicators: Indicator[];
