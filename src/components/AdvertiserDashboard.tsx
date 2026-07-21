@@ -51,6 +51,7 @@ import {
   ChatMessage,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, getVertical } from "@/lib/verticals";
+import SponsorSlot from "./SponsorSlot";
 import DynamicAttributesFields from "@/components/product/DynamicAttributesFields";
 
 interface AdvertiserDashboardProps {
