@@ -41,6 +41,7 @@ import {
   ChatMessage,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, verticalBadge } from "../lib/verticals";
+import SponsorSlot from "./SponsorSlot";
 
 interface AffiliateDashboardProps {
   indicator: Indicator;
