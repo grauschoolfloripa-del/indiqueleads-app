@@ -505,6 +505,13 @@ export default function LandingPage({
         </div>
       </section>
 
+      {/* SPONSOR BAND */}
+      <section className="py-8 sm:py-10 bg-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SponsorSlot variant="banner" label="Patrocinadores oficiais" />
+        </div>
+      </section>
+
       {/* SECTION NICHOS (OUR NICHES) */}
       <section id="nichos" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
