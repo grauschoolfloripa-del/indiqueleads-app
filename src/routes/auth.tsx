@@ -84,12 +84,12 @@ function AuthPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-green-950 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-8 text-white">
-          <span className="bg-green-600 text-white rounded-lg p-2 shadow-lg">
-            <Sparkles className="w-5 h-5" />
+        <Link to="/" className="flex items-center justify-center mb-8">
+          <span className="inline-flex bg-white rounded-xl px-3 py-2 shadow-lg">
+            <BrandLogo className="h-12 w-auto" />
           </span>
-          <span className="font-bold text-2xl tracking-tight">IndiqueLeads</span>
         </Link>
+
 
         <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
           <div className="flex bg-slate-100 rounded-lg p-1 mb-6">
