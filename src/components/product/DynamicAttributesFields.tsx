@@ -40,7 +40,7 @@ export default function DynamicAttributesFields({
           const raw = values?.[f.key];
           const v: string | number = typeof raw === "number" ? raw : (raw as string | undefined) ?? "";
           const common =
-            "w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-200";
+            "w-full text-sm rounded-lg border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-200";
           return (
             <label key={f.key} className="block text-xs">
               <span className="block font-semibold text-slate-600 mb-1">
@@ -71,7 +71,7 @@ export default function DynamicAttributesFields({
               ) : f.type === "boolean" ? (
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-orange-600"
+                  className="h-4 w-4 accent-green-600"
                   checked={!!v}
                   onChange={(e) => setField(f.key, e.target.checked)}
                 />

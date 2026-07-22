@@ -150,7 +150,7 @@ export default function AdminPanel({
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
       {/* Admin Title Banner */}
-      <div className="bg-gradient-to-r from-orange-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-orange-900/20">
+      <div className="bg-gradient-to-r from-green-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-green-900/20">
         <div className="flex items-center gap-4">
           <div className="bg-red-600/20 text-red-400 p-3 rounded-2xl border border-red-500/30">
             <Settings className="w-8 h-8" />
@@ -170,7 +170,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab("geral")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "geral"
-              ? "border-orange-600 text-orange-600 font-bold"
+              ? "border-green-600 text-green-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -180,7 +180,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab("categorias")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "categorias"
-              ? "border-orange-600 text-orange-600 font-bold"
+              ? "border-green-600 text-green-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -190,7 +190,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab("fraudes")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "fraudes"
-              ? "border-orange-600 text-orange-600 font-bold"
+              ? "border-green-600 text-green-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -200,7 +200,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab("taxas")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "taxas"
-              ? "border-orange-600 text-orange-600 font-bold"
+              ? "border-green-600 text-green-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -210,7 +210,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab("verticais")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "verticais"
-              ? "border-orange-600 text-orange-600 font-bold"
+              ? "border-green-600 text-green-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -220,7 +220,7 @@ export default function AdminPanel({
           onClick={() => setActiveTab("admins")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "admins"
-              ? "border-orange-600 text-orange-600 font-bold"
+              ? "border-green-600 text-green-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -375,7 +375,7 @@ export default function AdminPanel({
               <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                 Anunciantes Cadastrados
               </span>
-              <span className="text-xl font-mono font-bold text-orange-600 mt-1 block">
+              <span className="text-xl font-mono font-bold text-green-600 mt-1 block">
                 {advertisers.length} Contas
               </span>
               <p className="text-[10px] text-slate-500 mt-1 font-semibold">
@@ -387,7 +387,7 @@ export default function AdminPanel({
               <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                 Indicadores Autônomos
               </span>
-              <span className="text-xl font-mono font-bold text-orange-600 mt-1 block">
+              <span className="text-xl font-mono font-bold text-green-600 mt-1 block">
                 {indicators.filter((i) => i.name).length} Contas
               </span>
               <p className="text-[10px] text-slate-500 mt-1 font-semibold">
@@ -569,7 +569,7 @@ export default function AdminPanel({
 
               <button
                 type="submit"
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-4 h-4" /> Registrar Vertical Dinâmica
               </button>
@@ -598,7 +598,7 @@ export default function AdminPanel({
                         <span className="text-slate-400 text-xs font-normal">({cat.id})</span>
                       </span>
                     </span>
-                    <span className="text-[9px] bg-orange-50 text-orange-700 border border-orange-100 px-2.5 py-0.5 rounded-full font-bold uppercase font-mono">
+                    <span className="text-[9px] bg-green-50 text-green-700 border border-green-100 px-2.5 py-0.5 rounded-full font-bold uppercase font-mono">
                       {cat.fields.length} Campos
                     </span>
                   </div>
@@ -662,7 +662,7 @@ export default function AdminPanel({
                   <p className="text-xs text-slate-600 font-medium leading-relaxed">
                     {alert.description}
                   </p>
-                  <p className="text-[10px] text-orange-600 font-semibold font-mono">
+                  <p className="text-[10px] text-green-600 font-semibold font-mono">
                     Indicador Envolvido: {alert.indicatorName}
                   </p>
                 </div>
@@ -757,7 +757,7 @@ export default function AdminPanel({
       {activeTab === "admins" && (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm max-w-xl">
           <div className="flex items-center gap-2 mb-4">
-            <UserPlus className="w-5 h-5 text-orange-600" />
+            <UserPlus className="w-5 h-5 text-green-600" />
             <h3 className="font-display font-bold text-slate-900 text-sm">
               Criar Novo Administrador
             </h3>
@@ -844,7 +844,7 @@ export default function AdminPanel({
             <button
               type="submit"
               disabled={creatingAdmin}
-              className="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white font-bold text-xs py-3 rounded-xl transition-all shadow"
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold text-xs py-3 rounded-xl transition-all shadow"
             >
               {creatingAdmin && <Loader2 className="w-4 h-4 animate-spin" />}
               Criar Administrador

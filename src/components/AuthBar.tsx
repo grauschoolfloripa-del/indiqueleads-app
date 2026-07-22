@@ -11,7 +11,7 @@ export default function AuthBar() {
     return (
       <Link
         to="/auth"
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold transition"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-xs font-semibold transition"
       >
         <LogIn className="w-3.5 h-3.5" />
         Entrar / Criar conta
@@ -28,10 +28,10 @@ export default function AuthBar() {
   return (
     <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700 rounded-lg px-2 py-1">
       <div className="flex items-center gap-1.5 text-white text-xs">
-        <UserIcon className="w-3.5 h-3.5 text-orange-400" />
+        <UserIcon className="w-3.5 h-3.5 text-green-400" />
         <span className="font-medium truncate max-w-[120px]">{displayName}</span>
         {roles[0] && (
-          <span className="ml-1 text-[10px] uppercase tracking-wide bg-orange-600/20 text-orange-300 px-1.5 py-0.5 rounded font-mono">
+          <span className="ml-1 text-[10px] uppercase tracking-wide bg-green-600/20 text-green-300 px-1.5 py-0.5 rounded font-mono">
             {roles[0]}
           </span>
         )}

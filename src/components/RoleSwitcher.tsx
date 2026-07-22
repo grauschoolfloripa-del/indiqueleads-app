@@ -1,5 +1,7 @@
 import { UserCheck, Building2, ShieldAlert, Eye, Copy, Check, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import BrandLogo from '@/components/BrandLogo';
+
 
 interface RoleSwitcherProps {
   currentRole: 'indicador' | 'anunciante' | 'admin' | 'visitante';
@@ -39,13 +41,14 @@ export default function RoleSwitcher({
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Left: Brand & Status */}
         <div className="flex items-center gap-3">
-          <div className="bg-orange-600 text-white rounded-lg p-1.5 flex items-center justify-center shadow-md animate-pulse">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <span className="inline-flex bg-white rounded-lg px-2 py-1 shadow-md">
+            <BrandLogo className="h-7 w-auto" />
+          </span>
           <div>
             <span className="font-display font-bold tracking-tight text-white text-base">
-              IndicaAqui <span className="text-orange-400 text-xs font-mono ml-1 font-normal bg-orange-950/40 px-2 py-0.5 rounded border border-orange-900/30">SIMULADOR BENTO</span>
+              <span className="text-green-400 text-xs font-mono font-normal bg-green-950/40 px-2 py-0.5 rounded border border-green-900/30">SIMULADOR BENTO</span>
             </span>
+
             <p className="text-[10px] text-slate-400 font-mono hidden sm:block">
               {selectedReferralId ? (
                 <span className="text-emerald-400 font-semibold">
@@ -64,7 +67,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('indicador')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'indicador'
-                ? 'bg-orange-600 text-white shadow'
+                ? 'bg-green-600 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -76,7 +79,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('anunciante')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'anunciante'
-                ? 'bg-orange-600 text-white shadow'
+                ? 'bg-green-600 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -88,7 +91,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('admin')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'admin'
-                ? 'bg-orange-600 text-white shadow'
+                ? 'bg-green-600 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -100,7 +103,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('visitante')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'visitante'
-                ? 'bg-orange-600 text-white shadow'
+                ? 'bg-green-600 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
