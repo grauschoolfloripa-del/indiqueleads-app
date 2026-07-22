@@ -1,5 +1,7 @@
 import { UserCheck, Building2, ShieldAlert, Eye, Copy, Check, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import BrandLogo from '@/components/BrandLogo';
+
 
 interface RoleSwitcherProps {
   currentRole: 'indicador' | 'anunciante' | 'admin' | 'visitante';

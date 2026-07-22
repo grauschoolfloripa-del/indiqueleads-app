@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import BrandLogo from "@/components/BrandLogo";
 import {
+
   Sparkles,
   Award,
   Building2,
