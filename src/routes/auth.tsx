@@ -8,8 +8,8 @@ import { useAuth, type AppRole } from "@/hooks/useAuth";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — IndicaAqui" },
-      { name: "description", content: "Acesse sua conta IndicaAqui — indicadores, anunciantes e administradores." },
+      { title: "Entrar — IndiqueLeads" },
+      { name: "description", content: "Acesse sua conta IndiqueLeads — indicadores, anunciantes e administradores." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -80,13 +80,13 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-green-950 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8 text-white">
-          <span className="bg-orange-600 text-white rounded-lg p-2 shadow-lg">
+          <span className="bg-green-600 text-white rounded-lg p-2 shadow-lg">
             <Sparkles className="w-5 h-5" />
           </span>
-          <span className="font-bold text-2xl tracking-tight">IndicaAqui</span>
+          <span className="font-bold text-2xl tracking-tight">IndiqueLeads</span>
         </Link>
 
         <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
@@ -141,7 +141,7 @@ function AuthPage() {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                       placeholder="Seu nome"
                     />
                   </div>
@@ -151,7 +151,7 @@ function AuthPage() {
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value as AppRole)}
-                    className="mt-1 w-full py-2 px-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="mt-1 w-full py-2 px-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
                     <option value="indicator">Indicador (quero indicar e ganhar comissão)</option>
                     <option value="advertiser">Anunciante (quero divulgar meus produtos)</option>
@@ -169,7 +169,7 @@ function AuthPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="voce@exemplo.com"
                 />
               </div>
@@ -184,7 +184,7 @@ function AuthPage() {
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="••••••••"
                 />
               </div>
@@ -196,7 +196,7 @@ function AuthPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg transition"
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg transition"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {mode === "signin" ? "Entrar" : "Criar conta"}

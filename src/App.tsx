@@ -1249,10 +1249,10 @@ export default function App() {
   const activeProductForVisitor = products.find((p) => p.id === activeProductId) || null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-green-500 selection:text-white">
       {/* Persistent Profile / Session Bar for Logged-In Users */}
       {loggedUser && currentRole !== "visitante" && (
-        <div className="bg-orange-50/80 backdrop-blur-sm border-b border-orange-100/60 py-2.5 px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-orange-950 font-medium font-sans">
+        <div className="bg-green-50/80 backdrop-blur-sm border-b border-green-100/60 py-2.5 px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-green-950 font-medium font-sans">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -1272,7 +1272,7 @@ export default function App() {
             <AuthBar />
             <button
               onClick={handleLogout}
-              className="bg-white border border-orange-200 text-orange-700 font-bold px-3 py-1 rounded-lg hover:bg-orange-100 transition-colors flex items-center gap-1 shadow-sm text-[11px]"
+              className="bg-white border border-green-200 text-green-700 font-bold px-3 py-1 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-1 shadow-sm text-[11px]"
             >
               <X className="w-3.5 h-3.5" />
               Sair do Painel
@@ -1328,7 +1328,7 @@ export default function App() {
           /* Link único aberto mas produto ainda não carregado (ou removido). */
           <div className="flex-1 min-h-[60vh] flex items-center justify-center p-8">
             <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
-              <div className="w-12 h-12 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center">
                 <RefreshCw className="w-6 h-6 animate-spin" />
               </div>
               <h2 className="text-lg font-bold text-slate-900">Carregando anúncio…</h2>
@@ -1417,14 +1417,14 @@ export default function App() {
             key={notif.id}
             className={`p-4 rounded-2xl border flex items-start gap-3 shadow-xl backdrop-blur-sm animate-slide-in transition-all ${
               notif.type === "success"
-                ? "bg-orange-950/95 border-orange-500/30 text-orange-100"
+                ? "bg-green-950/95 border-green-500/30 text-green-100"
                 : "bg-slate-900/95 border-slate-700/50 text-slate-100"
             }`}
           >
             {notif.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             ) : (
-              <Info className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+              <Info className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             )}
             <div className="flex-1 text-xs font-semibold leading-relaxed">{notif.msg}</div>
             <button
@@ -1439,7 +1439,7 @@ export default function App() {
 
       {/* Micro-footer with Reset Database function */}
       <footer className="bg-white border-t border-slate-100 py-4 px-6 text-center text-xs text-slate-400 font-mono flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto w-full">
-        <span>IndicaAqui MVP (v1.0) • Prova de Conceito Concluída</span>
+        <span>IndiqueLeads MVP (v1.0) • Prova de Conceito Concluída</span>
         <button
           onClick={handleResetDatabase}
           className="text-red-500 hover:text-red-700 font-bold hover:underline flex items-center gap-1 bg-red-50 hover:bg-red-100/50 px-2.5 py-1 rounded-lg border border-red-100"

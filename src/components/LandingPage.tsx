@@ -285,11 +285,11 @@ export default function LandingPage({
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => setActiveSection("home")}
             >
-              <div className="bg-orange-600 p-2 rounded-xl text-white shadow shadow-orange-200">
+              <div className="bg-green-600 p-2 rounded-xl text-white shadow shadow-green-200">
                 <Sparkles className="w-5 h-5" />
               </div>
               <span className="font-display font-black text-slate-900 text-lg tracking-tight">
-                IndicaAqui<span className="text-orange-600">.</span>
+                IndiqueLeads<span className="text-green-600">.</span>
               </span>
             </div>
 
@@ -302,7 +302,7 @@ export default function LandingPage({
                   setActiveSection("niches");
                   document.getElementById("nichos")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`text-xs uppercase font-bold tracking-wider hover:text-orange-600 transition-colors ${activeSection === "niches" ? "text-orange-600" : "text-slate-600"}`}
+                className={`text-xs uppercase font-bold tracking-wider hover:text-green-600 transition-colors ${activeSection === "niches" ? "text-green-600" : "text-slate-600"}`}
               >
                 Nossos Nichos
               </a>
@@ -313,7 +313,7 @@ export default function LandingPage({
                   setActiveSection("how-it-works");
                   document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`text-xs uppercase font-bold tracking-wider hover:text-orange-600 transition-colors ${activeSection === "how-it-works" ? "text-slate-600" : "text-slate-600"}`}
+                className={`text-xs uppercase font-bold tracking-wider hover:text-green-600 transition-colors ${activeSection === "how-it-works" ? "text-slate-600" : "text-slate-600"}`}
               >
                 Como Funciona
               </a>
@@ -324,7 +324,7 @@ export default function LandingPage({
                   setActiveSection("how-to-profit");
                   document.getElementById("como-lucrar")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`text-xs uppercase font-bold tracking-wider hover:text-orange-600 transition-colors ${activeSection === "how-to-profit" ? "text-slate-600" : "text-slate-600"}`}
+                className={`text-xs uppercase font-bold tracking-wider hover:text-green-600 transition-colors ${activeSection === "how-to-profit" ? "text-slate-600" : "text-slate-600"}`}
               >
                 Simulador de Lucros
               </a>
@@ -335,7 +335,7 @@ export default function LandingPage({
                   setActiveSection("how-to-sell");
                   document.getElementById("anunciar")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`text-xs uppercase font-bold tracking-wider hover:text-orange-600 transition-colors ${activeSection === "how-to-sell" ? "text-slate-600" : "text-slate-600"}`}
+                className={`text-xs uppercase font-bold tracking-wider hover:text-green-600 transition-colors ${activeSection === "how-to-sell" ? "text-slate-600" : "text-slate-600"}`}
               >
                 Como Anunciar
               </a>
@@ -351,13 +351,13 @@ export default function LandingPage({
               </button>
               <button
                 onClick={() => openAuth("anunciante")}
-                className="bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md shadow-orange-100 hover:scale-[1.01] active:scale-[0.99]"
+                className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md shadow-green-100 hover:scale-[1.01] active:scale-[0.99]"
               >
                 Área do Anunciante
               </button>
               <button
                 onClick={() => openAuth("admin")}
-                className="p-2 text-slate-400 hover:text-orange-600 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-green-600 rounded-lg transition-colors"
                 title="Acesso Administrador"
               >
                 <Shield className="w-4 h-4" />
@@ -368,20 +368,20 @@ export default function LandingPage({
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative pt-16 pb-20 overflow-hidden bg-gradient-to-b from-orange-50/40 via-white to-slate-50">
+      <section className="relative pt-16 pb-20 overflow-hidden bg-gradient-to-b from-green-50/40 via-white to-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Column Text */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-1.5 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-1.5 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                 <TrendingUp className="w-3.5 h-3.5" />
                 Plataforma de Afiliados de Alto Padrão
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black tracking-tight text-slate-900 leading-[1.1]">
                 Indique Leads Premium e{" "}
-                <span className="text-orange-600 relative inline-block">
+                <span className="text-green-600 relative inline-block">
                   ganhe comissões
-                  <span className="absolute left-0 bottom-1 w-full h-2 bg-orange-200 -z-10 rounded"></span>
+                  <span className="absolute left-0 bottom-1 w-full h-2 bg-green-200 -z-10 rounded"></span>
                 </span>{" "}
                 via PIX.
               </h1>
@@ -394,13 +394,13 @@ export default function LandingPage({
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                 <button
                   onClick={() => openAuth("indicador", true)}
-                  className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-8 py-4 rounded-xl shadow-lg shadow-orange-100 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-8 py-4 rounded-xl shadow-lg shadow-green-100 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99]"
                 >
                   Seja um Indicador <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => openAuth("anunciante", true)}
-                  className="w-full sm:w-auto bg-white border border-slate-200 hover:border-orange-500 text-slate-800 hover:text-orange-600 font-bold text-sm px-8 py-4 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto bg-white border border-slate-200 hover:border-green-500 text-slate-800 hover:text-green-600 font-bold text-sm px-8 py-4 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                   <Building2 className="w-4 h-4" /> Anunciar Produtos
                 </button>
@@ -432,7 +432,7 @@ export default function LandingPage({
             {/* Right Column Interactive Bento Preview */}
             <div className="lg:col-span-5 relative">
               <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden border border-slate-800">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-600/10 rounded-full blur-3xl"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-600/10 rounded-full blur-3xl"></div>
 
                 <div className="flex items-center justify-between mb-6 border-b border-slate-800 pb-3">
                   <span className="text-xs font-mono text-slate-400">VITRINE EM TEMPO REAL</span>
@@ -445,7 +445,7 @@ export default function LandingPage({
                 <div className="space-y-4">
                   {/* Item 1 */}
                   <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-600/10 text-orange-500 flex items-center justify-center font-bold text-sm">
+                    <div className="w-10 h-10 rounded-xl bg-green-600/10 text-green-500 flex items-center justify-center font-bold text-sm">
                       🏠
                     </div>
                     <div className="flex-1 min-w-0">
@@ -453,7 +453,7 @@ export default function LandingPage({
                       <p className="text-[10px] text-slate-400">Vanguard Imóveis</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-orange-400 font-mono block font-bold">
+                      <span className="text-xs text-green-400 font-mono block font-bold">
                         R$ 18.000
                       </span>
                       <span className="text-[9px] text-slate-500 block">Comissão Indicação</span>
@@ -462,7 +462,7 @@ export default function LandingPage({
 
                   {/* Item 2 */}
                   <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-600/10 text-orange-500 flex items-center justify-center font-bold text-sm">
+                    <div className="w-10 h-10 rounded-xl bg-green-600/10 text-green-500 flex items-center justify-center font-bold text-sm">
                       🚗
                     </div>
                     <div className="flex-1 min-w-0">
@@ -470,7 +470,7 @@ export default function LandingPage({
                       <p className="text-[10px] text-slate-400">Motorsport SP</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-xs text-orange-400 font-mono block font-bold">
+                      <span className="text-xs text-green-400 font-mono block font-bold">
                         R$ 5.500
                       </span>
                       <span className="text-[9px] text-slate-500 block">Comissão Indicação</span>
@@ -517,7 +517,7 @@ export default function LandingPage({
       <section id="nichos" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-xs bg-orange-100 text-orange-800 font-bold tracking-widest uppercase px-3.5 py-1 rounded-full">
+            <span className="text-xs bg-green-100 text-green-800 font-bold tracking-widest uppercase px-3.5 py-1 rounded-full">
               NICHOS HIGH-TICKET DISPONÍVEIS
             </span>
             <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 tracking-tight">
@@ -534,7 +534,7 @@ export default function LandingPage({
             {nichesData.map((niche) => (
               <div
                 key={niche.id}
-                className={`rounded-2xl p-6 border border-slate-100 hover:border-orange-500/20 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between bg-gradient-to-b ${niche.gradient}`}
+                className={`rounded-2xl p-6 border border-slate-100 hover:border-green-500/20 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between bg-gradient-to-b ${niche.gradient}`}
               >
                 <div>
                   <div className="bg-white p-3.5 rounded-xl inline-block shadow-sm mb-4 border border-slate-50">
@@ -553,7 +553,7 @@ export default function LandingPage({
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span className="text-slate-500 font-medium">Comissão PIX:</span>
-                    <span className="font-bold text-orange-600">{niche.avgCommission}</span>
+                    <span className="font-bold text-green-600">{niche.avgCommission}</span>
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span className="text-slate-500 font-medium">Grau de Venda:</span>
@@ -570,11 +570,11 @@ export default function LandingPage({
       <section id="como-funciona" className="py-20 bg-slate-50 border-y border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-xs bg-orange-100 text-orange-800 font-bold tracking-widest uppercase px-3.5 py-1 rounded-full">
+            <span className="text-xs bg-green-100 text-green-800 font-bold tracking-widest uppercase px-3.5 py-1 rounded-full">
               SISTEMA SIMPLES E TRANSPARENTE
             </span>
             <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 tracking-tight">
-              Como Funciona a Plataforma IndicaAqui?
+              Como Funciona a Plataforma IndiqueLeads?
             </h2>
             <p className="text-slate-600 text-sm">
               Desenvolvemos dois painéis totalmente automatizados para que Indicadores e Anunciantes
@@ -585,9 +585,9 @@ export default function LandingPage({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Como Funciona para Indicadores */}
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-full blur-2xl"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full blur-2xl"></div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-orange-100 text-orange-700 p-2.5 rounded-xl">
+                <div className="bg-green-100 text-green-700 p-2.5 rounded-xl">
                   <UserCheck className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-black text-slate-900 text-xl">
@@ -597,7 +597,7 @@ export default function LandingPage({
 
               <div className="space-y-6">
                 <div className="flex gap-4">
-                  <span className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
                     1
                   </span>
                   <div>
@@ -612,7 +612,7 @@ export default function LandingPage({
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
                     2
                   </span>
                   <div>
@@ -627,7 +627,7 @@ export default function LandingPage({
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
                     3
                   </span>
                   <div>
@@ -642,7 +642,7 @@ export default function LandingPage({
                 </div>
 
                 <div className="flex gap-4">
-                  <span className="w-8 h-8 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-xs flex-shrink-0">
                     4
                   </span>
                   <div>
@@ -674,7 +674,7 @@ export default function LandingPage({
               <div className="mt-8 pt-4 border-t border-slate-100">
                 <button
                   onClick={() => openAuth("indicador", true)}
-                  className="text-orange-600 hover:text-orange-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                  className="text-green-600 hover:text-green-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
                 >
                   Criar Cadastro de Indicador Autônomo <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -685,7 +685,7 @@ export default function LandingPage({
             <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-slate-500/5 rounded-full blur-2xl"></div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-orange-100 text-orange-700 p-2.5 rounded-xl">
+                <div className="bg-green-100 text-green-700 p-2.5 rounded-xl">
                   <Building2 className="w-6 h-6" />
                 </div>
                 <h3 className="font-display font-black text-slate-900 text-xl">
@@ -767,7 +767,7 @@ export default function LandingPage({
               <div className="mt-8 pt-4 border-t border-slate-100">
                 <button
                   onClick={() => openAuth("anunciante", true)}
-                  className="text-orange-600 hover:text-orange-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                  className="text-green-600 hover:text-green-700 font-bold text-xs flex items-center gap-1.5 transition-colors"
                 >
                   Anunciar como Empresa / Vendedor <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -783,7 +783,7 @@ export default function LandingPage({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Col: Calculator */}
             <div className="lg:col-span-6 bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200/60 shadow-md">
-              <span className="text-[10px] bg-orange-100 text-orange-800 font-bold uppercase px-3 py-1 rounded-full font-mono">
+              <span className="text-[10px] bg-green-100 text-green-800 font-bold uppercase px-3 py-1 rounded-full font-mono">
                 SIMULADOR INTERATIVO
               </span>
               <h3 className="font-display font-bold text-slate-900 text-2xl mt-3 mb-6">
@@ -809,7 +809,7 @@ export default function LandingPage({
                           }}
                           className={`py-2 px-1 rounded-xl text-xs font-bold border transition-all ${
                             calcNiche === cat
-                              ? "bg-orange-600 border-orange-600 text-white"
+                              ? "bg-green-600 border-green-600 text-white"
                               : "bg-white border-slate-200 hover:bg-slate-50 text-slate-600"
                           }`}
                           title={v.label}
@@ -836,7 +836,7 @@ export default function LandingPage({
                     step={1000}
                     value={calcSaleValue}
                     onChange={(e) => setCalcSaleValue(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
                   />
                 </div>
 
@@ -857,7 +857,7 @@ export default function LandingPage({
                     step={0.5}
                     value={calcCommPct}
                     onChange={(e) => setCalcCommPct(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
+                    className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
                   />
                 </div>
 
@@ -871,7 +871,7 @@ export default function LandingPage({
                       onClick={() => setCalcType("digital")}
                       className={`p-3 rounded-2xl border text-left transition-all ${
                         calcType === "digital"
-                          ? "bg-orange-50 border-orange-500 ring-2 ring-orange-500/20"
+                          ? "bg-green-50 border-green-500 ring-2 ring-green-500/20"
                           : "bg-white border-slate-200 hover:bg-slate-50"
                       }`}
                     >
@@ -887,7 +887,7 @@ export default function LandingPage({
                       onClick={() => setCalcType("presencial")}
                       className={`p-3 rounded-2xl border text-left transition-all ${
                         calcType === "presencial"
-                          ? "bg-orange-50 border-orange-500 ring-2 ring-orange-500/20"
+                          ? "bg-green-50 border-green-500 ring-2 ring-green-500/20"
                           : "bg-white border-slate-200 hover:bg-slate-50"
                       }`}
                     >
@@ -903,8 +903,8 @@ export default function LandingPage({
                 </div>
 
                 {/* Result Card */}
-                <div className="bg-orange-600 text-white p-5 rounded-2xl shadow-md space-y-1 text-center">
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-orange-200">
+                <div className="bg-green-600 text-white p-5 rounded-2xl shadow-md space-y-1 text-center">
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-green-200">
                     Sua Comissão Estimada via PIX
                   </span>
                   <div className="text-3xl font-display font-black">
@@ -914,8 +914,8 @@ export default function LandingPage({
                       maximumFractionDigits: 2,
                     })}
                   </div>
-                  <p className="text-[10px] text-orange-100">
-                    Simulação baseada no regulamento de comissões autônomas IndicaAqui.
+                  <p className="text-[10px] text-green-100">
+                    Simulação baseada no regulamento de comissões autônomas IndiqueLeads.
                   </p>
                 </div>
               </div>
@@ -923,7 +923,7 @@ export default function LandingPage({
 
             {/* Right Col: Details */}
             <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs bg-orange-100 text-orange-800 font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+              <span className="text-xs bg-green-100 text-green-800 font-bold tracking-widest uppercase px-3 py-1 rounded-full">
                 COMO LUCRAR MAIS
               </span>
               <h3 className="text-3xl font-display font-black text-slate-900 tracking-tight leading-tight">
@@ -937,7 +937,7 @@ export default function LandingPage({
 
               <div className="space-y-4">
                 <div className="flex gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center flex-shrink-0">
                     <Percent className="w-5 h-5" />
                   </div>
                   <div>
@@ -953,7 +953,7 @@ export default function LandingPage({
                 </div>
 
                 <div className="flex gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center flex-shrink-0">
                     <Calendar className="w-5 h-5" />
                   </div>
                   <div>
@@ -992,13 +992,13 @@ export default function LandingPage({
 
       {/* SECTION COMO VENDER (FOR ADVERTISERS) */}
       <section id="anunciar" className="py-20 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-950 via-slate-900 to-slate-950 opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-green-950 via-slate-900 to-slate-950 opacity-90"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Text details */}
             <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs bg-orange-600 text-white font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+              <span className="text-xs bg-green-600 text-white font-bold tracking-widest uppercase px-3 py-1 rounded-full">
                 PARA INCORPORADORAS, LOJAS E CONCESSIONÁRIAS
               </span>
               <h3 className="text-3xl sm:text-4xl font-display font-black tracking-tight leading-tight">
@@ -1007,13 +1007,13 @@ export default function LandingPage({
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
                 Por que queimar dinheiro com anúncios patrocinados frios quando você pode ter
                 centenas de promotores locais motivados indicando leads super quentes e auditados?
-                Na plataforma IndicaAqui, você só paga comissão se a venda for de fato assinada e
+                Na plataforma IndiqueLeads, você só paga comissão se a venda for de fato assinada e
                 fechada!
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5">
-                  <h4 className="text-orange-400 font-bold text-xs uppercase mb-1">
+                  <h4 className="text-green-400 font-bold text-xs uppercase mb-1">
                     Catálogo Zero-Deploy
                   </h4>
                   <p className="text-slate-400 text-[11px]">
@@ -1022,7 +1022,7 @@ export default function LandingPage({
                   </p>
                 </div>
                 <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5">
-                  <h4 className="text-orange-400 font-bold text-xs uppercase mb-1">
+                  <h4 className="text-green-400 font-bold text-xs uppercase mb-1">
                     Auditoria de Visitas
                   </h4>
                   <p className="text-slate-400 text-[11px]">
@@ -1031,7 +1031,7 @@ export default function LandingPage({
                   </p>
                 </div>
                 <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5">
-                  <h4 className="text-orange-400 font-bold text-xs uppercase mb-1">
+                  <h4 className="text-green-400 font-bold text-xs uppercase mb-1">
                     Taxa por Lead ou Faturamento
                   </h4>
                   <p className="text-slate-400 text-[11px]">
@@ -1040,7 +1040,7 @@ export default function LandingPage({
                   </p>
                 </div>
                 <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5">
-                  <h4 className="text-orange-400 font-bold text-xs uppercase mb-1">
+                  <h4 className="text-green-400 font-bold text-xs uppercase mb-1">
                     Gestão de Leads Completa
                   </h4>
                   <p className="text-slate-400 text-[11px]">
@@ -1053,7 +1053,7 @@ export default function LandingPage({
               <div className="pt-2">
                 <button
                   onClick={() => openAuth("anunciante", true)}
-                  className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-orange-950/40"
+                  className="bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-green-950/40"
                 >
                   Cadastrar Empresa Grátis
                 </button>
@@ -1068,7 +1068,7 @@ export default function LandingPage({
 
               <div className="space-y-4">
                 {/* Plan 1 */}
-                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 flex justify-between items-center hover:border-orange-500/30 transition-all">
+                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 flex justify-between items-center hover:border-green-500/30 transition-all">
                   <div>
                     <span className="text-[10px] bg-slate-800 text-slate-300 font-bold uppercase px-2 py-0.5 rounded font-mono">
                       Simples
@@ -1080,16 +1080,16 @@ export default function LandingPage({
                     <span className="text-xs text-slate-400 block font-mono font-bold">
                       R$ 149 /mês
                     </span>
-                    <span className="text-[8px] bg-orange-600/20 text-orange-400 px-1.5 py-0.5 rounded">
+                    <span className="text-[8px] bg-green-600/20 text-green-400 px-1.5 py-0.5 rounded">
                       Popular
                     </span>
                   </div>
                 </div>
 
                 {/* Plan 2 */}
-                <div className="bg-slate-900 p-4 rounded-2xl border border-orange-500/20 flex justify-between items-center hover:border-orange-500/50 transition-all shadow-md shadow-orange-950/50">
+                <div className="bg-slate-900 p-4 rounded-2xl border border-green-500/20 flex justify-between items-center hover:border-green-500/50 transition-all shadow-md shadow-green-950/50">
                   <div>
-                    <span className="text-[10px] bg-orange-600 text-white font-bold uppercase px-2 py-0.5 rounded font-mono">
+                    <span className="text-[10px] bg-green-600 text-white font-bold uppercase px-2 py-0.5 rounded font-mono">
                       Mais Vendido
                     </span>
                     <h5 className="font-bold text-sm mt-1">Plano Pro (Multi-Vertical)</h5>
@@ -1098,7 +1098,7 @@ export default function LandingPage({
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-orange-400 block font-mono font-bold">
+                    <span className="text-xs text-green-400 block font-mono font-bold">
                       R$ 399 /mês
                     </span>
                     <span className="text-[8px] bg-emerald-600/20 text-emerald-400 px-1.5 py-0.5 rounded">
@@ -1108,7 +1108,7 @@ export default function LandingPage({
                 </div>
 
                 {/* Plan 3 */}
-                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 flex justify-between items-center hover:border-orange-500/30 transition-all">
+                <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 flex justify-between items-center hover:border-green-500/30 transition-all">
                   <div>
                     <span className="text-[10px] bg-slate-800 text-slate-300 font-bold uppercase px-2 py-0.5 rounded font-mono">
                       Corporativo
@@ -1138,7 +1138,7 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
             <span className="text-white font-display font-black text-base">
-              IndicaAqui<span className="text-orange-600">.</span>
+              IndiqueLeads<span className="text-green-600">.</span>
             </span>
             <p className="text-[11px] text-slate-500 leading-relaxed">
               A primeira rede de afiliação e comissões para bens de alto padrão no Brasil.
@@ -1221,7 +1221,7 @@ export default function LandingPage({
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-8 border-t border-slate-900 text-center text-[10px] text-slate-600 flex justify-between flex-wrap gap-4">
-          <span>© 2026 IndicaAqui Tecnologia Ltda. CNPJ: 34.567.890/0001-11</span>
+          <span>© 2026 IndiqueLeads Tecnologia Ltda. CNPJ: 34.567.890/0001-11</span>
           <span>Sede: Av. Brigadeiro Faria Lima, 2000 - São Paulo, SP</span>
         </div>
       </footer>
@@ -1248,7 +1248,7 @@ export default function LandingPage({
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   authRole === "indicador"
-                    ? "bg-orange-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -1262,7 +1262,7 @@ export default function LandingPage({
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   authRole === "anunciante"
-                    ? "bg-orange-600 text-white"
+                    ? "bg-green-600 text-white"
                     : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -1287,7 +1287,7 @@ export default function LandingPage({
 
             <div className="p-6 sm:p-8 space-y-6">
               <div className="text-center">
-                <span className="text-[10px] bg-orange-100 text-orange-800 font-bold uppercase px-2.5 py-1 rounded-full font-mono">
+                <span className="text-[10px] bg-green-100 text-green-800 font-bold uppercase px-2.5 py-1 rounded-full font-mono">
                   {authRole === "admin"
                     ? "Acesso Administrativo"
                     : isRegisterMode
@@ -1340,7 +1340,7 @@ export default function LandingPage({
                       }
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
 
@@ -1354,13 +1354,13 @@ export default function LandingPage({
                       placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-orange-100 flex items-center justify-center gap-2"
+                    className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-green-100 flex items-center justify-center gap-2"
                   >
                     <Lock className="w-4 h-4" /> Entrar no Painel Seguro
                   </button>
@@ -1376,7 +1376,7 @@ export default function LandingPage({
                             setErrorMsg("");
                             setSuccessMsg("");
                           }}
-                          className="text-orange-600 font-bold hover:underline"
+                          className="text-green-600 font-bold hover:underline"
                         >
                           Cadastre-se Agora
                         </button>
@@ -1395,10 +1395,10 @@ export default function LandingPage({
                         onClick={() =>
                           handleQuickLogin("gabriel.martins@indica.com", "senha123", "indicador")
                         }
-                        className="bg-orange-50 hover:bg-orange-100 border border-orange-200/50 text-orange-950 rounded-xl py-2 px-1 text-[10px] font-bold transition-all flex flex-col items-center gap-0.5 shadow-xs"
+                        className="bg-green-50 hover:bg-green-100 border border-green-200/50 text-green-950 rounded-xl py-2 px-1 text-[10px] font-bold transition-all flex flex-col items-center gap-0.5 shadow-xs"
                       >
                         <span className="opacity-90">Indicador</span>
-                        <span className="text-[8px] text-orange-700 font-normal">Gabriel</span>
+                        <span className="text-[8px] text-green-700 font-normal">Gabriel</span>
                       </button>
                       <button
                         type="button"
@@ -1439,7 +1439,7 @@ export default function LandingPage({
                           placeholder="ex: Roberto Carlos"
                           value={regIndName}
                           onChange={(e) => setRegIndName(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -1453,7 +1453,7 @@ export default function LandingPage({
                             placeholder="roberto@email.com"
                             value={regIndEmail}
                             onChange={(e) => setRegIndEmail(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                         <div>
@@ -1466,7 +1466,7 @@ export default function LandingPage({
                             placeholder="Mínimo 6 caracteres"
                             value={regIndPassword}
                             onChange={(e) => setRegIndPassword(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1481,7 +1481,7 @@ export default function LandingPage({
                             placeholder="000.000.000-00"
                             value={regIndCpf}
                             onChange={(e) => setRegIndCpf(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                         <div>
@@ -1493,7 +1493,7 @@ export default function LandingPage({
                             placeholder="(11) 99999-9999"
                             value={regIndPhone}
                             onChange={(e) => setRegIndPhone(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1505,7 +1505,7 @@ export default function LandingPage({
                           <select
                             value={regIndPixType}
                             onChange={(e: any) => setRegIndPixType(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           >
                             <option value="email">E-mail</option>
                             <option value="cpf">CPF</option>
@@ -1523,7 +1523,7 @@ export default function LandingPage({
                             placeholder="Chave para transferências"
                             value={regIndPixKey}
                             onChange={(e) => setRegIndPixKey(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1538,7 +1538,7 @@ export default function LandingPage({
                             placeholder="ex: São Paulo"
                             value={regIndCity}
                             onChange={(e) => setRegIndCity(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                         <div className="col-span-1">
@@ -1548,7 +1548,7 @@ export default function LandingPage({
                           <select
                             value={regIndState}
                             onChange={(e) => setRegIndState(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           >
                             <option value="AC">AC</option>
                             <option value="AL">AL</option>
@@ -1594,7 +1594,7 @@ export default function LandingPage({
                           placeholder="ex: Incorporadora Sul"
                           value={regAdvName}
                           onChange={(e) => setRegAdvName(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -1608,7 +1608,7 @@ export default function LandingPage({
                             placeholder="contato@empresa.com"
                             value={regAdvEmail}
                             onChange={(e) => setRegAdvEmail(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                         <div>
@@ -1621,7 +1621,7 @@ export default function LandingPage({
                             placeholder="Min. 6 caracteres"
                             value={regAdvPassword}
                             onChange={(e) => setRegAdvPassword(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1633,7 +1633,7 @@ export default function LandingPage({
                           <select
                             value={regAdvType}
                             onChange={(e: any) => setRegAdvType(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           >
                             <option value="PJ">CNPJ (PJ)</option>
                             <option value="PF">CPF (Autônomo)</option>
@@ -1649,7 +1649,7 @@ export default function LandingPage({
                             placeholder="CNPJ ou CPF"
                             value={regAdvCnpjOrCpf}
                             onChange={(e) => setRegAdvCnpjOrCpf(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -1663,7 +1663,7 @@ export default function LandingPage({
                             placeholder="(11) 98888-8888"
                             value={regAdvPhone}
                             onChange={(e) => setRegAdvPhone(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                         <div>
@@ -1673,7 +1673,7 @@ export default function LandingPage({
                           <select
                             value={regAdvPlan}
                             onChange={(e: any) => setRegAdvPlan(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           >
                             <option value="starter">Starter (R$ 149/mês)</option>
                             <option value="pro">Pro (R$ 399/mês)</option>
@@ -1692,7 +1692,7 @@ export default function LandingPage({
                             placeholder="ex: Rio de Janeiro"
                             value={regAdvCity}
                             onChange={(e) => setRegAdvCity(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           />
                         </div>
                         <div className="col-span-1">
@@ -1702,7 +1702,7 @@ export default function LandingPage({
                           <select
                             value={regAdvState}
                             onChange={(e) => setRegAdvState(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-green-500 focus:outline-none"
                           >
                             <option value="AC">AC</option>
                             <option value="AL">AL</option>
@@ -1749,7 +1749,7 @@ export default function LandingPage({
                                 title={v.label}
                                 className={`py-1 rounded text-[11px] font-bold border transition-all ${
                                   regAdvCategories.includes(cat)
-                                    ? "bg-orange-600 border-orange-600 text-white"
+                                    ? "bg-green-600 border-green-600 text-white"
                                     : "bg-slate-100 border-slate-200 text-slate-600"
                                 }`}
                               >
@@ -1764,7 +1764,7 @@ export default function LandingPage({
 
                   <button
                     type="submit"
-                    className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-orange-100 flex items-center justify-center gap-2"
+                    className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-green-100 flex items-center justify-center gap-2"
                   >
                     <PlusCircle className="w-4 h-4" /> Cadastrar e Concordar com os Termos
                   </button>
@@ -1779,7 +1779,7 @@ export default function LandingPage({
                           setErrorMsg("");
                           setSuccessMsg("");
                         }}
-                        className="text-orange-600 font-bold hover:underline"
+                        className="text-green-600 font-bold hover:underline"
                       >
                         Fazer Login
                       </button>

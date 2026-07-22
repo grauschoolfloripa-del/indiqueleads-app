@@ -136,18 +136,18 @@ export default function VisitorView({
       
       {/* Referral context notice bar */}
       {referralId && (
-        <div className="bg-gradient-to-r from-orange-950 via-slate-900 to-slate-950 border border-orange-500/20 text-white rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow">
+        <div className="bg-gradient-to-r from-green-950 via-slate-900 to-slate-950 border border-green-500/20 text-white rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow">
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-orange-400">Atribuição Ativa</span>
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-green-400">Atribuição Ativa</span>
             </div>
             <h4 className="font-display font-bold text-sm mt-0.5">Indicado Especial</h4>
             <p className="text-xs text-slate-300 mt-0.5">
               Você foi direcionado a esta oferta exclusiva pelo parceiro comercial <strong>{referralIndicatorName || 'Gabriel Martins'}</strong>.
             </p>
           </div>
-          <span className="text-[10px] bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-lg py-1 px-3 font-semibold font-mono self-start sm:self-auto">
+          <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 rounded-lg py-1 px-3 font-semibold font-mono self-start sm:self-auto">
             Cookie ID: {referralId}
           </span>
         </div>
@@ -174,7 +174,7 @@ export default function VisitorView({
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <Grid className="w-4 h-4 text-orange-600" />
+              <Grid className="w-4 h-4 text-green-600" />
               Visualizar Oferta
             </button>
             <button
@@ -192,7 +192,7 @@ export default function VisitorView({
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <MessageSquare className="w-4 h-4 text-orange-600 animate-pulse" />
+              <MessageSquare className="w-4 h-4 text-green-600 animate-pulse" />
               Acompanhar Atendimento
               {(() => {
                 const key = (portalLookupPhoneOrEmail || localStorage.getItem('indica_client_lookup_key') || '').toLowerCase().trim();
@@ -202,7 +202,7 @@ export default function VisitorView({
                 ).length : 0;
                 if (matchedCount > 0) {
                   return (
-                    <span className="bg-orange-600 text-white font-mono font-bold text-[9px] rounded-full h-4 min-w-4 px-1.5 flex items-center justify-center animate-bounce">
+                    <span className="bg-green-600 text-white font-mono font-bold text-[9px] rounded-full h-4 min-w-4 px-1.5 flex items-center justify-center animate-bounce">
                       {matchedCount}
                     </span>
                   );
@@ -214,7 +214,7 @@ export default function VisitorView({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest bg-orange-50 text-orange-700 border border-orange-100 px-3 py-1 rounded-full font-mono">
+          <span className="text-[10px] font-bold uppercase tracking-widest bg-green-50 text-green-700 border border-green-100 px-3 py-1 rounded-full font-mono">
             {product.category.toUpperCase()}
           </span>
           <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${
@@ -257,7 +257,7 @@ export default function VisitorView({
                     key={idx}
                     onClick={() => setActiveImage(img)}
                     className={`relative rounded-xl overflow-hidden cursor-pointer w-24 aspect-video border-2 transition-all ${
-                      activeImage === img ? 'border-orange-600 scale-[1.03]' : 'border-transparent opacity-70 hover:opacity-100'
+                      activeImage === img ? 'border-green-600 scale-[1.03]' : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -350,7 +350,7 @@ export default function VisitorView({
                     {/* Chat Header */}
                     <div className="bg-slate-900 text-white p-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-orange-500" />
+                        <MessageSquare className="w-4 h-4 text-green-500" />
                         <div>
                           <h4 className="font-bold text-xs">{product.advertiserName}</h4>
                           <span className="text-[9px] text-slate-400 block">Atendimento Oficial pelo Portal</span>
@@ -384,7 +384,7 @@ export default function VisitorView({
                           <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs shadow-sm ${
                               isMe 
-                                ? 'bg-orange-600 text-white rounded-br-none' 
+                                ? 'bg-green-600 text-white rounded-br-none' 
                                 : 'bg-white border border-slate-100 text-slate-800 rounded-bl-none'
                             }`}>
                               <span className="font-bold text-[9px] block opacity-85 mb-0.5">
@@ -413,11 +413,11 @@ export default function VisitorView({
                         value={chatText}
                         onChange={e => setChatText(e.target.value)}
                         placeholder="Digite sua dúvida ou mensagem..."
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-transparent"
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-transparent"
                       />
                       <button
                         type="submit"
-                        className="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-xl transition-all shadow-md active:scale-95"
+                        className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-xl transition-all shadow-md active:scale-95"
                       >
                         <Send className="w-3.5 h-3.5" />
                       </button>
@@ -426,7 +426,7 @@ export default function VisitorView({
 
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="text-xs text-orange-600 hover:text-orange-800 font-bold transition-all underline block text-center mx-auto"
+                    className="text-xs text-green-600 hover:text-green-800 font-bold transition-all underline block text-center mx-auto"
                   >
                     Voltar para o formulário
                   </button>
@@ -441,7 +441,7 @@ export default function VisitorView({
                     value={clientName}
                     onChange={e => setClientName(e.target.value)}
                     placeholder="ex: Fernando de Abreu"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -453,7 +453,7 @@ export default function VisitorView({
                       value={clientPhone}
                       onChange={e => setClientPhone(e.target.value)}
                       placeholder="(11) 99999-9999"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     />
                   </div>
                   <div>
@@ -463,7 +463,7 @@ export default function VisitorView({
                       value={clientEmail}
                       onChange={e => setClientEmail(e.target.value)}
                       placeholder="fernando@exemplo.com"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -475,14 +475,14 @@ export default function VisitorView({
                     value={formNotes}
                     onChange={e => setFormNotes(e.target.value)}
                     placeholder="Gostaria de agendar uma visita ou simular financiamento..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-1.5"
                 >
                   <Send className="w-3.5 h-3.5" />
                   {submitting ? 'Enviando...' : 'Solicitar Atendimento'}
@@ -492,7 +492,7 @@ export default function VisitorView({
 
             {/* Security badge and data protection trust message */}
             <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-2">
-              <span className="text-[10px] font-bold text-orange-950 uppercase block tracking-wider font-mono">Plataforma Segura</span>
+              <span className="text-[10px] font-bold text-green-950 uppercase block tracking-wider font-mono">Plataforma Segura</span>
               <p className="text-[10px] text-slate-500 leading-normal">
                 Seus dados serão compartilhados de forma totalmente confidencial e protegida de acordo com as leis de privacidade. Atendimento prioritário e acompanhamento integral.
               </p>
@@ -506,7 +506,7 @@ export default function VisitorView({
       {activeTab === 'portal' && (
         <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-6 sm:p-8 max-w-4xl mx-auto space-y-6 text-left animate-fade-in">
           <div className="text-center max-w-xl mx-auto space-y-1.5">
-            <div className="inline-flex bg-orange-50 text-orange-600 rounded-2xl p-2.5 mb-2">
+            <div className="inline-flex bg-green-50 text-green-600 rounded-2xl p-2.5 mb-2">
               <MessageSquare className="w-6 h-6 animate-pulse" />
             </div>
             <h2 className="font-display font-bold text-slate-950 text-xl sm:text-2xl tracking-tight">Portal de Acompanhamento do Cliente</h2>
@@ -528,12 +528,12 @@ export default function VisitorView({
                     localStorage.setItem('indica_client_lookup_key', e.target.value);
                   }}
                   placeholder="ex: fernando@exemplo.com ou (11) 99999-9999"
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all font-medium"
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all font-medium"
                 />
               </div>
             </div>
             <div className="flex items-start gap-2 text-[10px] text-slate-500">
-              <Info className="w-3.5 h-3.5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <Info className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
               <span>
                 Seus dados são confidenciais. Para abrir seus atendimentos ativos, digite exatamente o mesmo telefone ou e-mail que você utilizou ao preencher o formulário de interesse de qualquer produto.
               </span>
@@ -584,12 +584,12 @@ export default function VisitorView({
                       <div 
                         key={lead.id} 
                         className={`border rounded-2xl p-5 transition-all bg-white shadow-sm text-left ${
-                          isChatOpen ? 'ring-2 ring-orange-500 border-transparent bg-orange-50/5' : 'hover:border-slate-300'
+                          isChatOpen ? 'ring-2 ring-green-500 border-transparent bg-green-50/5' : 'hover:border-slate-300'
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div className="space-y-1 text-left">
-                            <span className="text-[9px] text-orange-600 font-bold uppercase tracking-wider bg-orange-50 border border-orange-100/60 px-2 py-0.5 rounded-md">
+                            <span className="text-[9px] text-green-600 font-bold uppercase tracking-wider bg-green-50 border border-green-100/60 px-2 py-0.5 rounded-md">
                               {lead.productCategory}
                             </span>
                             <h4 className="font-display font-bold text-slate-900 text-sm sm:text-base mt-1">{lead.productTitle}</h4>
@@ -611,7 +611,7 @@ export default function VisitorView({
                               lead.status === 'venda_concluida' ? 'bg-emerald-100 border-emerald-200 text-emerald-800' :
                               lead.status === 'visita_confirmada' ? 'bg-cyan-100 border-cyan-200 text-cyan-800' :
                               lead.status === 'visita_agendada' ? 'bg-amber-100 border-amber-200 text-amber-800' :
-                              lead.status === 'proposta' ? 'bg-orange-100 border-orange-200 text-orange-800' : 'bg-slate-100 border-slate-200 text-slate-700'
+                              lead.status === 'proposta' ? 'bg-green-100 border-green-200 text-green-800' : 'bg-slate-100 border-slate-200 text-slate-700'
                             }`}>
                               {lead.status === 'lead_recebido' && 'Lead Recebido'}
                               {lead.status === 'contato_feito' && 'Contato Comercial'}
@@ -629,10 +629,10 @@ export default function VisitorView({
                                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                               }`}
                             >
-                              <MessageSquare className="w-3.5 h-3.5 text-orange-600" />
+                              <MessageSquare className="w-3.5 h-3.5 text-green-600" />
                               {isChatOpen ? 'Fechar Chat' : 'Acompanhar Chat'}
                               {leadMessages.length > 0 && (
-                                <span className="bg-orange-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.2">
+                                <span className="bg-green-600 text-white text-[9px] font-bold rounded-full px-1.5 py-0.2">
                                   {leadMessages.length}
                                 </span>
                               )}
@@ -657,13 +657,13 @@ export default function VisitorView({
                               {/* Chat Header */}
                               <div className="bg-slate-950 text-white px-4 py-2.5 flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <ShieldCheck className="w-4 h-4 text-orange-500" />
+                                  <ShieldCheck className="w-4 h-4 text-green-500" />
                                   <div className="text-left">
                                     <h5 className="font-bold text-xs text-slate-100">Atendimento Oficial • {advertiserName}</h5>
                                     <p className="text-[9px] text-slate-400">Atribuído à comissão de indicação de {lead.indicatorName}</p>
                                   </div>
                                 </div>
-                                <div className="bg-slate-800 border border-slate-700 text-orange-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase font-bold">
+                                <div className="bg-slate-800 border border-slate-700 text-green-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase font-bold">
                                   Criptografia Ativa
                                 </div>
                               </div>
@@ -693,7 +693,7 @@ export default function VisitorView({
                                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-xs shadow-sm ${
                                           isMe 
-                                            ? 'bg-orange-600 text-white rounded-br-none' 
+                                            ? 'bg-green-600 text-white rounded-br-none' 
                                             : 'bg-white border border-slate-100 text-slate-800 rounded-bl-none'
                                         }`}>
                                           <span className="font-bold text-[9px] block opacity-85 mb-0.5">
@@ -742,11 +742,11 @@ export default function VisitorView({
                                   value={portalChatText}
                                   onChange={e => setPortalChatText(e.target.value)}
                                   placeholder="Escreva sua mensagem com segurança aqui..."
-                                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-transparent font-medium"
+                                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-transparent font-medium"
                                 />
                                 <button
                                   type="submit"
-                                  className="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-xl transition-all shadow active:scale-95 flex items-center justify-center"
+                                  className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-xl transition-all shadow active:scale-95 flex items-center justify-center"
                                 >
                                   <Send className="w-3.5 h-3.5" />
                                 </button>
