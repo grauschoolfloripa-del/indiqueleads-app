@@ -39,13 +39,14 @@ export default function RoleSwitcher({
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Left: Brand & Status */}
         <div className="flex items-center gap-3">
-          <div className="bg-green-600 text-white rounded-lg p-1.5 flex items-center justify-center shadow-md animate-pulse">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <span className="inline-flex bg-white rounded-lg px-2 py-1 shadow-md">
+            <BrandLogo className="h-7 w-auto" />
+          </span>
           <div>
             <span className="font-display font-bold tracking-tight text-white text-base">
-              IndiqueLeads <span className="text-green-400 text-xs font-mono ml-1 font-normal bg-green-950/40 px-2 py-0.5 rounded border border-green-900/30">SIMULADOR BENTO</span>
+              <span className="text-green-400 text-xs font-mono font-normal bg-green-950/40 px-2 py-0.5 rounded border border-green-900/30">SIMULADOR BENTO</span>
             </span>
+
             <p className="text-[10px] text-slate-400 font-mono hidden sm:block">
               {selectedReferralId ? (
                 <span className="text-emerald-400 font-semibold">

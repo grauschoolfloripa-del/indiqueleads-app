@@ -282,16 +282,12 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex items-center cursor-pointer"
               onClick={() => setActiveSection("home")}
             >
-              <div className="bg-green-600 p-2 rounded-xl text-white shadow shadow-green-200">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <span className="font-display font-black text-slate-900 text-lg tracking-tight">
-                IndiqueLeads<span className="text-green-600">.</span>
-              </span>
+              <BrandLogo className="h-10 w-auto" />
             </div>
+
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-6">
@@ -1137,9 +1133,10 @@ export default function LandingPage({
       <footer className="bg-slate-950 text-slate-400 py-12 border-t border-slate-900 font-mono text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-3">
-            <span className="text-white font-display font-black text-base">
-              IndiqueLeads<span className="text-green-600">.</span>
+            <span className="inline-flex bg-white/95 rounded-lg px-2 py-1.5">
+              <BrandLogo className="h-8 w-auto" />
             </span>
+
             <p className="text-[11px] text-slate-500 leading-relaxed">
               A primeira rede de afiliação e comissões para bens de alto padrão no Brasil.
             </p>
