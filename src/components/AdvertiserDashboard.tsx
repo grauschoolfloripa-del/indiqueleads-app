@@ -905,7 +905,7 @@ export default function AdvertiserDashboard({
     return (
       <div className="max-w-md mx-auto my-8 bg-white rounded-3xl border border-slate-100 shadow-2xl p-6 font-sans">
         <div className="text-center mb-6">
-          <div className="bg-green-100 text-green-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="bg-blue-100 text-blue-800 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
             <Building2 className="w-8 h-8" />
           </div>
           <h2 className="font-display font-bold text-2xl text-slate-900">Portal do Anunciante</h2>
@@ -926,7 +926,7 @@ export default function AdvertiserDashboard({
               value={onboardForm.name}
               onChange={(e) => setOnboardForm({ ...onboardForm, name: e.target.value })}
               placeholder="ex: Imobiliária Prime SP"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -940,7 +940,7 @@ export default function AdvertiserDashboard({
                 onChange={(e) =>
                   setOnboardForm({ ...onboardForm, type: e.target.value as "PF" | "PJ" })
                 }
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="PJ">Pessoa Jurídica (Empresa)</option>
                 <option value="PF">Pessoa Física (Particular)</option>
@@ -956,7 +956,7 @@ export default function AdvertiserDashboard({
                 value={onboardForm.cnpjOrCpf}
                 onChange={(e) => setOnboardForm({ ...onboardForm, cnpjOrCpf: e.target.value })}
                 placeholder="00.000.000/0001-00"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -1001,7 +1001,7 @@ export default function AdvertiserDashboard({
                 value={onboardForm.city}
                 onChange={(e) => setOnboardForm({ ...onboardForm, city: e.target.value })}
                 placeholder="ex: Rio de Janeiro"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
             <div className="col-span-1">
@@ -1011,7 +1011,7 @@ export default function AdvertiserDashboard({
               <select
                 value={onboardForm.state}
                 onChange={(e) => setOnboardForm({ ...onboardForm, state: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               >
                 <option value="AC">AC</option>
                 <option value="AL">AL</option>
@@ -1056,7 +1056,7 @@ export default function AdvertiserDashboard({
                   onClick={() => setOnboardForm({ ...onboardForm, plan: p })}
                   className={`p-2 rounded-xl border flex flex-col items-center justify-between transition-all ${
                     onboardForm.plan === p
-                      ? "bg-green-50 border-green-500 text-green-800 shadow"
+                      ? "bg-blue-50 border-blue-500 text-blue-900 shadow"
                       : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
                   }`}
                 >
@@ -1104,7 +1104,7 @@ export default function AdvertiserDashboard({
                 crédito de atribuição de venda de indicadores ou que sonegarem comprovantes de
                 fechamento serão banidas permanentemente, sem reembolso das mensalidades pagas.
               </p>
-              <p className="text-green-300 font-bold text-center mt-2">
+              <p className="text-blue-300 font-bold text-center mt-2">
                 === ROLAR ATÉ O FIM PARA ATIVAR O ACEITE ===
               </p>
             </div>
@@ -1115,7 +1115,7 @@ export default function AdvertiserDashboard({
             disabled={!scrolledTerms}
             className={`w-full py-3 rounded-xl font-semibold text-sm transition-all shadow-md ${
               scrolledTerms
-                ? "bg-green-600 text-white hover:bg-green-500 active:scale-[0.98]"
+                ? "bg-blue-700 text-white hover:bg-blue-500 active:scale-[0.98]"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
           >
@@ -1139,7 +1139,7 @@ export default function AdvertiserDashboard({
     contato_feito: { label: "Contato Feito", color: "bg-blue-100 text-blue-800", list: [] },
     visita_agendada: { label: "Visita Agendada", color: "bg-amber-100 text-amber-800", list: [] },
     visita_confirmada: { label: "Check-In Feito", color: "bg-cyan-100 text-cyan-800", list: [] },
-    proposta: { label: "Proposta", color: "bg-green-100 text-green-800", list: [] },
+    proposta: { label: "Proposta", color: "bg-blue-100 text-blue-900", list: [] },
     venda_concluida: { label: "Vendido", color: "bg-emerald-100 text-emerald-800", list: [] },
   };
 
@@ -1152,16 +1152,16 @@ export default function AdvertiserDashboard({
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
       {/* Header Info */}
-      <div className="bg-gradient-to-r from-green-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-green-900/20">
+      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-blue-950/20">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center font-bold text-xl uppercase shadow border border-green-500">
+            <div className="w-14 h-14 bg-blue-700 rounded-xl flex items-center justify-center font-bold text-xl uppercase shadow border border-blue-500">
               {advertiser.name.substring(0, 2)}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-display font-bold text-lg text-white">{advertiser.name}</h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-950/40 border border-green-800 text-green-300 uppercase tracking-wider">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-950/40 border border-blue-900 text-blue-300 uppercase tracking-wider">
                   Plano {advertiser.plan}
                 </span>
               </div>
@@ -1170,7 +1170,7 @@ export default function AdvertiserDashboard({
                   {advertiser.email} • WhatsApp: {advertiser.phone}
                 </span>
                 {advertiser.city && !isEditingLocation && (
-                  <span className="bg-green-950/80 text-green-200 px-2 py-0.5 rounded-md border border-green-800/40 font-semibold flex items-center gap-1">
+                  <span className="bg-blue-950/80 text-blue-200 px-2 py-0.5 rounded-md border border-blue-900/40 font-semibold flex items-center gap-1">
                     📍 {advertiser.city} ({advertiser.state})
                     <button
                       onClick={() => {
@@ -1178,7 +1178,7 @@ export default function AdvertiserDashboard({
                         setTempState(advertiser.state || "SP");
                         setIsEditingLocation(true);
                       }}
-                      className="text-[10px] text-green-400 hover:text-white font-bold ml-1 hover:underline"
+                      className="text-[10px] text-blue-400 hover:text-white font-bold ml-1 hover:underline"
                     >
                       Alterar
                     </button>
@@ -1191,7 +1191,7 @@ export default function AdvertiserDashboard({
                       setTempState("SP");
                       setIsEditingLocation(true);
                     }}
-                    className="bg-green-500/20 text-green-300 hover:text-white px-2 py-0.5 rounded-md border border-green-500/30 font-semibold text-[11px] hover:underline"
+                    className="bg-blue-500/20 text-blue-300 hover:text-white px-2 py-0.5 rounded-md border border-blue-500/30 font-semibold text-[11px] hover:underline"
                   >
                     + Adicionar Localização
                   </button>
@@ -1199,18 +1199,18 @@ export default function AdvertiserDashboard({
               </p>
 
               {isEditingLocation && (
-                <div className="mt-2 flex items-center gap-2 bg-slate-900/95 p-2 rounded-xl border border-green-900/40 max-w-sm">
+                <div className="mt-2 flex items-center gap-2 bg-slate-900/95 p-2 rounded-xl border border-blue-950/40 max-w-sm">
                   <input
                     type="text"
                     placeholder="Cidade"
                     value={tempCity}
                     onChange={(e) => setTempCity(e.target.value)}
-                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-green-500 flex-1"
+                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-1"
                   />
                   <select
                     value={tempState}
                     onChange={(e) => setTempState(e.target.value)}
-                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-green-500 w-16"
+                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 w-16"
                   >
                     <option value="AC">AC</option>
                     <option value="AL">AL</option>
@@ -1251,7 +1251,7 @@ export default function AdvertiserDashboard({
                       setIsEditingLocation(false);
                       onAddNotification("Localização atualizada!", "success");
                     }}
-                    className="bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md transition-all"
+                    className="bg-blue-700 hover:bg-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md transition-all"
                   >
                     Salvar
                   </button>
@@ -1269,7 +1269,7 @@ export default function AdvertiserDashboard({
           <div className="flex gap-3">
             <button
               onClick={() => setIsAddingProduct(true)}
-              className="bg-green-600 hover:bg-green-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-all shadow flex items-center gap-2"
+              className="bg-blue-700 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-4 rounded-xl transition-all shadow flex items-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
               Anunciar Novo Bem
@@ -1290,7 +1290,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("funnel")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "funnel"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1300,7 +1300,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("produtos")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "produtos"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1310,7 +1310,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("financeiro")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "financeiro"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1320,7 +1320,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("afiliados")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "afiliados"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1330,7 +1330,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("financiamentos")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "financiamentos"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1347,11 +1347,11 @@ export default function AdvertiserDashboard({
               {pendingArrivals.map((lead) => (
                 <div
                   key={lead.id}
-                  className="bg-gradient-to-r from-amber-50 to-green-50 border border-amber-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 text-left"
+                  className="bg-gradient-to-r from-amber-50 to-blue-50 border border-amber-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 text-left"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="bg-green-100 text-green-700 p-2 rounded-xl mt-0.5">
-                      <MapPin className="w-5 h-5 text-green-600" />
+                    <div className="bg-blue-100 text-blue-800 p-2 rounded-xl mt-0.5">
+                      <MapPin className="w-5 h-5 text-blue-700" />
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm">
@@ -1363,7 +1363,7 @@ export default function AdvertiserDashboard({
                         informou que acabou de chegar para a visita do cliente{" "}
                         <strong className="text-slate-900 font-bold">{lead.clientName}</strong>{" "}
                         (interesse em{" "}
-                        <span className="text-green-700 font-semibold">{lead.productTitle}</span>).
+                        <span className="text-blue-800 font-semibold">{lead.productTitle}</span>).
                       </p>
                     </div>
                   </div>
@@ -1375,7 +1375,7 @@ export default function AdvertiserDashboard({
                         "success",
                       );
                     }}
-                    className="bg-green-600 hover:bg-green-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 self-end md:self-auto active:scale-95 whitespace-nowrap"
+                    className="bg-blue-700 hover:bg-blue-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 self-end md:self-auto active:scale-95 whitespace-nowrap"
                   >
                     <Check className="w-4 h-4" /> Confirmar Presença do Indicador
                   </button>
@@ -1418,11 +1418,11 @@ export default function AdvertiserDashboard({
                     <div
                       key={lead.id}
                       onClick={() => setViewingLead(lead)}
-                      className="bg-white rounded-xl p-3 border border-slate-200 hover:border-green-400 cursor-pointer shadow-xs hover:shadow transition-all space-y-2 relative group text-left"
+                      className="bg-white rounded-xl p-3 border border-slate-200 hover:border-blue-400 cursor-pointer shadow-xs hover:shadow transition-all space-y-2 relative group text-left"
                       title="Clique para ver os detalhes completos do Lead e Indicador"
                     >
                       <div className="flex justify-between items-start gap-1">
-                        <span className="text-[9px] text-green-600 font-bold block truncate uppercase flex-1">
+                        <span className="text-[9px] text-blue-700 font-bold block truncate uppercase flex-1">
                           {lead.productTitle}
                         </span>
                         <span className="text-[8px] bg-slate-100 text-slate-500 px-1 py-0.2 rounded font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1473,7 +1473,7 @@ export default function AdvertiserDashboard({
 
                       <div className="border-t border-slate-100 pt-1.5 flex justify-between items-center text-[9px] text-slate-500 font-mono">
                         <span className="truncate">Por: {lead.indicatorName.split(" ")[0]}</span>
-                        <span className="font-bold text-green-700">
+                        <span className="font-bold text-blue-800">
                           R$ {lead.commissionValue.toLocaleString("pt-BR")}
                         </span>
                       </div>
@@ -1489,7 +1489,7 @@ export default function AdvertiserDashboard({
                               e.stopPropagation();
                               onUpdateLeadStatus(lead.id, "contato_feito");
                             }}
-                            className="w-full bg-green-50 hover:bg-green-600 text-green-700 hover:text-white py-1 rounded text-[10px] font-semibold transition-all flex items-center justify-center gap-1 border border-green-100/50"
+                            className="w-full bg-blue-50 hover:bg-blue-700 text-blue-800 hover:text-white py-1 rounded text-[10px] font-semibold transition-all flex items-center justify-center gap-1 border border-blue-100/50"
                           >
                             <span>Fazer Contato</span>
                             <ArrowRight className="w-3 h-3" />
@@ -1514,7 +1514,7 @@ export default function AdvertiserDashboard({
                           <div className="space-y-1.5 w-full">
                             {lead.checkInRequested ? (
                               <>
-                                <div className="text-[8px] text-green-800 font-bold bg-green-50 p-1.5 rounded border border-green-200 text-center flex flex-col gap-0.5 animate-pulse">
+                                <div className="text-[8px] text-blue-900 font-bold bg-blue-50 p-1.5 rounded border border-blue-200 text-center flex flex-col gap-0.5 animate-pulse">
                                   <span>📍 Presença Sinalizada!</span>
                                 </div>
                                 <button
@@ -1528,7 +1528,7 @@ export default function AdvertiserDashboard({
                                       "success",
                                     );
                                   }}
-                                  className="w-full bg-green-600 hover:bg-green-500 text-white py-1.5 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
+                                  className="w-full bg-blue-700 hover:bg-blue-500 text-white py-1.5 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1 shadow-sm"
                                   title="Confirmar que o indicador está fisicamente presente na loja"
                                 >
                                   <span>Confirmar Presença</span>
@@ -1644,7 +1644,7 @@ export default function AdvertiserDashboard({
               <button
                 type="button"
                 onClick={() => setIsAddingProduct(true)}
-                className="bg-green-600 hover:bg-green-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 self-end sm:self-auto"
+                className="bg-blue-700 hover:bg-blue-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-1.5 self-end sm:self-auto"
               >
                 <PlusCircle className="w-4 h-4" /> Cadastrar Bem Manualmente
               </button>
@@ -1687,7 +1687,7 @@ export default function AdvertiserDashboard({
                               referrerPolicy="no-referrer"
                             />
                             <div>
-                              <span className="text-[9px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider font-mono">
+                              <span className="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider font-mono">
                                 {p.category}
                               </span>
                               <span className="block font-bold text-slate-900 leading-snug mt-1">
@@ -1701,7 +1701,7 @@ export default function AdvertiserDashboard({
                           <td className="py-4 px-4 font-mono font-bold text-slate-900">
                             R$ {p.price.toLocaleString("pt-BR")}
                           </td>
-                          <td className="py-4 px-4 font-mono font-semibold text-green-600">
+                          <td className="py-4 px-4 font-mono font-semibold text-blue-700">
                             R$ {p.commissionDigitalValue?.toLocaleString("pt-BR")} (
                             {p.commissionDigitalPct}%)
                           </td>
@@ -1734,7 +1734,7 @@ export default function AdvertiserDashboard({
                               onChange={(e) =>
                                 onUpdateProductStatus(p.id, e.target.value as ProductStatus)
                               }
-                              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-green-500"
+                              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             >
                               <option value="ativo">Ativar</option>
                               <option value="reservado">Reservar</option>
@@ -1788,19 +1788,19 @@ export default function AdvertiserDashboard({
                 {/* Steps indicator */}
                 <div className="flex items-center justify-between max-w-lg mx-auto bg-slate-50 p-1.5 rounded-xl border border-slate-100 text-center text-[10px] font-bold text-slate-400">
                   <div
-                    className={`flex-1 py-1.5 rounded-lg ${bulkStep === "upload" ? "bg-green-600 text-white" : ""}`}
+                    className={`flex-1 py-1.5 rounded-lg ${bulkStep === "upload" ? "bg-blue-700 text-white" : ""}`}
                   >
                     1. Arquivo ou Ctrl+V
                   </div>
                   <div className="px-2 text-slate-300">➔</div>
                   <div
-                    className={`flex-1 py-1.5 rounded-lg ${bulkStep === "mapping" ? "bg-green-600 text-white" : ""}`}
+                    className={`flex-1 py-1.5 rounded-lg ${bulkStep === "mapping" ? "bg-blue-700 text-white" : ""}`}
                   >
                     2. Mapeamento
                   </div>
                   <div className="px-2 text-slate-300">➔</div>
                   <div
-                    className={`flex-1 py-1.5 rounded-lg ${bulkStep === "validation" ? "bg-green-600 text-white" : ""}`}
+                    className={`flex-1 py-1.5 rounded-lg ${bulkStep === "validation" ? "bg-blue-700 text-white" : ""}`}
                   >
                     3. Validação e Carga
                   </div>
@@ -1822,7 +1822,7 @@ export default function AdvertiserDashboard({
                               onClick={() => setBulkCategory(cat)}
                               className={`py-2 px-1 rounded-xl border text-[10px] font-bold text-center flex flex-col items-center gap-1 transition-all uppercase ${
                                 bulkCategory === cat
-                                  ? "bg-green-600 border-green-600 text-white shadow-md"
+                                  ? "bg-blue-700 border-blue-700 text-white shadow-md"
                                   : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                               }`}
                             >
@@ -1898,7 +1898,7 @@ export default function AdvertiserDashboard({
                         <label className="block text-xs font-bold text-slate-700 uppercase">
                           Opção A: Carregar Arquivo de Dispositivo
                         </label>
-                        <div className="border-2 border-dashed border-slate-300 hover:border-green-500 bg-slate-50 hover:bg-slate-100/40 rounded-2xl p-6 text-center transition-all relative">
+                        <div className="border-2 border-dashed border-slate-300 hover:border-blue-500 bg-slate-50 hover:bg-slate-100/40 rounded-2xl p-6 text-center transition-all relative">
                           <input
                             type="file"
                             accept=".csv, .txt, .tsv"
@@ -1915,7 +1915,7 @@ export default function AdvertiserDashboard({
                               Tabulações
                             </span>
                             {bulkSelectedFileName && (
-                              <span className="inline-block mt-2 bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded text-[10px]">
+                              <span className="inline-block mt-2 bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded text-[10px]">
                                 Selecionado: {bulkSelectedFileName}
                               </span>
                             )}
@@ -1934,7 +1934,7 @@ export default function AdvertiserDashboard({
                             value={bulkRawText}
                             onChange={(e) => setBulkRawText(e.target.value)}
                             placeholder="Cole as colunas de sua planilha aqui. Exemplo:&#10;Título	Preço	Descrição	Cidade	Estado&#10;Apartamento de Luxo	1200000	Maravilhoso loft decorado	São Paulo	SP"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-green-500 focus:bg-white"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
                           />
                           <div className="flex justify-between items-center">
                             <span className="text-[10px] text-slate-400">
@@ -1953,7 +1953,7 @@ export default function AdvertiserDashboard({
                                   "info",
                                 );
                               }}
-                              className="text-[10px] text-green-600 font-bold hover:underline"
+                              className="text-[10px] text-blue-700 font-bold hover:underline"
                             >
                               Preencher Exemplo Rápido
                             </button>
@@ -1969,7 +1969,7 @@ export default function AdvertiserDashboard({
                         disabled={!bulkRawText.trim()}
                         className={`font-bold text-xs py-2.5 px-5 rounded-xl shadow transition-all flex items-center gap-1 ${
                           bulkRawText.trim()
-                            ? "bg-green-600 hover:bg-green-500 text-white cursor-pointer"
+                            ? "bg-blue-700 hover:bg-blue-500 text-white cursor-pointer"
                             : "bg-slate-100 text-slate-400 cursor-not-allowed"
                         }`}
                       >
@@ -2039,7 +2039,7 @@ export default function AdvertiserDashboard({
                       <button
                         type="button"
                         onClick={handleApplyMapping}
-                        className="bg-green-600 hover:bg-green-500 text-white font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-md flex items-center gap-1.5"
+                        className="bg-blue-700 hover:bg-blue-500 text-white font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-md flex items-center gap-1.5"
                       >
                         Validar Dados <Check className="w-4 h-4" />
                       </button>
@@ -2200,7 +2200,7 @@ export default function AdvertiserDashboard({
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Imóveis: Vista CRM */}
-                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-green-500/50 transition-all group">
+                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition-all group">
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <span className="text-3xl">Vista</span>
@@ -2209,7 +2209,7 @@ export default function AdvertiserDashboard({
                           </span>
                         </div>
                         <div>
-                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-green-600 transition-colors">
+                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-blue-700 transition-colors">
                             Vista CRM
                           </h5>
                           <p className="text-[10px] text-slate-500 leading-relaxed mt-1">
@@ -2228,7 +2228,7 @@ export default function AdvertiserDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveIntegrationDetail("vistaCrm")}
-                          className="bg-slate-100 hover:bg-green-50 hover:text-green-600 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
+                          className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
                         >
                           Configurar
                         </button>
@@ -2236,7 +2236,7 @@ export default function AdvertiserDashboard({
                     </div>
 
                     {/* Imóveis: Kenlo / inGaia */}
-                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-green-500/50 transition-all group">
+                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition-all group">
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <span className="text-3xl">Kenlo</span>
@@ -2245,7 +2245,7 @@ export default function AdvertiserDashboard({
                           </span>
                         </div>
                         <div>
-                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-green-600 transition-colors">
+                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-blue-700 transition-colors">
                             Kenlo (inGaia)
                           </h5>
                           <p className="text-[10px] text-slate-500 leading-relaxed mt-1">
@@ -2264,7 +2264,7 @@ export default function AdvertiserDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveIntegrationDetail("kenlo")}
-                          className="bg-slate-100 hover:bg-green-50 hover:text-green-600 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
+                          className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
                         >
                           Configurar
                         </button>
@@ -2272,7 +2272,7 @@ export default function AdvertiserDashboard({
                     </div>
 
                     {/* Veículos: Webmotors */}
-                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-green-500/50 transition-all group">
+                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition-all group">
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <span className="text-3xl">🚗</span>
@@ -2281,7 +2281,7 @@ export default function AdvertiserDashboard({
                           </span>
                         </div>
                         <div>
-                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-green-600 transition-colors">
+                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-blue-700 transition-colors">
                             Integradores de Veículos
                           </h5>
                           <p className="text-[10px] text-slate-500 leading-relaxed mt-1">
@@ -2300,7 +2300,7 @@ export default function AdvertiserDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveIntegrationDetail("webmotors")}
-                          className="bg-slate-100 hover:bg-green-50 hover:text-green-600 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
+                          className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
                         >
                           Configurar
                         </button>
@@ -2308,7 +2308,7 @@ export default function AdvertiserDashboard({
                     </div>
 
                     {/* Bling ERP */}
-                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-green-500/50 transition-all group">
+                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition-all group">
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <span className="text-3xl">Bling!</span>
@@ -2317,7 +2317,7 @@ export default function AdvertiserDashboard({
                           </span>
                         </div>
                         <div>
-                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-green-600 transition-colors">
+                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-blue-700 transition-colors">
                             Bling! ERP
                           </h5>
                           <p className="text-[10px] text-slate-500 leading-relaxed mt-1">
@@ -2336,7 +2336,7 @@ export default function AdvertiserDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveIntegrationDetail("bling")}
-                          className="bg-slate-100 hover:bg-green-50 hover:text-green-600 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
+                          className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
                         >
                           Configurar
                         </button>
@@ -2344,7 +2344,7 @@ export default function AdvertiserDashboard({
                     </div>
 
                     {/* Shopify */}
-                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-green-500/50 transition-all group">
+                    <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition-all group">
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <span className="text-3xl">Shopify</span>
@@ -2353,7 +2353,7 @@ export default function AdvertiserDashboard({
                           </span>
                         </div>
                         <div>
-                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-green-600 transition-colors">
+                          <h5 className="font-display font-bold text-slate-900 text-xs group-hover:text-blue-700 transition-colors">
                             Shopify / WooCommerce
                           </h5>
                           <p className="text-[10px] text-slate-500 leading-relaxed mt-1">
@@ -2372,7 +2372,7 @@ export default function AdvertiserDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveIntegrationDetail("shopify")}
-                          className="bg-slate-100 hover:bg-green-50 hover:text-green-600 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
+                          className="bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
                         >
                           Configurar
                         </button>
@@ -2384,12 +2384,12 @@ export default function AdvertiserDashboard({
                       <div className="space-y-3">
                         <div className="flex justify-between items-start">
                           <span className="text-3xl">💻</span>
-                          <span className="bg-green-600/30 border border-green-500/30 text-green-300 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="bg-blue-700/30 border border-blue-500/30 text-blue-300 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                             Para Desenvolvedores
                           </span>
                         </div>
                         <div>
-                          <h5 className="font-display font-bold text-white text-xs group-hover:text-green-500 transition-colors">
+                          <h5 className="font-display font-bold text-white text-xs group-hover:text-blue-500 transition-colors">
                             API Direta de Integração
                           </h5>
                           <p className="text-[10px] text-slate-400 leading-relaxed mt-1">
@@ -2406,7 +2406,7 @@ export default function AdvertiserDashboard({
                         <button
                           type="button"
                           onClick={() => setActiveIntegrationDetail("api_doc")}
-                          className="bg-green-600 hover:bg-green-500 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
+                          className="bg-blue-700 hover:bg-blue-500 text-white font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-all"
                         >
                           Ver Token e Código
                         </button>
@@ -2425,7 +2425,7 @@ export default function AdvertiserDashboard({
                     >
                       ⬅ Voltar para Hub
                     </button>
-                    <span className="text-[10px] bg-green-50 text-green-700 border border-green-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider font-mono">
+                    <span className="text-[10px] bg-blue-50 text-blue-800 border border-blue-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider font-mono">
                       {activeIntegrationDetail === "api_doc"
                         ? "API de Desenvolvedor"
                         : `Integração: ${activeIntegrationDetail.toUpperCase()}`}
@@ -2475,7 +2475,7 @@ export default function AdvertiserDashboard({
                                 vistaCrm: { ...integrations.vistaCrm, url: e.target.value },
                               })
                             }
-                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />
                         </div>
                         <div className="space-y-1">
@@ -2492,7 +2492,7 @@ export default function AdvertiserDashboard({
                                 vistaCrm: { ...integrations.vistaCrm, token: e.target.value },
                               })
                             }
-                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                           />
                         </div>
                         <div className="flex items-center gap-2 py-1">
@@ -2506,7 +2506,7 @@ export default function AdvertiserDashboard({
                                 vistaCrm: { ...integrations.vistaCrm, autoSync: e.target.checked },
                               })
                             }
-                            className="rounded text-green-600 focus:ring-green-500"
+                            className="rounded text-blue-700 focus:ring-blue-500"
                           />
                           <label
                             htmlFor="vista-auto-sync"
@@ -2544,7 +2544,7 @@ export default function AdvertiserDashboard({
                             }
                             className={`flex-1 font-bold text-[10px] py-2 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-1.5 shadow ${
                               integrations.vistaCrm.url && integrations.vistaCrm.token && !isSyncing
-                                ? "bg-green-600 text-white hover:bg-green-500 cursor-pointer"
+                                ? "bg-blue-700 text-white hover:bg-blue-500 cursor-pointer"
                                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
                             }`}
                           >
@@ -2673,7 +2673,7 @@ export default function AdvertiserDashboard({
                               integrations.kenlo.clientId &&
                               integrations.kenlo.clientSecret &&
                               !isSyncing
-                                ? "bg-green-600 text-white hover:bg-green-500 cursor-pointer"
+                                ? "bg-blue-700 text-white hover:bg-blue-500 cursor-pointer"
                                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
                             }`}
                           >
@@ -2754,7 +2754,7 @@ export default function AdvertiserDashboard({
                             disabled={!integrations.webmotors.feedUrl || isSyncing}
                             className={`flex-1 font-bold text-[10px] py-2 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-1.5 shadow ${
                               integrations.webmotors.feedUrl && !isSyncing
-                                ? "bg-green-600 text-white hover:bg-green-500 cursor-pointer"
+                                ? "bg-blue-700 text-white hover:bg-blue-500 cursor-pointer"
                                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
                             }`}
                           >
@@ -2835,7 +2835,7 @@ export default function AdvertiserDashboard({
                             disabled={!integrations.bling.apikey || isSyncing}
                             className={`flex-1 font-bold text-[10px] py-2 px-4 rounded-xl text-center transition-all flex items-center justify-center gap-1.5 shadow ${
                               integrations.bling.apikey && !isSyncing
-                                ? "bg-green-600 text-white hover:bg-green-500 cursor-pointer"
+                                ? "bg-blue-700 text-white hover:bg-blue-500 cursor-pointer"
                                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
                             }`}
                           >
@@ -2940,7 +2940,7 @@ export default function AdvertiserDashboard({
                               integrations.shopify.shopUrl &&
                               integrations.shopify.accessToken &&
                               !isSyncing
-                                ? "bg-green-600 text-white hover:bg-green-500 cursor-pointer"
+                                ? "bg-blue-700 text-white hover:bg-blue-500 cursor-pointer"
                                 : "bg-slate-100 text-slate-400 cursor-not-allowed"
                             }`}
                           >
@@ -3007,7 +3007,7 @@ export default function AdvertiserDashboard({
                           <span className="block text-[10px] font-bold text-slate-500 uppercase">
                             Instrução cURL de Exemplo (Adicionar Produto)
                           </span>
-                          <div className="bg-slate-900 text-green-200 font-mono text-[10px] p-4 rounded-xl overflow-x-auto relative group">
+                          <div className="bg-slate-900 text-blue-200 font-mono text-[10px] p-4 rounded-xl overflow-x-auto relative group">
                             <button
                               type="button"
                               onClick={() => {
@@ -3041,7 +3041,7 @@ export default function AdvertiserDashboard({
                           </p>
                           <p>
                             •{" "}
-                            <span className="font-mono font-bold text-green-600">201 Created</span>
+                            <span className="font-mono font-bold text-blue-700">201 Created</span>
                             : Produto criado com sucesso.
                           </p>
                           <p>
@@ -3078,8 +3078,8 @@ export default function AdvertiserDashboard({
             </h3>
             <p className="text-xs text-slate-500">Seu plano ativo na plataforma IndiqueLeads.</p>
 
-            <div className="bg-gradient-to-br from-green-950 to-slate-950 text-white rounded-2xl p-5 border border-green-900/30 relative overflow-hidden">
-              <span className="text-[9px] bg-green-600 text-white px-2.5 py-0.5 rounded font-bold uppercase tracking-wider">
+            <div className="bg-gradient-to-br from-blue-950 to-slate-950 text-white rounded-2xl p-5 border border-blue-950/30 relative overflow-hidden">
+              <span className="text-[9px] bg-blue-700 text-white px-2.5 py-0.5 rounded font-bold uppercase tracking-wider">
                 PREMIUM
               </span>
               <h4 className="font-display font-bold text-lg mt-2">Plano Corporativo</h4>
@@ -3087,7 +3087,7 @@ export default function AdvertiserDashboard({
                 Limite de anúncios ilimitado • Acesso a todas as verticais.
               </p>
 
-              <div className="border-t border-green-900/20 mt-4 pt-3 flex justify-between items-baseline">
+              <div className="border-t border-blue-950/20 mt-4 pt-3 flex justify-between items-baseline">
                 <span className="text-xs text-slate-400">Vencimento em 10/07/2026:</span>
                 <span className="text-lg font-mono font-bold text-white">R$ 199,00/mês</span>
               </div>
@@ -3192,7 +3192,7 @@ export default function AdvertiserDashboard({
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-100 text-green-700 font-bold rounded-lg flex items-center justify-center text-xs">
+                      <div className="w-8 h-8 bg-blue-100 text-blue-800 font-bold rounded-lg flex items-center justify-center text-xs">
                         {ind.name.substring(0, 2)}
                       </div>
                       <div>
@@ -3267,7 +3267,7 @@ export default function AdvertiserDashboard({
             </button>
 
             <div className="text-center mb-6">
-              <span className="text-[10px] bg-green-50 text-green-700 border border-green-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+              <span className="text-[10px] bg-blue-50 text-blue-800 border border-blue-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
                 Novo Anúncio de Catálogo
               </span>
               <h2 className="font-display font-bold text-slate-900 text-xl mt-2">
@@ -3291,7 +3291,7 @@ export default function AdvertiserDashboard({
                     title={v.label}
                     className={`py-3 px-1 rounded-2xl border text-xs font-bold text-center flex flex-col items-center gap-1.5 transition-all uppercase tracking-wide ${
                       active
-                        ? "bg-green-600 border-green-600 text-white shadow-lg shadow-green-100"
+                        ? "bg-blue-700 border-blue-700 text-white shadow-lg shadow-blue-100"
                         : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                   >
@@ -3314,7 +3314,7 @@ export default function AdvertiserDashboard({
                     value={productForm.title}
                     onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
                     placeholder="ex: Porsche Carrera GTS 2022 ou Mansão Alphaville"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
@@ -3330,7 +3330,7 @@ export default function AdvertiserDashboard({
                       setProductForm({ ...productForm, description: e.target.value })
                     }
                     placeholder="Destaque os principais diferenciais, opcionais, revisões and condições comerciais."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
@@ -3344,7 +3344,7 @@ export default function AdvertiserDashboard({
                     value={productForm.price}
                     onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                     placeholder="ex: 159000"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-green-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
@@ -3429,7 +3429,7 @@ export default function AdvertiserDashboard({
                       onChange={(e) =>
                         setProductForm({ ...productForm, allowPresencialTier: e.target.checked })
                       }
-                      className="w-3.5 h-3.5 text-green-600 focus:ring-green-500 animate-pulse"
+                      className="w-3.5 h-3.5 text-blue-700 focus:ring-blue-500 animate-pulse"
                     />
                   </label>
                   <input
@@ -3547,7 +3547,7 @@ export default function AdvertiserDashboard({
                           onClick={() => setProductForm({ ...productForm, coverImage: img })}
                           className={`relative rounded-xl overflow-hidden cursor-pointer border-2 aspect-video transition-all ${
                             productForm.coverImage === img
-                              ? "border-green-600 scale-[1.03] shadow-md"
+                              ? "border-blue-700 scale-[1.03] shadow-md"
                               : "border-transparent"
                           }`}
                         >
@@ -3558,7 +3558,7 @@ export default function AdvertiserDashboard({
                             referrerPolicy="no-referrer"
                           />
                           {productForm.coverImage === img && (
-                            <div className="absolute top-1.5 right-1.5 bg-green-600 text-white p-0.5 rounded-full">
+                            <div className="absolute top-1.5 right-1.5 bg-blue-700 text-white p-0.5 rounded-full">
                               <Check className="w-3 h-3" />
                             </div>
                           )}
@@ -3571,9 +3571,9 @@ export default function AdvertiserDashboard({
 
               <button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 shadow-green-100"
+                className="w-full bg-blue-700 hover:bg-blue-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 shadow-blue-100"
               >
-                <Sparkles className="w-4 h-4 text-green-200" />
+                <Sparkles className="w-4 h-4 text-blue-200" />
                 Publicar Anúncio no Catálogo Geral
               </button>
             </form>
@@ -3635,7 +3635,7 @@ export default function AdvertiserDashboard({
                     <span className="text-[9px] text-slate-400 block uppercase font-bold">
                       Atribuição
                     </span>
-                    <span className="text-xs font-bold uppercase text-green-700">
+                    <span className="text-xs font-bold uppercase text-blue-800">
                       {closingSaleLead.commissionType}
                     </span>
                   </div>
@@ -3657,7 +3657,7 @@ export default function AdvertiserDashboard({
               </div>
 
               {/* Upload contract simulation */}
-              <div className="border-2 border-dashed border-slate-200 hover:border-green-500 rounded-2xl p-5 text-center transition-colors cursor-pointer bg-slate-50/50">
+              <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-5 text-center transition-colors cursor-pointer bg-slate-50/50">
                 <input
                   type="file"
                   id="invoice_file_upload"
@@ -3673,7 +3673,7 @@ export default function AdvertiserDashboard({
                 />
                 <label htmlFor="invoice_file_upload" className="cursor-pointer space-y-1 block">
                   <Upload className="w-6 h-6 text-slate-400 mx-auto" />
-                  <span className="block text-xs font-bold text-green-600">
+                  <span className="block text-xs font-bold text-blue-700">
                     Anexar NF-e ou Contrato de Compra e Venda
                   </span>
                   <span className="block text-[9px] text-slate-400">
@@ -3711,7 +3711,7 @@ export default function AdvertiserDashboard({
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <Landmark className="w-6 h-6 text-green-500" />
+                <Landmark className="w-6 h-6 text-blue-500" />
                 <h3 className="font-display font-bold text-lg">
                   Mesa de Análise de Crédito Veicular
                 </h3>
@@ -3723,7 +3723,7 @@ export default function AdvertiserDashboard({
                 assinatura digital do contrato!
               </p>
             </div>
-            <span className="bg-green-950/60 border border-green-800 text-green-400 text-[10px] font-mono px-3 py-1 rounded-full uppercase tracking-wider shrink-0">
+            <span className="bg-blue-950/60 border border-blue-900 text-blue-400 text-[10px] font-mono px-3 py-1 rounded-full uppercase tracking-wider shrink-0">
               Mesa Ativa •{" "}
               {simulations?.filter((s) => s.advertiserId === advertiser.id).length || 0} Fichas
             </span>
@@ -3826,7 +3826,7 @@ export default function AdvertiserDashboard({
 
                         <div className="bg-slate-100/60 p-2.5 rounded-xl border border-slate-200/50 text-[10px] text-slate-600 space-y-0.5">
                           <p className="font-semibold text-slate-700">Enviado por:</p>
-                          <p className="font-bold text-green-700 line-clamp-1">
+                          <p className="font-bold text-blue-800 line-clamp-1">
                             {sim.indicatorName}
                           </p>
                           <p className="text-[9px] text-slate-400 font-mono">
@@ -3930,7 +3930,7 @@ export default function AdvertiserDashboard({
                             </p>
                             <p className="font-mono text-slate-400">
                               Taxa:{" "}
-                              <span className="font-bold text-green-400">
+                              <span className="font-bold text-blue-400">
                                 {sim.approvedContract.interestRate}% a.m.
                               </span>{" "}
                               • Financiado: R${" "}
@@ -3953,7 +3953,7 @@ export default function AdvertiserDashboard({
                         {sim.status === "pendente" && (
                           <button
                             onClick={() => handleInitiateBankAnalysis(sim.id)}
-                            className="w-full bg-green-600 hover:bg-green-500 text-white font-bold text-[10px] py-2 px-3 rounded-xl transition-all shadow-xs flex items-center justify-center gap-1"
+                            className="w-full bg-blue-700 hover:bg-blue-500 text-white font-bold text-[10px] py-2 px-3 rounded-xl transition-all shadow-xs flex items-center justify-center gap-1"
                           >
                             <RefreshCw className="w-3 h-3 animate-spin-slow" />
                             Iniciar Simulação
@@ -4066,7 +4066,7 @@ export default function AdvertiserDashboard({
                         <span className="font-bold text-slate-800 line-clamp-1">
                           {bank.bankName}
                         </span>
-                        <span className="bg-green-150 text-green-800 text-[8px] font-bold px-1 py-0.5 rounded">
+                        <span className="bg-green-150 text-blue-900 text-[8px] font-bold px-1 py-0.5 rounded">
                           Banco
                         </span>
                       </div>
@@ -4146,7 +4146,7 @@ export default function AdvertiserDashboard({
                           bankName: e.target.value,
                         })
                       }
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="Banco Itaú Veículos">Banco Itaú Veículos</option>
                       <option value="Banco Bradesco Financiamentos">
@@ -4390,7 +4390,7 @@ export default function AdvertiserDashboard({
                 </button>
 
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-green-100 text-green-800 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase font-mono">
+                  <span className="bg-blue-100 text-blue-900 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase font-mono">
                     Dossiê de Lead {viewingLead.id}
                   </span>
                   <span className="bg-slate-100 text-slate-600 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase font-mono">
@@ -4409,8 +4409,8 @@ export default function AdvertiserDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* COLUMN 1: CLIENT DETAILS & INTERESTS */}
                   <div className="space-y-4">
-                    <div className="bg-green-50/50 p-4 rounded-2xl border border-green-100/40">
-                      <h3 className="text-xs font-bold uppercase text-green-800 mb-3 flex items-center gap-1.5">
+                    <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/40">
+                      <h3 className="text-xs font-bold uppercase text-blue-900 mb-3 flex items-center gap-1.5">
                         <FileText className="w-3.5 h-3.5" />
                         Dados Completos do Lead
                       </h3>
@@ -4476,7 +4476,7 @@ export default function AdvertiserDashboard({
                           Categoria: {viewingLead.productCategory}
                         </p>
                         {relativeProduct && (
-                          <p className="text-[11px] font-bold text-green-600 mt-1">
+                          <p className="text-[11px] font-bold text-blue-700 mt-1">
                             Valor do Produto: R$ {relativeProduct.price.toLocaleString("pt-BR")}
                           </p>
                         )}
@@ -4559,7 +4559,7 @@ export default function AdvertiserDashboard({
 
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2 py-0.5 rounded">
+                          <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">
                             {viewingLead.referralChannel || "Link Direto / WhatsApp"}
                           </span>
                         </div>
@@ -4658,7 +4658,7 @@ export default function AdvertiserDashboard({
                           );
                           setViewingLead(null);
                         }}
-                        className="bg-green-600 hover:bg-green-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shadow shadow-green-100 flex items-center gap-1.5"
+                        className="bg-blue-700 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl transition-all shadow shadow-blue-100 flex items-center gap-1.5"
                       >
                         <Check className="w-3.5 h-3.5" />
                         Salvar Agendamento & Observações
@@ -4671,17 +4671,17 @@ export default function AdvertiserDashboard({
                 <div className="mt-6 border-t border-slate-100 pt-5 text-left">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xs font-bold uppercase text-slate-800 flex items-center gap-1.5">
-                      <MessageSquare className="w-3.5 h-3.5 text-green-600" />
+                      <MessageSquare className="w-3.5 h-3.5 text-blue-700" />
                       Chat de Atendimento Exclusivo • Contato Seguro
                     </h3>
-                    <div className="bg-slate-900 border border-slate-800 text-green-400 rounded-full px-2.5 py-0.5 text-[8px] font-mono uppercase font-bold">
+                    <div className="bg-slate-900 border border-slate-800 text-blue-400 rounded-full px-2.5 py-0.5 text-[8px] font-mono uppercase font-bold">
                       Monitoramento Antifraude Ativo
                     </div>
                   </div>
 
                   {/* Info banner about safety */}
-                  <div className="bg-green-50 border border-green-100 p-3 rounded-2xl text-[10px] text-green-950 mb-3 flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div className="bg-blue-50 border border-blue-100 p-3 rounded-2xl text-[10px] text-blue-950 mb-3 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-blue-700 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold">Privacidade & Garantia de Atribuição:</p>
                       <p className="mt-0.5">
@@ -4793,11 +4793,11 @@ export default function AdvertiserDashboard({
                         value={advertiserChatText}
                         onChange={(e) => setAdvertiserChatText(e.target.value)}
                         placeholder="Responda ao cliente com segurança aqui..."
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-transparent"
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                       />
                       <button
                         type="submit"
-                        className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-xl transition-all shadow active:scale-95 flex items-center justify-center"
+                        className="bg-blue-700 hover:bg-blue-800 text-white p-2 rounded-xl transition-all shadow active:scale-95 flex items-center justify-center"
                       >
                         <Send className="w-3.5 h-3.5" />
                       </button>
@@ -4847,7 +4847,7 @@ export default function AdvertiserDashboard({
               <p className="text-[10px] text-slate-500 font-mono mt-0.5">
                 {schedulingLead.clientPhone}
               </p>
-              <p className="text-[10px] text-green-600 font-bold block truncate uppercase mt-1">
+              <p className="text-[10px] text-blue-700 font-bold block truncate uppercase mt-1">
                 Interesse: {schedulingLead.productTitle}
               </p>
             </div>
@@ -4922,7 +4922,7 @@ export default function AdvertiserDashboard({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-semibold text-xs transition-all shadow-md flex items-center justify-center gap-1"
+                  className="flex-1 bg-blue-700 hover:bg-blue-500 text-white py-3 rounded-xl font-semibold text-xs transition-all shadow-md flex items-center justify-center gap-1"
                 >
                   <Check className="w-4 h-4" />
                   Salvar Visita
