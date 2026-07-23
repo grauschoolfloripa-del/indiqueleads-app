@@ -46,7 +46,7 @@ export default function RoleSwitcher({
           </span>
           <div>
             <span className="font-display font-bold tracking-tight text-white text-base">
-              <span className="text-green-400 text-xs font-mono font-normal bg-green-950/40 px-2 py-0.5 rounded border border-green-900/30">SIMULADOR BENTO</span>
+              <span className="text-blue-400 text-xs font-mono font-normal bg-blue-950/40 px-2 py-0.5 rounded border border-blue-950/30">SIMULADOR BENTO</span>
             </span>
 
             <p className="text-[10px] text-slate-400 font-mono hidden sm:block">
@@ -67,7 +67,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('indicador')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'indicador'
-                ? 'bg-green-600 text-white shadow'
+                ? 'bg-blue-700 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -79,7 +79,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('anunciante')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'anunciante'
-                ? 'bg-green-600 text-white shadow'
+                ? 'bg-blue-700 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -91,7 +91,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('admin')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'admin'
-                ? 'bg-green-600 text-white shadow'
+                ? 'bg-blue-700 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -103,7 +103,7 @@ export default function RoleSwitcher({
             onClick={() => onChangeRole('visitante')}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentRole === 'visitante'
-                ? 'bg-green-600 text-white shadow'
+                ? 'bg-blue-700 text-white shadow'
                 : 'text-slate-400 hover:text-white'
             }`}
           >

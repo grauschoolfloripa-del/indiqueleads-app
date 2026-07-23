@@ -445,7 +445,7 @@ export default function AffiliateDashboard({
     return (
       <div className="max-w-md mx-auto my-8 bg-white rounded-3xl border border-slate-100 shadow-2xl p-6 font-sans">
         <div className="text-center mb-6">
-          <div className="bg-green-100 text-green-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="bg-blue-100 text-blue-800 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
             <Award className="w-8 h-8" />
           </div>
           <h2 className="font-display font-bold text-2xl text-slate-900">Seja um Indicador</h2>
@@ -465,7 +465,7 @@ export default function AffiliateDashboard({
               value={onboardForm.name}
               onChange={(e) => setOnboardForm({ ...onboardForm, name: e.target.value })}
               placeholder="ex: Gabriel Martins"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -480,7 +480,7 @@ export default function AffiliateDashboard({
                 value={onboardForm.cpf}
                 onChange={(e) => setOnboardForm({ ...onboardForm, cpf: e.target.value })}
                 placeholder="000.000.000-00"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
             <div>
@@ -493,7 +493,7 @@ export default function AffiliateDashboard({
                 value={onboardForm.phone}
                 onChange={(e) => setOnboardForm({ ...onboardForm, phone: e.target.value })}
                 placeholder="(11) 99999-9999"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
           </div>
@@ -508,7 +508,7 @@ export default function AffiliateDashboard({
               value={onboardForm.email}
               onChange={(e) => setOnboardForm({ ...onboardForm, email: e.target.value })}
               placeholder="gabriel@exemplo.com"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -523,7 +523,7 @@ export default function AffiliateDashboard({
                 value={onboardForm.city}
                 onChange={(e) => setOnboardForm({ ...onboardForm, city: e.target.value })}
                 placeholder="ex: São Paulo"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
             <div className="col-span-1">
@@ -533,7 +533,7 @@ export default function AffiliateDashboard({
               <select
                 value={onboardForm.state}
                 onChange={(e) => setOnboardForm({ ...onboardForm, state: e.target.value })}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               >
                 <option value="AC">AC</option>
                 <option value="AL">AL</option>
@@ -578,7 +578,7 @@ export default function AffiliateDashboard({
                   onClick={() => setOnboardForm({ ...onboardForm, pixType: type })}
                   className={`px-2 py-1.5 rounded-lg text-xs font-medium border capitalize transition-all ${
                     onboardForm.pixType === type
-                      ? "bg-green-600 border-green-600 text-white shadow shadow-green-100"
+                      ? "bg-blue-700 border-blue-700 text-white shadow shadow-blue-100"
                       : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
                   }`}
                 >
@@ -592,7 +592,7 @@ export default function AffiliateDashboard({
               value={onboardForm.pixKey}
               onChange={(e) => setOnboardForm({ ...onboardForm, pixKey: e.target.value })}
               placeholder="Chave para transferências"
-              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
@@ -617,25 +617,25 @@ export default function AffiliateDashboard({
                 CONTRATO DE PARCERIA COMERCIAL AUTÔNOMA
               </p>
               <p className="mb-2">
-                <strong className="text-green-400">CLÁUSULA 1ª - DA AUTONOMIA REAL:</strong> O
+                <strong className="text-blue-400">CLÁUSULA 1ª - DA AUTONOMIA REAL:</strong> O
                 parceiro comercial (Indicador) atuará de forma totalmente independente e sem
                 subordinação. O parceiro é livre para fixar seus próprios dias, horários e locais de
                 atividade, não estando sujeito a carga horária de trabalho mínima ou obrigatoriedade
                 de presença.
               </p>
               <p className="mb-2">
-                <strong className="text-green-400">CLÁUSULA 2ª - DA MULTIPLICIDADE:</strong> É
+                <strong className="text-blue-400">CLÁUSULA 2ª - DA MULTIPLICIDADE:</strong> É
                 garantido ao Indicador o direito de exercer atividades correlatas para outros
                 anunciantes, imobiliárias, concessionárias ou plataformas concorrentes de forma
                 simultânea.
               </p>
               <p className="mb-2">
-                <strong className="text-green-400">CLÁUSULA 3ª - DA EXCLUSÃO DE VÍNCULO:</strong>{" "}
+                <strong className="text-blue-400">CLÁUSULA 3ª - DA EXCLUSÃO DE VÍNCULO:</strong>{" "}
                 Este contrato não cria sob qualquer hipótese qualquer tipo de vínculo de emprego,
                 relação de subordinação ou representação estatutária, conforme o Art. 442-B da CLT.
               </p>
               <p className="mb-2">
-                <strong className="text-green-400">
+                <strong className="text-blue-400">
                   CLÁUSULA 4ª - DA ATUAÇÃO DE IMÓVEIS (LEI 6.530/78):
                 </strong>{" "}
                 Fica estabelecido que na vertical de imóveis, a função do Indicador é exclusivamente
@@ -643,7 +643,7 @@ export default function AffiliateDashboard({
                 imobiliária ou intermediação imobiliária comercial depende de registro ativo no
                 Conselho Regional de Corretores de Imóveis (CRECI).
               </p>
-              <p className="text-green-300 font-bold text-center mt-2">
+              <p className="text-blue-300 font-bold text-center mt-2">
                 === ROLAR ATÉ O FIM PARA ATIVAR O ACEITE ===
               </p>
             </div>
@@ -663,7 +663,7 @@ export default function AffiliateDashboard({
               id="creci_checkbox"
               checked={creciWarningAccepted}
               onChange={(e) => setCreciWarningAccepted(e.target.checked)}
-              className="mt-1 w-4 h-4 text-green-600 border-slate-300 rounded focus:ring-green-500 focus:outline-none"
+              className="mt-1 w-4 h-4 text-blue-700 border-slate-300 rounded focus:ring-blue-500 focus:outline-none"
             />
             <label htmlFor="creci_checkbox" className="text-[11px] text-slate-600 leading-tight">
               Entendo que a indicação de <strong>Imóveis</strong> se limita à indicação de leads
@@ -677,7 +677,7 @@ export default function AffiliateDashboard({
             disabled={!scrolledTerms || !creciWarningAccepted}
             className={`w-full py-3 rounded-xl font-semibold text-sm transition-all shadow-md ${
               scrolledTerms && creciWarningAccepted
-                ? "bg-green-600 text-white hover:bg-green-500 active:scale-[0.98]"
+                ? "bg-blue-700 text-white hover:bg-blue-500 active:scale-[0.98]"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed"
             }`}
           >
@@ -724,14 +724,14 @@ export default function AffiliateDashboard({
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
       {/* Header Profile Summary */}
-      <div className="bg-gradient-to-r from-green-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-green-900/20 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-blue-950/20 relative overflow-hidden">
         <div className="absolute right-0 bottom-0 top-0 opacity-10 flex items-center mr-12 pointer-events-none">
           <Award className="w-64 h-64 text-white" />
         </div>
 
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center font-bold text-2xl uppercase shadow-md border-2 border-green-500 text-white">
+            <div className="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center font-bold text-2xl uppercase shadow-md border-2 border-blue-500 text-white">
               {indicator.name.substring(0, 2)}
             </div>
             <div>
@@ -743,18 +743,18 @@ export default function AffiliateDashboard({
                       ? "bg-amber-400 text-amber-950"
                       : indicator.league === "prata"
                         ? "bg-slate-300 text-slate-950"
-                        : "bg-green-400 text-green-950"
+                        : "bg-blue-400 text-blue-950"
                   }`}
                 >
                   Liga {indicator.league}
                 </span>
               </div>
-              <p className="text-xs text-green-200 mt-0.5 font-mono flex items-center gap-2 flex-wrap">
+              <p className="text-xs text-blue-200 mt-0.5 font-mono flex items-center gap-2 flex-wrap">
                 <span>
                   {indicator.email} • Reputação: {indicator.score}/100
                 </span>
                 {indicator.city && !isEditingLocation && (
-                  <span className="bg-green-950/80 text-green-200 px-2 py-0.5 rounded-md border border-green-800/40 font-semibold flex items-center gap-1">
+                  <span className="bg-blue-950/80 text-blue-200 px-2 py-0.5 rounded-md border border-blue-900/40 font-semibold flex items-center gap-1">
                     📍 {indicator.city} ({indicator.state})
                     <button
                       onClick={() => {
@@ -762,7 +762,7 @@ export default function AffiliateDashboard({
                         setTempState(indicator.state || "SP");
                         setIsEditingLocation(true);
                       }}
-                      className="text-[10px] text-green-400 hover:text-white font-bold ml-1 hover:underline"
+                      className="text-[10px] text-blue-400 hover:text-white font-bold ml-1 hover:underline"
                     >
                       Alterar
                     </button>
@@ -775,7 +775,7 @@ export default function AffiliateDashboard({
                       setTempState("SP");
                       setIsEditingLocation(true);
                     }}
-                    className="bg-green-500/20 text-green-300 hover:text-white px-2 py-0.5 rounded-md border border-green-500/30 font-semibold text-[11px] hover:underline"
+                    className="bg-blue-500/20 text-blue-300 hover:text-white px-2 py-0.5 rounded-md border border-blue-500/30 font-semibold text-[11px] hover:underline"
                   >
                     + Adicionar Localização
                   </button>
@@ -783,18 +783,18 @@ export default function AffiliateDashboard({
               </p>
 
               {isEditingLocation && (
-                <div className="mt-2 flex items-center gap-2 bg-slate-900/95 p-2 rounded-xl border border-green-900/40 max-w-sm">
+                <div className="mt-2 flex items-center gap-2 bg-slate-900/95 p-2 rounded-xl border border-blue-950/40 max-w-sm">
                   <input
                     type="text"
                     placeholder="Cidade"
                     value={tempCity}
                     onChange={(e) => setTempCity(e.target.value)}
-                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-green-500 flex-1"
+                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-1"
                   />
                   <select
                     value={tempState}
                     onChange={(e) => setTempState(e.target.value)}
-                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-green-500 w-16"
+                    className="bg-slate-950 text-white text-xs px-2.5 py-1 rounded-lg border border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 w-16"
                   >
                     <option value="AC">AC</option>
                     <option value="AL">AL</option>
@@ -835,7 +835,7 @@ export default function AffiliateDashboard({
                       setIsEditingLocation(false);
                       onAddNotification("Localização de atuação atualizada!", "success");
                     }}
-                    className="bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md transition-all"
+                    className="bg-blue-700 hover:bg-blue-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-md transition-all"
                   >
                     Salvar
                   </button>
@@ -887,7 +887,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("vitrine")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "vitrine"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -897,7 +897,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("desempenho")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "desempenho"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -907,7 +907,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("carteira")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "carteira"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -917,7 +917,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("financiamentos")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "financiamentos"
-              ? "border-green-600 text-green-600 font-bold"
+              ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -962,7 +962,7 @@ export default function AffiliateDashboard({
           <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5 lg:col-span-1">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="font-display font-bold text-slate-800 text-sm flex items-center gap-2">
-                <Filter className="w-4 h-4 text-green-600" />
+                <Filter className="w-4 h-4 text-blue-700" />
                 Filtros de Busca
               </span>
               <button
@@ -972,7 +972,7 @@ export default function AffiliateDashboard({
                   setMinCommission(0);
                   setOnlyPresencial(false);
                 }}
-                className="text-xs text-slate-400 hover:text-green-600 font-medium"
+                className="text-xs text-slate-400 hover:text-blue-700 font-medium"
               >
                 Limpar
               </button>
@@ -988,7 +988,7 @@ export default function AffiliateDashboard({
                   onClick={() => setSelectedCategory("all")}
                   className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
                     selectedCategory === "all"
-                      ? "bg-green-50 border-green-200 text-green-700"
+                      ? "bg-blue-50 border-blue-200 text-blue-800"
                       : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}
                 >
@@ -1003,7 +1003,7 @@ export default function AffiliateDashboard({
                       onClick={() => setSelectedCategory(catId)}
                       className={`py-2 px-1 rounded-xl border text-xs font-medium text-center transition-all ${
                         active
-                          ? "bg-green-50 border-green-200 text-green-700"
+                          ? "bg-blue-50 border-blue-200 text-blue-800"
                           : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                       }`}
                       title={v.label}
@@ -1026,7 +1026,7 @@ export default function AffiliateDashboard({
                 value={cityFilter}
                 onChange={(e) => setCityFilter(e.target.value)}
                 placeholder="ex: São Paulo"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
@@ -1038,7 +1038,7 @@ export default function AffiliateDashboard({
               <select
                 value={minCommission}
                 onChange={(e) => setMinCommission(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-green-500"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value={0}>Qualquer Valor</option>
                 <option value={500}>Acima de R$ 500</option>
@@ -1055,7 +1055,7 @@ export default function AffiliateDashboard({
                 id="only_presencial"
                 checked={onlyPresencial}
                 onChange={(e) => setOnlyPresencial(e.target.checked)}
-                className="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500"
+                className="w-4 h-4 text-blue-700 rounded border-slate-300 focus:ring-blue-500"
               />
               <label
                 htmlFor="only_presencial"
@@ -1073,13 +1073,13 @@ export default function AffiliateDashboard({
                   id="filter_my_region"
                   checked={filterByMyRegion}
                   onChange={(e) => setFilterByMyRegion(e.target.checked)}
-                  className="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500"
+                  className="w-4 h-4 text-blue-700 rounded border-slate-300 focus:ring-blue-500"
                 />
                 <label
                   htmlFor="filter_my_region"
                   className="text-xs text-slate-600 select-none font-semibold flex items-center gap-1"
                 >
-                  <MapPin className="w-3.5 h-3.5 text-green-600" />
+                  <MapPin className="w-3.5 h-3.5 text-blue-700" />
                   Filtrar por Minha Região ({indicator.city})
                 </label>
               </div>
@@ -1115,17 +1115,17 @@ export default function AffiliateDashboard({
               if (!indicator.city) return null;
 
               return (
-                <div className="bg-gradient-to-br from-green-50 to-amber-50 rounded-3xl p-5 border border-green-200/60 shadow-xs mb-6">
+                <div className="bg-gradient-to-br from-blue-50 to-amber-50 rounded-3xl p-5 border border-blue-200/60 shadow-xs mb-6">
                   <div className="flex items-center justify-between mb-3.5">
                     <div className="flex items-center gap-2">
                       <div className="relative">
-                        <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-green-400 opacity-75 animate-ping"></span>
-                        <MapPin className="w-5 h-5 text-green-600 relative" />
+                        <span className="absolute inline-flex h-2.5 w-2.5 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+                        <MapPin className="w-5 h-5 text-blue-700 relative" />
                       </div>
                       <div>
                         <h4 className="font-display font-bold text-sm text-slate-900 flex items-center gap-1.5">
                           Novidades na Sua Região{" "}
-                          <span className="text-green-600 font-extrabold font-mono text-xs bg-green-100 px-2.5 py-0.5 rounded-full uppercase">
+                          <span className="text-blue-700 font-extrabold font-mono text-xs bg-blue-100 px-2.5 py-0.5 rounded-full uppercase">
                             {indicator.city} - {indicator.state}
                           </span>
                         </h4>
@@ -1148,7 +1148,7 @@ export default function AffiliateDashboard({
                         return (
                           <div
                             key={`highlight-${prod.id}`}
-                            className="bg-white rounded-2xl p-3 border border-green-100 hover:border-green-200/80 shadow-xs transition-all flex flex-col justify-between"
+                            className="bg-white rounded-2xl p-3 border border-blue-100 hover:border-blue-200/80 shadow-xs transition-all flex flex-col justify-between"
                           >
                             <div>
                               <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-100 mb-2">
@@ -1158,7 +1158,7 @@ export default function AffiliateDashboard({
                                   className="w-full h-full object-cover"
                                   referrerPolicy="no-referrer"
                                 />
-                                <div className="absolute top-1.5 left-1.5 bg-green-600 text-white px-2 py-0.5 rounded-md text-[8px] font-bold font-mono uppercase">
+                                <div className="absolute top-1.5 left-1.5 bg-blue-700 text-white px-2 py-0.5 rounded-md text-[8px] font-bold font-mono uppercase">
                                   {prod.category}
                                 </div>
                                 <div className="absolute bottom-1.5 left-1.5 bg-slate-950/80 backdrop-blur-xs rounded px-1.5 py-0.5 text-[8px] font-bold text-slate-200 flex items-center gap-0.5">
@@ -1195,7 +1195,7 @@ export default function AffiliateDashboard({
                                 )}
                                 <button
                                   onClick={() => setSharingProduct(prod)}
-                                  className="bg-green-600 hover:bg-green-500 text-white font-bold text-[10px] py-1.5 px-2.5 rounded-lg transition-all flex items-center gap-1 shadow-sm"
+                                  className="bg-blue-700 hover:bg-blue-500 text-white font-bold text-[10px] py-1.5 px-2.5 rounded-lg transition-all flex items-center gap-1 shadow-sm"
                                 >
                                   <Share2 className="w-2.5 h-2.5" /> Indicar
                                 </button>
@@ -1206,10 +1206,10 @@ export default function AffiliateDashboard({
                       })}
                     </div>
                   ) : (
-                    <div className="bg-white/80 rounded-2xl p-4 border border-green-100 text-center">
+                    <div className="bg-white/80 rounded-2xl p-4 border border-blue-100 text-center">
                       <p className="text-xs text-slate-600 leading-relaxed font-sans">
                         💡{" "}
-                        <strong className="font-semibold text-green-950">
+                        <strong className="font-semibold text-blue-950">
                           Sabedoria de Profissional:
                         </strong>{" "}
                         Não há ofertas ativas em {indicator.city} atualmente, mas você pode indicar
@@ -1270,7 +1270,7 @@ export default function AffiliateDashboard({
 
                       <div className="p-4 flex-1 flex flex-col justify-between">
                         <div>
-                          <span className="text-[10px] text-green-600 font-bold tracking-wider uppercase font-mono">
+                          <span className="text-[10px] text-blue-700 font-bold tracking-wider uppercase font-mono">
                             {prod.advertiserName}
                           </span>
                           <h3 className="font-display font-bold text-slate-900 text-base leading-tight mt-0.5 line-clamp-1">
@@ -1296,7 +1296,7 @@ export default function AffiliateDashboard({
                             <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider">
                               Digital (Indicação)
                             </span>
-                            <span className="text-xs font-mono font-bold text-green-700">
+                            <span className="text-xs font-mono font-bold text-blue-800">
                               R$ {digitalComm.toLocaleString("pt-BR")}{" "}
                               <span className="text-[9px] font-normal text-slate-500">
                                 ({prod.commissionDigitalPct}%)
@@ -1337,7 +1337,7 @@ export default function AffiliateDashboard({
                           )}
                           <button
                             onClick={() => setSharingProduct(prod)}
-                            className="flex-1 bg-green-600 hover:bg-green-500 text-white font-semibold text-xs py-2.5 px-3 rounded-xl transition-all shadow flex items-center justify-center gap-1.5 shadow-green-100"
+                            className="flex-1 bg-blue-700 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-3 rounded-xl transition-all shadow flex items-center justify-center gap-1.5 shadow-blue-100"
                           >
                             <Share2 className="w-3.5 h-3.5" />
                             Obter Link
@@ -1359,7 +1359,7 @@ export default function AffiliateDashboard({
           {/* Leagues / Gamification Status Card */}
           <div className="bg-white rounded-3xl border border-slate-150 p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <span className="text-[10px] text-green-600 uppercase font-bold tracking-wider block">
+              <span className="text-[10px] text-blue-700 uppercase font-bold tracking-wider block">
                 Sistema de Ligas
               </span>
               <div className="flex items-center gap-3">
@@ -1384,7 +1384,7 @@ export default function AffiliateDashboard({
                 <span>85% Concluído</span>
               </div>
               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div className="bg-green-600 h-full w-[85%] rounded-full"></div>
+                <div className="bg-blue-700 h-full w-[85%] rounded-full"></div>
               </div>
               <p className="text-[10px] text-slate-400">
                 Indique mais 2 vendas qualificadas para desbloquear.
@@ -1454,7 +1454,7 @@ export default function AffiliateDashboard({
                         <>
                           <tr
                             key={lead.id}
-                            className={`hover:bg-slate-50/50 transition-all ${isChatOpen ? "bg-green-50/20" : ""}`}
+                            className={`hover:bg-slate-50/50 transition-all ${isChatOpen ? "bg-blue-50/20" : ""}`}
                           >
                             <td className="py-4 px-4 font-medium text-slate-900">
                               <div>{lead.clientName}</div>
@@ -1476,7 +1476,7 @@ export default function AffiliateDashboard({
                                   Presencial
                                 </span>
                               ) : (
-                                <span className="text-green-600 bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
+                                <span className="text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
                                   Digital
                                 </span>
                               )}
@@ -1494,7 +1494,7 @@ export default function AffiliateDashboard({
                                       : lead.status === "visita_agendada"
                                         ? "bg-amber-100 text-amber-800"
                                         : lead.status === "proposta"
-                                          ? "bg-green-100 text-green-800"
+                                          ? "bg-blue-100 text-blue-900"
                                           : "bg-slate-100 text-slate-700"
                                 }`}
                               >
@@ -1527,7 +1527,7 @@ export default function AffiliateDashboard({
                                           "success",
                                         );
                                       }}
-                                      className="bg-gradient-to-r from-green-500 to-amber-600 hover:from-green-600 hover:to-amber-700 text-white font-bold py-1 px-2.5 rounded-lg transition-all text-[9px] flex items-center gap-1 shadow-sm active:scale-95"
+                                      className="bg-gradient-to-r from-blue-500 to-amber-600 hover:from-blue-700 hover:to-amber-700 text-white font-bold py-1 px-2.5 rounded-lg transition-all text-[9px] flex items-center gap-1 shadow-sm active:scale-95"
                                     >
                                       <MapPin className="w-2.5 h-2.5" /> Cheguei na Loja
                                     </button>
@@ -1541,10 +1541,10 @@ export default function AffiliateDashboard({
                                       : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
                                   }`}
                                 >
-                                  <MessageSquare className="w-3 h-3 text-green-500" />
+                                  <MessageSquare className="w-3 h-3 text-blue-500" />
                                   {isChatOpen ? "Fechar Atendimento" : "Acompanhar Chat"}
                                   {leadMsgs.length > 0 && (
-                                    <span className="bg-green-100 text-green-800 text-[8px] font-bold rounded-full px-1.5 py-0.2">
+                                    <span className="bg-blue-100 text-blue-900 text-[8px] font-bold rounded-full px-1.5 py-0.2">
                                       {leadMsgs.length}
                                     </span>
                                   )}
@@ -1562,7 +1562,7 @@ export default function AffiliateDashboard({
                                   {/* Chat Panel Header */}
                                   <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                      <ShieldCheck className="w-4 h-4 text-green-500" />
+                                      <ShieldCheck className="w-4 h-4 text-blue-500" />
                                       <div className="text-left">
                                         <h4 className="font-bold text-xs text-slate-100">
                                           Console de Monitoramento • {lead.clientName}
@@ -1572,14 +1572,14 @@ export default function AffiliateDashboard({
                                         </p>
                                       </div>
                                     </div>
-                                    <div className="bg-slate-800 border border-slate-700 text-green-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase font-bold">
+                                    <div className="bg-slate-800 border border-slate-700 text-blue-400 rounded-full px-2 py-0.5 text-[8px] font-mono uppercase font-bold">
                                       Modo Observador Ativo
                                     </div>
                                   </div>
 
                                   {/* Info banner */}
-                                  <div className="bg-green-50 border-b border-green-100 px-4 py-2 flex items-start gap-2 text-[10px] text-green-950 text-left">
-                                    <Info className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
+                                  <div className="bg-blue-50 border-b border-blue-100 px-4 py-2 flex items-start gap-2 text-[10px] text-blue-950 text-left">
+                                    <Info className="w-3.5 h-3.5 text-blue-700 flex-shrink-0 mt-0.5" />
                                     <span>
                                       Você está visualizando a conversa entre o lojista e o
                                       comprador em tempo real. Se o lojista concluir a venda, a sua
@@ -1628,7 +1628,7 @@ export default function AffiliateDashboard({
                                               className={`max-w-[75%] rounded-2xl px-3 py-2 text-xs shadow-sm ${
                                                 isClient
                                                   ? "bg-slate-100 border border-slate-200 text-slate-800 rounded-br-none"
-                                                  : "bg-green-50 border border-green-100 text-green-950 rounded-bl-none"
+                                                  : "bg-blue-50 border border-blue-100 text-blue-950 rounded-bl-none"
                                               }`}
                                             >
                                               <div className="flex items-center justify-between gap-4 mb-1">
@@ -1686,7 +1686,7 @@ export default function AffiliateDashboard({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 lg:col-span-1">
             <h3 className="font-display font-bold text-slate-900 text-base flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-green-600" />
+              <Wallet className="w-5 h-5 text-blue-700" />
               Solicitar Transferência (Saque)
             </h3>
 
@@ -1715,7 +1715,7 @@ export default function AffiliateDashboard({
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder="ex: 1500"
                   max={indicator.balanceAvailable}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
@@ -1816,7 +1816,7 @@ export default function AffiliateDashboard({
       {activeTab === "financiamentos" && (
         <div className="space-y-6 animate-fadeIn">
           {/* Header introduction banner */}
-          <div className="bg-gradient-to-r from-green-500 to-amber-600 rounded-3xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-blue-500 to-amber-600 rounded-3xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-xl">
               <div className="flex items-center gap-2">
                 <Landmark className="w-6 h-6 text-white" />
@@ -1824,7 +1824,7 @@ export default function AffiliateDashboard({
                   Intermediação de Crédito Veicular
                 </h3>
               </div>
-              <p className="text-xs text-green-50 leading-relaxed">
+              <p className="text-xs text-blue-50 leading-relaxed">
                 Intermedeie o financiamento do comprador diretamente com a concessionária ou bancos
                 parceiros. Cadastre os dados de crédito do comprador para que a loja faça a
                 simulação automática multi-bancos. Quando aprovado, você visualiza as parcelas e
@@ -1843,9 +1843,9 @@ export default function AffiliateDashboard({
                 }
                 setShowSimulateModal(true);
               }}
-              className="bg-white text-green-950 hover:bg-green-50 font-bold text-xs py-3 px-5 rounded-2xl transition-all shadow-md flex items-center gap-2 self-start md:self-center shrink-0 active:scale-95"
+              className="bg-white text-blue-950 hover:bg-blue-50 font-bold text-xs py-3 px-5 rounded-2xl transition-all shadow-md flex items-center gap-2 self-start md:self-center shrink-0 active:scale-95"
             >
-              <Plus className="w-4 h-4 text-green-600" />
+              <Plus className="w-4 h-4 text-blue-700" />
               Nova Simulação de Crédito
             </button>
           </div>
@@ -2029,7 +2029,7 @@ export default function AffiliateDashboard({
                             sim.status === "concluido") && (
                             <div className="space-y-3">
                               <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                                <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                                <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
                                 Cotações de Bancos Credenciados (Simulação Direct-to-Store)
                               </span>
 
@@ -2065,7 +2065,7 @@ export default function AffiliateDashboard({
                                         </p>
                                         <p className="font-mono text-[10px] text-slate-500">
                                           Taxa:{" "}
-                                          <strong className="font-bold text-green-600">
+                                          <strong className="font-bold text-blue-700">
                                             {bank.interestRate}% a.m.
                                           </strong>
                                         </p>
@@ -2137,7 +2137,7 @@ export default function AffiliateDashboard({
                                   <span className="text-slate-400 block text-[9px] uppercase font-semibold">
                                     Taxa de Juros
                                   </span>
-                                  <span className="font-bold text-green-400 font-mono text-sm">
+                                  <span className="font-bold text-blue-400 font-mono text-sm">
                                     {sim.approvedContract.interestRate}% a.m.
                                   </span>
                                 </div>
@@ -2200,7 +2200,7 @@ export default function AffiliateDashboard({
             </button>
 
             <div className="text-center mb-6 border-b border-slate-100 pb-4">
-              <span className="text-[10px] bg-green-50 border border-green-100 text-green-700 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+              <span className="text-[10px] bg-blue-50 border border-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
                 Intermediação Direta de Financiamento
               </span>
               <h2 className="font-display font-bold text-slate-900 text-xl mt-2">
@@ -2216,14 +2216,14 @@ export default function AffiliateDashboard({
               {/* Step 1: Vehicle selection */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                  <Landmark className="w-3.5 h-3.5 text-green-600" />
+                  <Landmark className="w-3.5 h-3.5 text-blue-700" />
                   Veículo / Produto Escolhido
                 </label>
                 <select
                   required
                   value={simFormProductId}
                   onChange={(e) => setSimFormProductId(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
                 >
                   <option value="" disabled>
                     Selecione o veículo...
@@ -2252,7 +2252,7 @@ export default function AffiliateDashboard({
                       value={simFormClientName}
                       onChange={(e) => setSimFormClientName(e.target.value)}
                       placeholder="ex: Roberto Alencar"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -2266,7 +2266,7 @@ export default function AffiliateDashboard({
                       value={simFormClientCpf}
                       onChange={(e) => setSimFormClientCpf(e.target.value)}
                       placeholder="000.000.000-00"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -2280,7 +2280,7 @@ export default function AffiliateDashboard({
                       value={simFormClientPhone}
                       onChange={(e) => setSimFormClientPhone(e.target.value)}
                       placeholder="(11) 98111-2233"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -2293,7 +2293,7 @@ export default function AffiliateDashboard({
                       required
                       value={simFormClientBirthDate}
                       onChange={(e) => setSimFormClientBirthDate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -2311,7 +2311,7 @@ export default function AffiliateDashboard({
                       value={simFormClientIncome}
                       onChange={(e) => setSimFormClientIncome(e.target.value)}
                       placeholder="ex: 12000"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -2327,7 +2327,7 @@ export default function AffiliateDashboard({
                       value={simFormDownPayment}
                       onChange={(e) => setSimFormDownPayment(e.target.value)}
                       placeholder="ex: 45000"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
                   </div>
 
@@ -2338,7 +2338,7 @@ export default function AffiliateDashboard({
                     <select
                       value={simFormDesiredInstallments}
                       onChange={(e) => setSimFormDesiredInstallments(parseInt(e.target.value))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
                     >
                       <option value={12}>12x parcelas</option>
                       <option value={24}>24x parcelas</option>
@@ -2370,7 +2370,7 @@ export default function AffiliateDashboard({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-green-600 hover:bg-green-500 text-white py-3 rounded-xl font-semibold text-xs transition-all shadow shadow-green-100 flex items-center justify-center gap-1"
+                  className="flex-1 bg-blue-700 hover:bg-blue-500 text-white py-3 rounded-xl font-semibold text-xs transition-all shadow shadow-blue-100 flex items-center justify-center gap-1"
                 >
                   <Send className="w-3.5 h-3.5" />
                   Enviar Ficha à Loja
@@ -2396,7 +2396,7 @@ export default function AffiliateDashboard({
             </button>
 
             <div className="text-center mb-6 border-b border-slate-100 pb-4">
-              <span className="text-[10px] bg-green-50 border border-green-100 text-green-700 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+              <span className="text-[10px] bg-blue-50 border border-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
                 Kit de Divulgação Inteligente
               </span>
               <h2 className="font-display font-bold text-slate-900 text-xl mt-2">
@@ -2423,7 +2423,7 @@ export default function AffiliateDashboard({
                     />
                     <button
                       onClick={() => handleShareLink(sharingProduct)}
-                      className="bg-green-600 hover:bg-green-500 text-white p-2.5 rounded-xl transition-all shadow shadow-green-100"
+                      className="bg-blue-700 hover:bg-blue-500 text-white p-2.5 rounded-xl transition-all shadow shadow-blue-100"
                       title="Copiar Link"
                     >
                       {shareCopied ? (
@@ -2464,7 +2464,7 @@ export default function AffiliateDashboard({
                         }}
                         className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
                           selectedSocialPlatform === platform.id
-                            ? "border-slate-900 bg-slate-50 ring-2 ring-green-500 ring-offset-1"
+                            ? "border-slate-900 bg-slate-50 ring-2 ring-blue-500 ring-offset-1"
                             : "border-slate-200 bg-white hover:bg-slate-50"
                         }`}
                       >
@@ -2572,7 +2572,7 @@ export default function AffiliateDashboard({
                     return (
                       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3.5 text-xs text-slate-800 animate-slide-in">
                         <div className="flex items-center gap-1.5 border-b border-slate-200 pb-1.5 mb-1">
-                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
                           <span className="font-bold text-[10px] uppercase tracking-wider text-slate-500">
                             Passos de Publicação
                           </span>
@@ -2580,7 +2580,7 @@ export default function AffiliateDashboard({
 
                         {/* Step 1: Download Media */}
                         <div className="flex items-start gap-3">
-                          <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+                          <div className="bg-blue-100 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
                             1
                           </div>
                           <div className="flex-1">
@@ -2603,7 +2603,7 @@ export default function AffiliateDashboard({
 
                         {/* Step 2: Copy Commercial Copy */}
                         <div className="flex items-start gap-3">
-                          <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+                          <div className="bg-blue-100 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
                             2
                           </div>
                           <div className="flex-1">
@@ -2634,7 +2634,7 @@ export default function AffiliateDashboard({
 
                         {/* Step 3: Open Social App */}
                         <div className="flex items-start gap-3">
-                          <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
+                          <div className="bg-blue-100 text-blue-900 rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] flex-shrink-0 mt-0.5">
                             3
                           </div>
                           <div className="flex-1">
@@ -2739,7 +2739,7 @@ export default function AffiliateDashboard({
 
                     {/* Top Content */}
                     <div className="relative z-10 flex justify-between items-start">
-                      <div className="bg-green-600 text-white text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full font-mono tracking-widest shadow-sm">
+                      <div className="bg-blue-700 text-white text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full font-mono tracking-widest shadow-sm">
                         Oportunidade
                       </div>
                       <span className="text-[10px] text-slate-300 font-display font-semibold bg-slate-900/60 backdrop-blur-sm px-2 py-0.5 rounded border border-white/5">
@@ -2759,7 +2759,7 @@ export default function AffiliateDashboard({
 
                     {/* Lower Info */}
                     <div className="relative z-10 space-y-1 text-left">
-                      <p className="text-[10px] font-mono uppercase tracking-wider text-green-400 font-bold">
+                      <p className="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-bold">
                         {sharingProduct.advertiserName}
                       </p>
                       <h4 className="font-display font-bold text-sm tracking-tight line-clamp-2">
@@ -2920,7 +2920,7 @@ export default function AffiliateDashboard({
                       ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                       : gpsSuccess
                         ? "bg-emerald-600 text-white"
-                        : "bg-green-600 hover:bg-green-500 text-white shadow shadow-green-100"
+                        : "bg-blue-700 hover:bg-blue-500 text-white shadow shadow-blue-100"
                   }`}
                 >
                   {gpsLoading ? (
@@ -2952,7 +2952,7 @@ export default function AffiliateDashboard({
                   loja/imóvel com o cliente para auditoria posterior da plataforma.
                 </p>
 
-                <div className="border-2 border-dashed border-slate-200 hover:border-green-500 rounded-2xl p-6 text-center transition-colors cursor-pointer bg-slate-50/50">
+                <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-6 text-center transition-colors cursor-pointer bg-slate-50/50">
                   <input
                     type="file"
                     id="photo_checkin_upload"
@@ -2971,7 +2971,7 @@ export default function AffiliateDashboard({
                     className="cursor-pointer space-y-1.5 block"
                   >
                     <Camera className="w-8 h-8 text-slate-400 mx-auto" />
-                    <span className="block text-xs font-bold text-green-600">
+                    <span className="block text-xs font-bold text-blue-700">
                       Fotografar / Enviar Foto
                     </span>
                     <span className="block text-[10px] text-slate-400">JPG ou PNG até 5MB</span>
@@ -2992,7 +2992,7 @@ export default function AffiliateDashboard({
                       ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                       : gpsSuccess
                         ? "bg-emerald-600 text-white"
-                        : "bg-green-600 hover:bg-green-500 text-white shadow shadow-green-100"
+                        : "bg-blue-700 hover:bg-blue-500 text-white shadow shadow-blue-100"
                   }`}
                 >
                   {gpsLoading
