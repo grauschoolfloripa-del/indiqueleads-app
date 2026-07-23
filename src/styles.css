@@ -19,9 +19,22 @@
  */
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Epilogue", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Urbanist", "Epilogue", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Luxury Navy Trust palette */
+  --color-navy-950: #060a1a;
+  --color-navy-900: #0a1230;
+  --color-navy-800: #0f1b3d;
+  --color-navy-700: #1e3a5f;
+  --color-royal-500: #3b6fa0;
+  --color-royal-400: #5a8bc0;
+  --color-platinum-100: #e8edf3;
+  --color-platinum-200: #c9d3e0;
+  --color-gold-400: #d4b56a;
+  --color-gold-500: #c9a84c;
+  --color-gold-600: #a88a35;
 }
 
 @theme inline {
