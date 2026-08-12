@@ -1,18 +1,10 @@
 import React, { useState } from "react";
 import BrandLogo from "@/components/BrandLogo";
 import {
-
-  Sparkles,
-  Award,
   Building2,
-  ShieldAlert,
-  CheckCircle2,
-  AlertCircle,
   ArrowRight,
-  Lock,
   Shield,
   UserCheck,
-  PlusCircle,
   Check,
   HelpCircle,
   TrendingUp,
@@ -26,73 +18,20 @@ import {
   Calculator,
   Percent,
 } from "lucide-react";
-import { Category, Indicator, Advertiser } from "../types";
+import { Category } from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
 import SponsorSlot from "./SponsorSlot";
 
-interface LandingPageProps {
-  indicators: Indicator[];
-  advertisers: Advertiser[];
-  onLoginIndicator: (email: string, pass: string) => boolean;
-  onRegisterIndicator: (newInd: Partial<Indicator> & { password?: string }) => void;
-  onLoginAdvertiser: (email: string, pass: string) => boolean;
-  onRegisterAdvertiser: (newAdv: Partial<Advertiser> & { password?: string }) => void;
-  onLoginAdmin: (email: string, pass: string) => boolean;
-}
-
-export default function LandingPage({
-  indicators,
-  advertisers,
-  onLoginIndicator,
-  onRegisterIndicator,
-  onLoginAdvertiser,
-  onRegisterAdvertiser,
-  onLoginAdmin,
-}: LandingPageProps) {
+export default function LandingPage() {
   // Navigation & Active View state inside landing page
   const [activeSection, setActiveSection] = useState<
     "home" | "niches" | "how-it-works" | "how-to-profit" | "how-to-sell"
   >("home");
-  const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
-  const [authRole, setAuthRole] = useState<"indicador" | "anunciante" | "admin">("indicador");
-  const [isRegisterMode, setIsRegisterMode] = useState<boolean>(false);
-
-  // Forms states
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-
-  // Registration Form Indicator
-  const [regIndName, setRegIndName] = useState("");
-  const [regIndEmail, setRegIndEmail] = useState("");
-  const [regIndPassword, setRegIndPassword] = useState("");
-  const [regIndCpf, setRegIndCpf] = useState("");
-  const [regIndPhone, setRegIndPhone] = useState("");
-  const [regIndPixKey, setRegIndPixKey] = useState("");
-  const [regIndPixType, setRegIndPixType] = useState<"cpf" | "email" | "phone" | "random">("email");
-  const [regIndCity, setRegIndCity] = useState("");
-  const [regIndState, setRegIndState] = useState("SP");
-
-  // Registration Form Advertiser
-  const [regAdvName, setRegAdvName] = useState("");
-  const [regAdvEmail, setRegAdvEmail] = useState("");
-  const [regAdvPassword, setRegAdvPassword] = useState("");
-  const [regAdvCnpjOrCpf, setRegAdvCnpjOrCpf] = useState("");
-  const [regAdvType, setRegAdvType] = useState<"PF" | "PJ">("PJ");
-  const [regAdvPhone, setRegAdvPhone] = useState("");
-  const [regAdvPlan, setRegAdvPlan] = useState<"starter" | "premium" | "pro">("starter");
-  const [regAdvCategories, setRegAdvCategories] = useState<Category[]>(["imovel"]);
-  const [regAdvCity, setRegAdvCity] = useState("");
-  const [regAdvState, setRegAdvState] = useState("SP");
-
   // Dynamic Calculator states
   const [calcNiche, setCalcNiche] = useState<Category>("imovel");
   const [calcSaleValue, setCalcSaleValue] = useState<number>(350000);
   const [calcCommPct, setCalcCommPct] = useState<number>(4); // 4% typical builder/owner commission
   const [calcType, setCalcType] = useState<"digital" | "presencial">("digital");
-
-  // Local helper alerts
-  const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
 
   // Niches derivados de VERTICALS (fonte única de verdade)
   const nichesData = VERTICALS_ORDER.map((catId) => {
@@ -117,160 +56,6 @@ export default function LandingPage({
   const calculatedEarnings =
     calcType === "digital" ? totalAdvertiserCommission * 0.15 : totalAdvertiserCommission * 0.35;
 
-  const handleQuickLogin = (
-    email: string,
-    pass: string,
-    role: "indicador" | "anunciante" | "admin",
-  ) => {
-    setAuthRole(role);
-    setIsRegisterMode(false);
-    setLoginEmail(email);
-    setLoginPassword(pass);
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    setTimeout(() => {
-      let success = false;
-      if (role === "indicador") {
-        success = onLoginIndicator(email, pass);
-      } else if (role === "anunciante") {
-        success = onLoginAdvertiser(email, pass);
-      } else if (role === "admin") {
-        success = onLoginAdmin(email, pass);
-      }
-
-      if (success) {
-        setSuccessMsg("Bem-vindo! Acesso rápido concedido.");
-        setTimeout(() => {
-          setShowAuthModal(false);
-          setSuccessMsg("");
-        }, 800);
-      } else {
-        setErrorMsg("Erro de autenticação automática.");
-      }
-    }, 50);
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    if (!loginEmail || !loginPassword) {
-      setErrorMsg("Por favor, preencha todos os campos.");
-      return;
-    }
-
-    if (authRole === "indicador") {
-      const success = onLoginIndicator(loginEmail, loginPassword);
-      if (success) {
-        setSuccessMsg("Login efetuado! Redirecionando...");
-        setTimeout(() => setShowAuthModal(false), 800);
-      } else {
-        setErrorMsg("E-mail ou senha incorretos para Indicador.");
-      }
-    } else if (authRole === "anunciante") {
-      const success = onLoginAdvertiser(loginEmail, loginPassword);
-      if (success) {
-        setSuccessMsg("Login efetuado! Redirecionando...");
-        setTimeout(() => setShowAuthModal(false), 800);
-      } else {
-        setErrorMsg("E-mail ou senha incorretos para Anunciante.");
-      }
-    } else if (authRole === "admin") {
-      const success = onLoginAdmin(loginEmail, loginPassword);
-      if (success) {
-        setSuccessMsg("Acesso administrativo liberado!");
-        setTimeout(() => setShowAuthModal(false), 800);
-      } else {
-        setErrorMsg("Senha administrativa inválida.");
-      }
-    }
-  };
-
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg("");
-    setSuccessMsg("");
-
-    if (authRole === "indicador") {
-      if (
-        !regIndName ||
-        !regIndEmail ||
-        !regIndPassword ||
-        !regIndCpf ||
-        !regIndPixKey ||
-        !regIndCity ||
-        !regIndState
-      ) {
-        setErrorMsg(
-          "Preencha os campos obrigatórios (Nome, E-mail, Senha, CPF, Chave PIX, Cidade e Estado).",
-        );
-        return;
-      }
-      onRegisterIndicator({
-        name: regIndName,
-        email: regIndEmail,
-        password: regIndPassword,
-        cpf: regIndCpf,
-        phone: regIndPhone || "(11) 99999-9999",
-        pixKey: regIndPixKey,
-        pixType: regIndPixType,
-        league: "bronze",
-        score: 100,
-        clicks: 0,
-        hasAcceptedTerms: true,
-        balanceAvailable: 0,
-        balancePending: 0,
-        city: regIndCity,
-        state: regIndState,
-      });
-      setSuccessMsg("Cadastro efetuado com sucesso! Agora faça seu login.");
-      setIsRegisterMode(false);
-      setLoginEmail(regIndEmail);
-    } else {
-      if (
-        !regAdvName ||
-        !regAdvEmail ||
-        !regAdvPassword ||
-        !regAdvCnpjOrCpf ||
-        !regAdvCity ||
-        !regAdvState
-      ) {
-        setErrorMsg(
-          "Preencha os campos obrigatórios (Nome da Empresa, E-mail, Senha, CNPJ/CPF, Cidade e Estado).",
-        );
-        return;
-      }
-      onRegisterAdvertiser({
-        name: regAdvName,
-        email: regAdvEmail,
-        password: regAdvPassword,
-        cnpjOrCpf: regAdvCnpjOrCpf,
-        type: regAdvType,
-        phone: regAdvPhone || "(11) 99999-9999",
-        plan: regAdvPlan,
-        categoriesSelected: regAdvCategories,
-        hasAcceptedTerms: true,
-        city: regAdvCity,
-        state: regAdvState,
-      });
-      setSuccessMsg("Cadastro efetuado com sucesso! Agora faça seu login.");
-      setIsRegisterMode(false);
-      setLoginEmail(regAdvEmail);
-    }
-  };
-
-  const toggleCategorySelection = (cat: Category) => {
-    if (regAdvCategories.includes(cat)) {
-      if (regAdvCategories.length > 1) {
-        setRegAdvCategories(regAdvCategories.filter((c) => c !== cat));
-      }
-    } else {
-      setRegAdvCategories([...regAdvCategories, cat]);
-    }
-  };
-
   const openAuth = (_role: "indicador" | "anunciante" | "admin", _isRegister = false) => {
     // Fluxo unificado: todo cadastro/login vai para a rota /auth (Supabase real).
     // O modal interno legado foi desativado — evita cadastros em localStorage que sumiam.
@@ -289,7 +74,6 @@ export default function LandingPage({
             >
               <BrandLogo className="h-10 w-auto" />
             </div>
-
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-6">
@@ -727,8 +511,9 @@ export default function LandingPage({
                       Receba Leads Auditados
                     </h4>
                     <p className="text-slate-600 text-xs">
-                      Os leads gerados por promotores caem instantaneamente no seu painel. O
-                      promotor pode ainda fazer check-in de visita via GPS.
+                      Os leads gerados por promotores caem instantaneamente no seu painel. Quando o
+                      indicador chega à loja com o cliente, você confirma a presença dele com um
+                      clique.
                     </p>
                   </div>
                 </div>
@@ -960,9 +745,9 @@ export default function LandingPage({
                     </h4>
                     <p className="text-slate-600 text-xs">
                       Quer lucrar 2x ou 3x mais? No agendamento da visita, opte por acompanhar o
-                      lead presencialmente na imobiliária, marina ou concessionária. Utilize nosso
-                      app de celular para realizar o check-in por GPS auditado para validar sua
-                      comissão.
+                      lead presencialmente na imobiliária, marina ou concessionária. Ao chegar à
+                      loja, sinalize sua presença com um clique — o anunciante confirma direto no
+                      painel dele para validar sua comissão.
                     </p>
                   </div>
                 </div>
@@ -1024,8 +809,8 @@ export default function LandingPage({
                     Auditoria de Visitas
                   </h4>
                   <p className="text-slate-400 text-[11px]">
-                    Evite fraudes: promotores confirmam visitas tirando foto na fachada da loja ou
-                    realizando check-in com GPS no local.
+                    Evite fraudes: quem confirma que a visita aconteceu é você, o anunciante — com
+                    um clique no seu painel quando o indicador chega à loja com o cliente.
                   </p>
                 </div>
                 <div className="bg-slate-950/60 p-4 rounded-2xl border border-white/5">
@@ -1092,7 +877,7 @@ export default function LandingPage({
                     </span>
                     <h5 className="font-bold text-sm mt-1">Plano Pro (Multi-Vertical)</h5>
                     <p className="text-[10px] text-slate-400">
-                      Até 10 anúncios ativos com auditoria GPS.
+                      Até 10 anúncios ativos com confirmação de visita pelo anunciante.
                     </p>
                   </div>
                   <div className="text-right">
@@ -1224,572 +1009,6 @@ export default function LandingPage({
           <span>Sede: Av. Brigadeiro Faria Lima, 2000 - São Paulo, SP</span>
         </div>
       </footer>
-
-      {/* FULL AUTH MODAL (LOGIN & CADASTRO COM LOGIN/SENHA) */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden border border-slate-100 shadow-2xl relative animate-scale-up max-h-[90vh] overflow-y-auto">
-            {/* Modal Close Button */}
-            <button
-              onClick={() => setShowAuthModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center transition-colors text-sm font-bold z-10"
-            >
-              ✕
-            </button>
-
-            {/* Header Tabs */}
-            <div className="bg-slate-50 border-b border-slate-100 p-4 pt-6 flex justify-center gap-2">
-              <button
-                onClick={() => {
-                  setAuthRole("indicador");
-                  setErrorMsg("");
-                  setSuccessMsg("");
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  authRole === "indicador"
-                    ? "bg-blue-700 text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                Sou Indicador (Afiliado)
-              </button>
-              <button
-                onClick={() => {
-                  setAuthRole("anunciante");
-                  setErrorMsg("");
-                  setSuccessMsg("");
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  authRole === "anunciante"
-                    ? "bg-blue-700 text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                Sou Anunciante (Vendedor)
-              </button>
-              <button
-                onClick={() => {
-                  setAuthRole("admin");
-                  setIsRegisterMode(false);
-                  setErrorMsg("");
-                  setSuccessMsg("");
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  authRole === "admin"
-                    ? "bg-slate-900 text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
-                }`}
-              >
-                Admin
-              </button>
-            </div>
-
-            <div className="p-6 sm:p-8 space-y-6">
-              <div className="text-center">
-                <span className="text-[10px] bg-blue-100 text-blue-900 font-bold uppercase px-2.5 py-1 rounded-full font-mono">
-                  {authRole === "admin"
-                    ? "Acesso Administrativo"
-                    : isRegisterMode
-                      ? "Cadastro Completo"
-                      : "Área Restrita"}
-                </span>
-                <h3 className="font-display font-black text-slate-900 text-2xl mt-2">
-                  {authRole === "admin"
-                    ? "Acesso Admin"
-                    : isRegisterMode
-                      ? `Registrar como ${authRole === "indicador" ? "Indicador" : "Anunciante"}`
-                      : `Entrar como ${authRole === "indicador" ? "Indicador" : "Anunciante"}`}
-                </h3>
-                {authRole !== "admin" && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    {isRegisterMode
-                      ? "Preencha o formulário abaixo"
-                      : "Entre com e-mail e senha cadastrados"}
-                  </p>
-                )}
-              </div>
-
-              {/* Error and Success states */}
-              {errorMsg && (
-                <div className="bg-red-50 border border-red-100 text-red-700 p-3 rounded-xl text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-semibold">{errorMsg}</span>
-                </div>
-              )}
-              {successMsg && (
-                <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-semibold">{successMsg}</span>
-                </div>
-              )}
-
-              {/* FORMS */}
-              {!isRegisterMode ? (
-                // LOGIN FORM
-                <form onSubmit={handleLoginSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                      E-mail de Acesso
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder={
-                        authRole === "admin" ? "admin@indicaaqui.com" : "ex: gabriel@exemplo.com"
-                      }
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                      Senha Secreta
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-blue-700 hover:bg-blue-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-blue-100 flex items-center justify-center gap-2"
-                  >
-                    <Lock className="w-4 h-4" /> Entrar no Painel Seguro
-                  </button>
-
-                  {authRole !== "admin" && (
-                    <div className="text-center pt-2 border-t border-slate-100">
-                      <p className="text-xs text-slate-500">
-                        Não possui cadastro?{" "}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsRegisterMode(true);
-                            setErrorMsg("");
-                            setSuccessMsg("");
-                          }}
-                          className="text-blue-700 font-bold hover:underline"
-                        >
-                          Cadastre-se Agora
-                        </button>
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Quick demo login links */}
-                  <div className="mt-5 pt-4 border-t border-slate-100 text-center">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                      Acesso Rápido (Demonstração)
-                    </span>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleQuickLogin("gabriel.martins@indica.com", "senha123", "indicador")
-                        }
-                        className="bg-blue-50 hover:bg-blue-100 border border-blue-200/50 text-blue-950 rounded-xl py-2 px-1 text-[10px] font-bold transition-all flex flex-col items-center gap-0.5 shadow-xs"
-                      >
-                        <span className="opacity-90">Indicador</span>
-                        <span className="text-[8px] text-blue-800 font-normal">Gabriel</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleQuickLogin("contato@vanguardluxo.com.br", "senha123", "anunciante")
-                        }
-                        className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/50 text-emerald-950 rounded-xl py-2 px-1 text-[10px] font-bold transition-all flex flex-col items-center gap-0.5 shadow-xs"
-                      >
-                        <span className="opacity-90">Anunciante</span>
-                        <span className="text-[8px] text-emerald-700 font-normal">Vanguard</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleQuickLogin("admin@indicaaqui.com", "admin123", "admin")
-                        }
-                        className="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-950 rounded-xl py-2 px-1 text-[10px] font-bold transition-all flex flex-col items-center gap-0.5 shadow-xs"
-                      >
-                        <span className="opacity-90">Administrador</span>
-                        <span className="text-[8px] text-slate-600 font-normal">Admin Geral</span>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                // REGISTER FORMS
-                <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                  {authRole === "indicador" ? (
-                    // INDICATOR REGISTER FIELDS
-                    <>
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                          Nome Completo
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="ex: Roberto Carlos"
-                          value={regIndName}
-                          onChange={(e) => setRegIndName(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            E-mail
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            placeholder="roberto@email.com"
-                            value={regIndEmail}
-                            onChange={(e) => setRegIndEmail(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Senha
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            placeholder="Mínimo 6 caracteres"
-                            value={regIndPassword}
-                            onChange={(e) => setRegIndPassword(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            CPF
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="000.000.000-00"
-                            value={regIndCpf}
-                            onChange={(e) => setRegIndCpf(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            WhatsApp / Telefone
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="(11) 99999-9999"
-                            value={regIndPhone}
-                            onChange={(e) => setRegIndPhone(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-1">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Tipo de PIX
-                          </label>
-                          <select
-                            value={regIndPixType}
-                            onChange={(e: any) => setRegIndPixType(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          >
-                            <option value="email">E-mail</option>
-                            <option value="cpf">CPF</option>
-                            <option value="phone">Celular</option>
-                            <option value="random">Chave Aleatória</option>
-                          </select>
-                        </div>
-                        <div className="col-span-2">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Chave PIX de Recebimento
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Chave para transferências"
-                            value={regIndPixKey}
-                            onChange={(e) => setRegIndPixKey(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-2">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Cidade de Atuação
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="ex: São Paulo"
-                            value={regIndCity}
-                            onChange={(e) => setRegIndCity(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Estado (UF)
-                          </label>
-                          <select
-                            value={regIndState}
-                            onChange={(e) => setRegIndState(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          >
-                            <option value="AC">AC</option>
-                            <option value="AL">AL</option>
-                            <option value="AP">AP</option>
-                            <option value="AM">AM</option>
-                            <option value="BA">BA</option>
-                            <option value="CE">CE</option>
-                            <option value="DF">DF</option>
-                            <option value="ES">ES</option>
-                            <option value="GO">GO</option>
-                            <option value="MA">MA</option>
-                            <option value="MT">MT</option>
-                            <option value="MS">MS</option>
-                            <option value="MG">MG</option>
-                            <option value="PA">PA</option>
-                            <option value="PB">PB</option>
-                            <option value="PR">PR</option>
-                            <option value="PE">PE</option>
-                            <option value="PI">PI</option>
-                            <option value="RJ">RJ</option>
-                            <option value="RN">RN</option>
-                            <option value="RS">RS</option>
-                            <option value="RO">RO</option>
-                            <option value="RR">RR</option>
-                            <option value="SC">SC</option>
-                            <option value="SP">SP</option>
-                            <option value="SE">SE</option>
-                            <option value="TO">TO</option>
-                          </select>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    // ADVERTISER REGISTER FIELDS
-                    <>
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                          Nome Fantasia da Empresa
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="ex: Incorporadora Sul"
-                          value={regAdvName}
-                          onChange={(e) => setRegAdvName(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            E-mail Corporativo
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            placeholder="contato@empresa.com"
-                            value={regAdvEmail}
-                            onChange={(e) => setRegAdvEmail(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Senha
-                          </label>
-                          <input
-                            type="password"
-                            required
-                            placeholder="Min. 6 caracteres"
-                            value={regAdvPassword}
-                            onChange={(e) => setRegAdvPassword(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-1">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Tipo
-                          </label>
-                          <select
-                            value={regAdvType}
-                            onChange={(e: any) => setRegAdvType(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          >
-                            <option value="PJ">CNPJ (PJ)</option>
-                            <option value="PF">CPF (Autônomo)</option>
-                          </select>
-                        </div>
-                        <div className="col-span-2">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Documento (CNPJ/CPF)
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="CNPJ ou CPF"
-                            value={regAdvCnpjOrCpf}
-                            onChange={(e) => setRegAdvCnpjOrCpf(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            WhatsApp / Comercial
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="(11) 98888-8888"
-                            value={regAdvPhone}
-                            onChange={(e) => setRegAdvPhone(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Plano Pretendido
-                          </label>
-                          <select
-                            value={regAdvPlan}
-                            onChange={(e: any) => setRegAdvPlan(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          >
-                            <option value="starter">Starter (R$ 149/mês)</option>
-                            <option value="pro">Pro (R$ 399/mês)</option>
-                            <option value="premium">Premium (R$ 799/mês)</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="col-span-2">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Cidade da Sede / Loja
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="ex: Rio de Janeiro"
-                            value={regAdvCity}
-                            onChange={(e) => setRegAdvCity(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
-                        </div>
-                        <div className="col-span-1">
-                          <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                            Estado (UF)
-                          </label>
-                          <select
-                            value={regAdvState}
-                            onChange={(e) => setRegAdvState(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          >
-                            <option value="AC">AC</option>
-                            <option value="AL">AL</option>
-                            <option value="AP">AP</option>
-                            <option value="AM">AM</option>
-                            <option value="BA">BA</option>
-                            <option value="CE">CE</option>
-                            <option value="DF">DF</option>
-                            <option value="ES">ES</option>
-                            <option value="GO">GO</option>
-                            <option value="MA">MA</option>
-                            <option value="MT">MT</option>
-                            <option value="MS">MS</option>
-                            <option value="MG">MG</option>
-                            <option value="PA">PA</option>
-                            <option value="PB">PB</option>
-                            <option value="PR">PR</option>
-                            <option value="PE">PE</option>
-                            <option value="PI">PI</option>
-                            <option value="RJ">RJ</option>
-                            <option value="RN">RN</option>
-                            <option value="RS">RS</option>
-                            <option value="RO">RO</option>
-                            <option value="RR">RR</option>
-                            <option value="SC">SC</option>
-                            <option value="SP">SP</option>
-                            <option value="SE">SE</option>
-                            <option value="TO">TO</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] text-slate-500 font-bold uppercase mb-1">
-                          Nichos Atuantes (Múltiplas Verticais)
-                        </label>
-                        <div className="grid grid-cols-5 md:grid-cols-7 gap-1 pt-1">
-                          {VERTICALS_ORDER.map((cat) => {
-                            const v = VERTICALS[cat];
-                            return (
-                              <button
-                                type="button"
-                                key={cat}
-                                onClick={() => toggleCategorySelection(cat)}
-                                title={v.label}
-                                className={`py-1 rounded text-[11px] font-bold border transition-all ${
-                                  regAdvCategories.includes(cat)
-                                    ? "bg-blue-700 border-blue-700 text-white"
-                                    : "bg-slate-100 border-slate-200 text-slate-600"
-                                }`}
-                              >
-                                {v.emoji}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full bg-blue-700 hover:bg-blue-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md shadow-blue-100 flex items-center justify-center gap-2"
-                  >
-                    <PlusCircle className="w-4 h-4" /> Cadastrar e Concordar com os Termos
-                  </button>
-
-                  <div className="text-center pt-2 border-t border-slate-100">
-                    <p className="text-xs text-slate-500">
-                      Já possui cadastro?{" "}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsRegisterMode(false);
-                          setErrorMsg("");
-                          setSuccessMsg("");
-                        }}
-                        className="text-blue-700 font-bold hover:underline"
-                      >
-                        Fazer Login
-                      </button>
-                    </p>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

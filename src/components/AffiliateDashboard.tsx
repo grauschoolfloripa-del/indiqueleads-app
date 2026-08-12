@@ -57,6 +57,8 @@ interface AffiliateDashboardProps {
     status: any,
     extra?: { visitDate?: string; notes?: string; checkInRequested?: boolean },
   ) => void;
+  /** "Cheguei na Loja" — sinaliza chegada; só o anunciante confirma a visita. */
+  onRequestCheckIn: (leadId: string) => void;
   onAddNotification: (msg: string, type: "success" | "info") => void;
   advertisers: Advertiser[];
   onViewProduct?: (productId: string) => void;
@@ -78,6 +80,7 @@ export default function AffiliateDashboard({
   simulations,
   onAddSimulation,
   onUpdateLeadStatus,
+  onRequestCheckIn,
   onAddNotification,
   advertisers,
   onViewProduct,
@@ -126,14 +129,6 @@ export default function AffiliateDashboard({
     "instagram" | "whatsapp" | "facebook" | "tiktok" | "linkedin" | ""
   >("");
   const [selectedPlacement, setSelectedPlacement] = useState<string>("");
-
-  // Check-In Geolocation Simulator
-  const [checkingInLead, setCheckingInLead] = useState<Lead | null>(null);
-  const [gpsLoading, setGpsLoading] = useState<boolean>(false);
-  const [gpsSuccess, setGpsSuccess] = useState<boolean>(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
-  const [checkinMethod, setCheckinMethod] = useState<"gps" | "photo">("gps");
-  const [mockPhotoUploaded, setMockPhotoUploaded] = useState<boolean>(false);
 
   // PIX Withdrawal
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
@@ -343,101 +338,6 @@ export default function AffiliateDashboard({
       `Abrindo ${gallery.length} imagem(ns) do produto para você salvar no seu dispositivo!`,
       "success",
     );
-  };
-
-  // GPS Check-In Geolocation Trigger
-  const handleGpsCheckIn = (lead: Lead) => {
-    const relatedProduct = products.find((p) => p.id === lead.productId);
-    if (!relatedProduct) return;
-
-    setGpsLoading(true);
-    setGpsError(null);
-
-    // Check geolocation API
-    if (!navigator.geolocation) {
-      setGpsError(
-        "Seu navegador não suporta geolocalização. Use a foto de fachada como alternativa.",
-      );
-      setGpsLoading(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        // Calculate dynamic mock distance
-        // Standard coordinates for target location is in relatedProduct.location
-        // We simulate that they are exactly at the correct spot to represent a successful check-in (less than 100 meters)
-        setTimeout(() => {
-          setGpsLoading(false);
-          setGpsSuccess(true);
-          onUpdateLeadStatus(lead.id, "visita_confirmada");
-          onAddNotification(
-            `Check-in confirmado com sucesso! Distância de 42m do local.`,
-            "success",
-          );
-
-          // pending commission goes to pending balance
-          onUpdateIndicator({
-            ...indicator,
-            balancePending: indicator.balancePending + lead.commissionValue,
-          });
-
-          setTimeout(() => {
-            setGpsSuccess(false);
-            setCheckingInLead(null);
-          }, 3000);
-        }, 1500);
-      },
-      (error) => {
-        // Geolocation denied, let's provide a simulation helper button instead of completely blocking
-        setTimeout(() => {
-          // Since it's a simulator, we allow "Simular GPS com Sucesso" to make testing seamless in the iframe
-          setGpsLoading(false);
-          setGpsSuccess(true);
-          onUpdateLeadStatus(lead.id, "visita_confirmada");
-          onAddNotification(
-            `Check-in simulado com sucesso! (GPS de demonstração autorizado)`,
-            "success",
-          );
-
-          onUpdateIndicator({
-            ...indicator,
-            balancePending: indicator.balancePending + lead.commissionValue,
-          });
-
-          setTimeout(() => {
-            setGpsSuccess(false);
-            setCheckingInLead(null);
-          }, 3000);
-        }, 1200);
-      },
-      { enableHighAccuracy: true, timeout: 5000 },
-    );
-  };
-
-  const handlePhotoCheckIn = (lead: Lead) => {
-    if (!mockPhotoUploaded) {
-      onAddNotification("Por favor, carregue uma foto da fachada da loja/imóvel.", "info");
-      return;
-    }
-    setGpsLoading(true);
-    setTimeout(() => {
-      setGpsLoading(false);
-      setGpsSuccess(true);
-      onUpdateLeadStatus(lead.id, "visita_confirmada");
-      onAddNotification("Check-in via foto de fachada auditado com sucesso!", "success");
-
-      onUpdateIndicator({
-        ...indicator,
-        balancePending: indicator.balancePending + lead.commissionValue,
-      });
-
-      setTimeout(() => {
-        setGpsSuccess(false);
-        setCheckingInLead(null);
-        setMockPhotoUploaded(false);
-      }, 3000);
-    }, 1500);
   };
 
   // If NOT registered yet, display the beautiful Onboarding/Terms interface
@@ -938,20 +838,11 @@ export default function AffiliateDashboard({
                 Visitas Presenciais Pendentes ({scheduledVisits.length})
               </h4>
               <p className="text-xs text-amber-700 mt-0.5">
-                Você tem visitas agendadas. Lembre-se de realizar o check-in por GPS no local para
-                ativar sua comissão!
+                Você tem visitas agendadas. Ao chegar à loja com o cliente, use o botão "Cheguei na
+                Loja" na tabela de leads abaixo — o anunciante confirma sua presença de lá.
               </p>
             </div>
           </div>
-          <button
-            onClick={() => {
-              setCheckingInLead(scheduledVisits[0]);
-              setCheckinMethod("gps");
-            }}
-            className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow"
-          >
-            Iniciar Check-In Simulador
-          </button>
         </div>
       )}
 
@@ -1518,15 +1409,7 @@ export default function AffiliateDashboard({
                                     </div>
                                   ) : (
                                     <button
-                                      onClick={() => {
-                                        onUpdateLeadStatus(lead.id, "visita_agendada", {
-                                          checkInRequested: true,
-                                        });
-                                        onAddNotification(
-                                          "Você sinalizou que chegou à loja com o cliente! Uma notificação foi enviada ao lojista para confirmar.",
-                                          "success",
-                                        );
-                                      }}
+                                      onClick={() => onRequestCheckIn(lead.id)}
                                       className="bg-gradient-to-r from-blue-500 to-amber-600 hover:from-blue-700 hover:to-amber-700 text-white font-bold py-1 px-2.5 rounded-lg transition-all text-[9px] flex items-center gap-1 shadow-sm active:scale-95"
                                     >
                                       <MapPin className="w-2.5 h-2.5" /> Cheguei na Loja
@@ -2707,7 +2590,6 @@ export default function AffiliateDashboard({
                               Abrir {selectedSocialPlatform}{" "}
                               {selectedPlacement ? `(${selectedPlacement})` : ""} 🚀
                             </button>
-
                           </div>
                         </div>
                       </div>
@@ -2830,7 +2712,6 @@ export default function AffiliateDashboard({
                     </>
                   )}
                 </button>
-
               </div>
             </div>
           </div>
@@ -2838,174 +2719,6 @@ export default function AffiliateDashboard({
       )}
 
       {/* MODAL: PHYSICAL CHECK-IN SIMULATOR */}
-      {checkingInLead && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 relative font-sans shadow-2xl">
-            <button
-              onClick={() => setCheckingInLead(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm"
-            >
-              ✕
-            </button>
-
-            <div className="text-center mb-5">
-              <div className="bg-amber-100 text-amber-800 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Navigation className="w-6 h-6" />
-              </div>
-              <h2 className="font-display font-bold text-slate-900 text-lg">
-                Check-In Presencial por GPS
-              </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Confirme seu acompanhamento presencial do cliente.
-              </p>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 mb-4 text-xs text-slate-700 font-sans">
-              <div>
-                <span className="font-bold block uppercase text-[9px] text-slate-400">
-                  Cliente Indicado
-                </span>
-                <p className="text-sm font-semibold text-slate-900">{checkingInLead.clientName}</p>
-              </div>
-              <div>
-                <span className="font-bold block uppercase text-[9px] text-slate-400">
-                  Produto de Interesse
-                </span>
-                <p className="text-sm font-semibold text-slate-900">
-                  {checkingInLead.productTitle}
-                </p>
-              </div>
-              <div>
-                <span className="font-bold block uppercase text-[9px] text-slate-400">
-                  Comissão Adicional
-                </span>
-                <p className="text-sm font-bold text-emerald-600">
-                  R$ {checkingInLead.commissionValue.toLocaleString("pt-BR")} (Presencial)
-                </p>
-              </div>
-            </div>
-
-            {/* Check-in Method selector */}
-            <div className="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-semibold">
-              <button
-                onClick={() => setCheckinMethod("gps")}
-                className={`flex-1 py-1.5 rounded-lg transition-all ${
-                  checkinMethod === "gps" ? "bg-white text-slate-900 shadow" : "text-slate-500"
-                }`}
-              >
-                Localização (GPS)
-              </button>
-              <button
-                onClick={() => setCheckinMethod("photo")}
-                className={`flex-1 py-1.5 rounded-lg transition-all ${
-                  checkinMethod === "photo" ? "bg-white text-slate-900 shadow" : "text-slate-500"
-                }`}
-              >
-                Foto de Fachada (Alternativo)
-              </button>
-            </div>
-
-            {checkinMethod === "gps" ? (
-              <div className="space-y-4">
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  O sistema usará o GPS do seu dispositivo para confirmar que você está no local
-                  físico do anúncio no horário agendado (janela de geolocalização do parceiro).
-                </p>
-
-                <button
-                  onClick={() => handleGpsCheckIn(checkingInLead)}
-                  disabled={gpsLoading}
-                  className={`w-full py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow ${
-                    gpsLoading
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : gpsSuccess
-                        ? "bg-emerald-600 text-white"
-                        : "bg-blue-700 hover:bg-blue-500 text-white shadow shadow-blue-100"
-                  }`}
-                >
-                  {gpsLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Consultando coordenadas GPS...
-                    </>
-                  ) : gpsSuccess ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Check-In Confirmado!
-                    </>
-                  ) : (
-                    <>
-                      <Navigation className="w-4 h-4" />
-                      Acionar GPS & Confirmar Chegada
-                    </>
-                  )}
-                </button>
-
-                {gpsError && (
-                  <p className="text-[10px] text-red-500 text-center font-semibold">{gpsError}</p>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Se o GPS estiver instável ou com imprecisões, tire uma foto da fachada da
-                  loja/imóvel com o cliente para auditoria posterior da plataforma.
-                </p>
-
-                <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-6 text-center transition-colors cursor-pointer bg-slate-50/50">
-                  <input
-                    type="file"
-                    id="photo_checkin_upload"
-                    accept="image/*"
-                    onChange={() => {
-                      setMockPhotoUploaded(true);
-                      onAddNotification(
-                        "Foto da fachada anexada para auditoria de check-in!",
-                        "info",
-                      );
-                    }}
-                    className="hidden"
-                  />
-                  <label
-                    htmlFor="photo_checkin_upload"
-                    className="cursor-pointer space-y-1.5 block"
-                  >
-                    <Camera className="w-8 h-8 text-slate-400 mx-auto" />
-                    <span className="block text-xs font-bold text-blue-700">
-                      Fotografar / Enviar Foto
-                    </span>
-                    <span className="block text-[10px] text-slate-400">JPG ou PNG até 5MB</span>
-                  </label>
-                </div>
-
-                {mockPhotoUploaded && (
-                  <p className="text-emerald-600 font-bold text-center text-xs flex items-center justify-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Foto Anexada com sucesso!
-                  </p>
-                )}
-
-                <button
-                  onClick={() => handlePhotoCheckIn(checkingInLead)}
-                  disabled={gpsLoading}
-                  className={`w-full py-3 rounded-xl font-semibold text-xs transition-all shadow ${
-                    gpsLoading
-                      ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                      : gpsSuccess
-                        ? "bg-emerald-600 text-white"
-                        : "bg-blue-700 hover:bg-blue-500 text-white shadow shadow-blue-100"
-                  }`}
-                >
-                  {gpsLoading
-                    ? "Analisando imagem..."
-                    : gpsSuccess
-                      ? "Auditoria Concluída!"
-                      : "Enviar Foto e Confirmar"}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* MODAL: WHATSAPP NOTIFICATION FOR ADVERTISER */}
       {whatsAppNotificationData && (

@@ -1,68 +1,40 @@
-import { useState, useEffect } from "react";
-import {
-  Sparkles,
-  Award,
-  Building2,
-  ShieldAlert,
-  Eye,
-  Info,
-  CheckCircle2,
-  AlertCircle,
-  Trash2,
-  Landmark,
-  RefreshCw,
-  X,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { CheckCircle2, Info, X } from "lucide-react";
 
-import {
-  INITIAL_PRODUCTS,
-  INITIAL_INDICATORS,
-  INITIAL_ADVERTISERS,
-  INITIAL_LEADS,
-  INITIAL_PLATFORM_CONFIG,
-  INITIAL_SIMULATIONS,
-  INITIAL_CHAT_MESSAGES,
-} from "./data/mockData";
-import {
-  Product,
-  Indicator,
-  Advertiser,
-  Lead,
-  Category,
-  PlatformConfig,
-  FinancingSimulation,
-  FinancingStatus,
-  BankSimulationResponse,
-  ApprovedContract,
-  ChatMessage,
-} from "./types";
-import { sanitizeChatMessage, getSecurityWarningMessage } from "./lib/chatSecurity";
+import { Product, Lead, Category, FinancingSimulation } from "./types";
 import { VERTICALS, VERTICALS_ORDER } from "./lib/verticals";
+import { isUuid } from "./lib/repositories";
 import {
-  ensureAdvertiserRow,
-  ensureIndicatorRow,
-  fetchProductsForAdvertiser,
-  fetchAllActiveProducts,
-  fetchLeadsForAdvertiser,
-  fetchLeadsForIndicator,
-  fetchChatsForLeads,
-  fetchSimulationsForAdvertiser,
-  fetchSimulationsForIndicator,
-  fetchPlatformConfig,
-  pushProduct,
-  updateProductStatus as cloudUpdateProductStatus,
-  pushLead,
-  updateLead as cloudUpdateLead,
-  pushChatMessage,
-  pushSimulation,
-  updateSimulationStatus as cloudUpdateSimulationStatus,
-  pushPlatformConfig,
-  subscribeChatMessagesAll,
-  subscribeLeads,
-  subscribeIndicators,
-  isUuid,
-} from "./lib/cloudSync";
-import { supabase } from "./integrations/supabase/client";
+  useAdvertiserProfile,
+  useIndicatorProfile,
+  useUpdateAdvertiser,
+  useUpdateIndicator,
+  useIndicatorRealtimeSync,
+  useActiveProducts,
+  useAdvertiserProducts,
+  useAllProducts,
+  useCreateProduct,
+  useUpdateProductStatus,
+  useAdvertiserLeads,
+  useIndicatorLeads,
+  useAllLeads,
+  useCreateLead,
+  useUpdateLead,
+  useRequestCheckIn,
+  useLeadsRealtimeSync,
+  useChatMessages,
+  useSendChatMessage,
+  useChatRealtimeSync,
+  useAdvertiserSimulations,
+  useIndicatorSimulations,
+  useCreateSimulation,
+  useUpdateSimulationStatus,
+  useAllAdvertisers,
+  useAllIndicators,
+  useAdvertiserRelatedIndicators,
+  usePlatformConfig,
+  useUpdatePlatformConfig,
+} from "./hooks/queries";
 
 import AffiliateDashboard from "./components/AffiliateDashboard";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
@@ -72,78 +44,31 @@ import LandingPage from "./components/LandingPage";
 import AuthBar from "./components/AuthBar";
 import { useAuth, signOut as supabaseSignOut } from "./hooks/useAuth";
 
+type LoggedUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: "indicador" | "anunciante" | "admin";
+};
+
 export default function App() {
-  // --- STATE DECLARATIONS ---
+  // --- UI / NAVEGAÇÃO ---
   const [currentRole, setCurrentRole] = useState<
     "indicador" | "anunciante" | "admin" | "visitante"
   >("indicador");
   const [activeReferralId, setActiveReferralId] = useState<string | null>(null);
-  const [activeProductId, setActiveProductId] = useState<string>("prod-1");
+  const [activeProductId, setActiveProductId] = useState<string>("");
   // Quando true, o visitante chegou via link único (?p=). Impede navegação para outros anúncios.
   const [lockedToSharedProduct, setLockedToSharedProduct] = useState<boolean>(false);
+  // Lead criado pelo próprio visitante nesta sessão (para acompanhar o chat sem estar logado).
+  const [visitorLeadId, setVisitorLeadId] = useState<string | null>(null);
 
-
-  // Session / Authentication state
   // Sessão real vem exclusivamente do Supabase (useAuth) via bridge abaixo.
-  // Nunca lemos de localStorage para evitar sessões fantasmas de fluxos antigos.
-  const [loggedUser, setLoggedUser] = useState<{
-    id: string;
-    name: string;
-    email: string;
-    role: "indicador" | "anunciante" | "admin";
-  } | null>(null);
+  const [loggedUser, setLoggedUser] = useState<LoggedUser | null>(null);
 
-  // Core Db States
-  const [products, setProducts] = useState<Product[]>(() => {
-    try {
-      const cached = localStorage.getItem("indica_products");
-      return cached ? JSON.parse(cached) : INITIAL_PRODUCTS;
-    } catch {
-      return INITIAL_PRODUCTS;
-    }
-  });
-  const [indicators, setIndicators] = useState<Indicator[]>(() => {
-    try {
-      const cached = localStorage.getItem("indica_indicators");
-      return cached ? JSON.parse(cached) : INITIAL_INDICATORS;
-    } catch {
-      return INITIAL_INDICATORS;
-    }
-  });
-  const [advertisers, setAdvertisers] = useState<Advertiser[]>(() => {
-    try {
-      const cached = localStorage.getItem("indica_advertisers");
-      return cached ? JSON.parse(cached) : INITIAL_ADVERTISERS;
-    } catch {
-      return INITIAL_ADVERTISERS;
-    }
-  });
-  const [leads, setLeads] = useState<Lead[]>(() => {
-    try {
-      const cached = localStorage.getItem("indica_leads");
-      return cached ? JSON.parse(cached) : INITIAL_LEADS;
-    } catch {
-      return INITIAL_LEADS;
-    }
-  });
-  const [simulations, setSimulations] = useState<FinancingSimulation[]>(() => {
-    try {
-      const cached = localStorage.getItem("indica_simulations");
-      return cached ? JSON.parse(cached) : INITIAL_SIMULATIONS;
-    } catch {
-      return INITIAL_SIMULATIONS;
-    }
-  });
-  const [platformConfig, setPlatformConfig] = useState<PlatformConfig>(() => {
-    try {
-      const cached = localStorage.getItem("indica_config");
-      return cached ? JSON.parse(cached) : INITIAL_PLATFORM_CONFIG;
-    } catch {
-      return INITIAL_PLATFORM_CONFIG;
-    }
-  });
-
-  // Dynamic Categories (fonte: src/lib/verticals.ts — verticais oficiais da plataforma)
+  // Categorias: derivadas de verticals.ts (fonte oficial). Adições feitas no admin
+  // valem só para a sessão — não há tabela dedicada no banco para isso.
   const [categories, setCategories] = useState<
     Array<{ id: Category | string; name: string; icon: string; fields: string[] }>
   >(() =>
@@ -155,170 +80,25 @@ export default function App() {
     })),
   );
 
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() => {
-    try {
-      const cached = localStorage.getItem("indica_chat_messages");
-      return cached ? JSON.parse(cached) : INITIAL_CHAT_MESSAGES;
-    } catch {
-      return INITIAL_CHAT_MESSAGES;
-    }
-  });
-
   // Notifications Queue
   const [notifications, setNotifications] = useState<
     Array<{ id: string; msg: string; type: "success" | "info" }>
   >([]);
 
-  // --- INITIALIZATION & REFERRAL COOKIE READING ---
-  // Limpa qualquer sessão legada em localStorage do fluxo antigo (mock).
-  // A autenticação real é 100% Supabase via useAuth + bridge abaixo.
-  useEffect(() => {
-    localStorage.removeItem("indica_logged_user");
-  }, []);
+  const addNotification = (msg: string, type: "success" | "info" = "info") => {
+    const id = `notif-${Date.now()}`;
+    setNotifications((prev) => [...prev, { id, msg, type }]);
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    }, 4000);
+  };
 
-  useEffect(() => {
-    // 1. Load database from localStorage or seed
-    const cachedProducts = localStorage.getItem("indica_products");
-    const cachedIndicators = localStorage.getItem("indica_indicators");
-    const cachedAdvertisers = localStorage.getItem("indica_advertisers");
-    const cachedLeads = localStorage.getItem("indica_leads");
-    const cachedSimulations = localStorage.getItem("indica_simulations");
-    const cachedCategories = localStorage.getItem("indica_categories");
-    const cachedConfig = localStorage.getItem("indica_config");
-    const cachedCookie = localStorage.getItem("indica_cookie_ref");
-    const cachedChatMessages = localStorage.getItem("indica_chat_messages");
-
-    if (cachedProducts) setProducts(JSON.parse(cachedProducts));
-    else setProducts(INITIAL_PRODUCTS);
-
-    if (cachedIndicators) setIndicators(JSON.parse(cachedIndicators));
-    else setIndicators(INITIAL_INDICATORS);
-
-    if (cachedAdvertisers) setAdvertisers(JSON.parse(cachedAdvertisers));
-    else setAdvertisers(INITIAL_ADVERTISERS);
-
-    if (cachedLeads) setLeads(JSON.parse(cachedLeads));
-    else setLeads(INITIAL_LEADS);
-
-    if (cachedSimulations) setSimulations(JSON.parse(cachedSimulations));
-    else setSimulations(INITIAL_SIMULATIONS);
-
-    if (cachedChatMessages) setChatMessages(JSON.parse(cachedChatMessages));
-    else setChatMessages(INITIAL_CHAT_MESSAGES);
-
-    if (cachedCategories) setCategories(JSON.parse(cachedCategories));
-    if (cachedConfig) setPlatformConfig(JSON.parse(cachedConfig));
-
-    void fetchAllActiveProducts()
-      .then((cloudProducts) => {
-        if (!cloudProducts.length) return;
-        setProducts(cloudProducts);
-        saveToStorage("indica_products", cloudProducts);
-      })
-      .catch((error) => console.error("[App] public products hydrate failed", error));
-
-    if (cachedCookie) {
-      setActiveReferralId(cachedCookie);
-    }
-
-    // 2. Read Query parameters (simulating landing through an affiliate link)
-    const params = new URLSearchParams(window.location.search);
-    const refParam = params.get("ref");
-    const prodParam = params.get("p");
-    const srcParam = params.get("src");
-
-    if (srcParam) {
-      localStorage.setItem("indica_cookie_src", srcParam);
-    }
-
-    if (refParam) {
-      // Set attribution cookie (60-day simulated persistence)
-      localStorage.setItem("indica_cookie_ref", refParam);
-      setActiveReferralId(refParam);
-
-      // Auto-increment the promoter's click count to reflect dynamic attribution activity!
-      setIndicators((prevInds) => {
-        const updated = prevInds.map((ind) => {
-          if (ind.id === refParam) {
-            return { ...ind, clicks: ind.clicks + 1 };
-          }
-          return ind;
-        });
-        localStorage.setItem("indica_indicators", JSON.stringify(updated));
-        return updated;
-      });
-
-      addNotification(`Link de Indicação ativado! ID Promotor: ${refParam}`, "success");
-      setCurrentRole("visitante");
-    }
-
-    if (prodParam) {
-      setActiveProductId(prodParam);
-      setCurrentRole("visitante");
-      setLockedToSharedProduct(true);
-      // Se o produto não está no estado local (link vindo de outro dispositivo),
-      // busca no banco e injeta para que a página do produto abra correta.
-      const existsLocal = (cachedProducts ? JSON.parse(cachedProducts) : INITIAL_PRODUCTS)
-        .some((p: Product) => p.id === prodParam);
-      if (!existsLocal && isUuid(prodParam)) {
-        void import("./lib/cloudSync").then(({ fetchProductById }) =>
-          fetchProductById(prodParam).then((prod) => {
-            if (prod) {
-              setProducts((prev) =>
-                prev.some((p) => p.id === prod.id) ? prev : [prod, ...prev],
-              );
-            } else {
-              addNotification("Este anúncio não está mais disponível.", "info");
-            }
-          }),
-        );
-      }
-    }
-
-
-    const roleParam = params.get("role");
-    if (roleParam === "anunciante") {
-      setCurrentRole("anunciante");
-      const loadedAdvertisers = cachedAdvertisers
-        ? JSON.parse(cachedAdvertisers)
-        : INITIAL_ADVERTISERS;
-      const firstAdv = loadedAdvertisers[0] || INITIAL_ADVERTISERS[0];
-      const userObj = {
-        id: firstAdv.id,
-        name: firstAdv.name,
-        email: firstAdv.email,
-        role: "anunciante" as const,
-      };
-      setLoggedUser(userObj);
-      localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
-      addNotification(`Painel do Anunciante ativado via link!`, "success");
-    } else if (roleParam === "indicador") {
-      setCurrentRole("indicador");
-      const loadedIndicators = cachedIndicators ? JSON.parse(cachedIndicators) : INITIAL_INDICATORS;
-      const firstInd = loadedIndicators[0] || INITIAL_INDICATORS[0];
-      const userObj = {
-        id: firstInd.id,
-        name: firstInd.name,
-        email: firstInd.email,
-        role: "indicador" as const,
-      };
-      setLoggedUser(userObj);
-      localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
-      addNotification(`Painel do Indicador ativado via link!`, "success");
-    }
-  }, []);
-
-  // --- BRIDGE: Supabase Auth → loggedUser (real production auth, authoritative) ---
+  // --- BRIDGE: Supabase Auth → loggedUser (única fonte de sessão) ---
   const { user: supaUser, roles: supaRoles, loading: supaLoading } = useAuth();
   useEffect(() => {
     if (supaLoading) return;
     if (!supaUser) {
-      // No Supabase session: clear any stale legacy session so UI reflects logged-out state.
-      const stale = localStorage.getItem("indica_logged_user");
-      if (stale) {
-        localStorage.removeItem("indica_logged_user");
-        setLoggedUser(null);
-      }
+      setLoggedUser(null);
       return;
     }
     const role: "indicador" | "anunciante" | "admin" = supaRoles.includes("admin")
@@ -331,406 +111,193 @@ export default function App() {
       (supaUser.user_metadata?.name as string) ||
       supaUser.email?.split("@")[0] ||
       "Usuário";
-    const emailLc = (supaUser.email ?? "").toLowerCase();
     const phone = (supaUser.user_metadata?.phone as string) || (supaUser.phone as string) || "";
-    const userObj = { id: supaUser.id, name: displayName, email: supaUser.email ?? "", role };
-    setLoggedUser(userObj);
+    setLoggedUser({ id: supaUser.id, name: displayName, email: supaUser.email ?? "", phone, role });
     setCurrentRole(role);
-    localStorage.setItem("indica_logged_user", JSON.stringify(userObj));
-
-    // Garantir que o registro de Anunciante/Indicador reflita o usuário real logado.
-    if (role === "anunciante") {
-      setAdvertisers((prev) => {
-        const byId = prev.find((a) => a.id === supaUser.id);
-        if (byId) {
-          // Sincroniza nome/email/telefone com o cadastro real do usuário logado.
-          const next = prev.map((a) =>
-            a.id === supaUser.id
-              ? { ...a, name: displayName, email: supaUser.email ?? a.email, phone: phone || a.phone }
-              : a,
-          );
-          saveToStorage("indica_advertisers", next);
-          return next;
-        }
-        const byEmail = prev.findIndex((a) => a.email.toLowerCase() === emailLc && emailLc);
-        if (byEmail >= 0) {
-          // Migra o registro existente (mesmo email) para o id do Supabase.
-          const next = [...prev];
-          next[byEmail] = { ...next[byEmail], id: supaUser.id, name: displayName, email: supaUser.email ?? next[byEmail].email };
-          saveToStorage("indica_advertisers", next);
-          return next;
-        }
-        // Cria um novo registro real a partir do usuário Supabase (sem mock).
-        const created: Advertiser = {
-          id: supaUser.id,
-          name: displayName,
-          cnpjOrCpf: "",
-          type: "PJ",
-          phone,
-          email: supaUser.email ?? "",
-          plan: "gratuito",
-          categoriesSelected: [],
-          hasAcceptedTerms: true,
-        };
-        const next = [...prev, created];
-        saveToStorage("indica_advertisers", next);
-        return next;
-      });
-    } else if (role === "indicador") {
-      setIndicators((prev) => {
-        const byId = prev.find((i) => i.id === supaUser.id);
-        if (byId) {
-          const next = prev.map((i) =>
-            i.id === supaUser.id
-              ? { ...i, name: displayName, email: supaUser.email ?? i.email, phone: phone || i.phone }
-              : i,
-          );
-          saveToStorage("indica_indicators", next);
-          return next;
-        }
-        const byEmail = prev.findIndex((i) => i.email.toLowerCase() === emailLc && emailLc);
-        if (byEmail >= 0) {
-          const next = [...prev];
-          next[byEmail] = { ...next[byEmail], id: supaUser.id, name: displayName, email: supaUser.email ?? next[byEmail].email };
-          saveToStorage("indica_indicators", next);
-          return next;
-        }
-        const created: Indicator = {
-          id: supaUser.id,
-          name: displayName,
-          cpf: "",
-          phone,
-          email: supaUser.email ?? "",
-          pixKey: supaUser.email ?? "",
-          pixType: "email",
-          league: "bronze",
-          score: 0,
-          clicks: 0,
-          hasAcceptedTerms: true,
-          balanceAvailable: 0,
-          balancePending: 0,
-        };
-        const next = [...prev, created];
-        saveToStorage("indica_indicators", next);
-        return next;
-      });
-    }
-
-    // --- Cloud sync: ensure DB rows exist for this user, then hydrate from cloud. ---
-    void (async () => {
-      try {
-        if (role === "anunciante") {
-          const advId = await ensureAdvertiserRow(supaUser.id, {
-            name: displayName,
-            email: supaUser.email ?? "",
-            phone,
-          });
-          if (!advId) return;
-          const [cloudProducts, cloudLeads] = await Promise.all([
-            fetchProductsForAdvertiser(advId),
-            fetchLeadsForAdvertiser(advId),
-          ]);
-          if (cloudProducts.length) {
-            setProducts((prev) => {
-              const ids = new Set(prev.map((p) => p.id));
-              const merged = [...cloudProducts.filter((p) => !ids.has(p.id)), ...prev];
-              saveToStorage("indica_products", merged);
-              return merged;
-            });
-          }
-          if (cloudLeads.length) {
-            setLeads((prev) => {
-              const ids = new Set(prev.map((l) => l.id));
-              const merged = [...cloudLeads.filter((l) => !ids.has(l.id)), ...prev];
-              saveToStorage("indica_leads", merged);
-              return merged;
-            });
-            const chats = await fetchChatsForLeads(cloudLeads.map((l) => l.id));
-            if (chats.length) {
-              setChatMessages((prev) => {
-                const ids = new Set(prev.map((m) => m.id));
-                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
-                saveToStorage("indica_chat_messages", merged);
-                return merged;
-              });
-            }
-          }
-          const cloudSims = await fetchSimulationsForAdvertiser(advId);
-          if (cloudSims.length) {
-            setSimulations((prev) => {
-              const ids = new Set(prev.map((s) => s.id));
-              const merged = [...cloudSims.filter((s) => !ids.has(s.id)), ...prev];
-              saveToStorage("indica_simulations", merged);
-              return merged;
-            });
-          }
-        } else if (role === "indicador") {
-          const indId = await ensureIndicatorRow(supaUser.id, {
-            name: displayName,
-            email: supaUser.email ?? "",
-            phone,
-          });
-          if (!indId) return;
-          // Also refresh public active products (so indicator sees new advertisers' items).
-          const [activeProducts, indLeads] = await Promise.all([
-            fetchAllActiveProducts(),
-            fetchLeadsForIndicator(indId),
-          ]);
-          if (activeProducts.length) {
-            setProducts(activeProducts);
-            saveToStorage("indica_products", activeProducts);
-          }
-          if (indLeads.length) {
-            setLeads((prev) => {
-              const ids = new Set(prev.map((l) => l.id));
-              const merged = [...indLeads.filter((l) => !ids.has(l.id)), ...prev];
-              saveToStorage("indica_leads", merged);
-              return merged;
-            });
-            const chats = await fetchChatsForLeads(indLeads.map((l) => l.id));
-            if (chats.length) {
-              setChatMessages((prev) => {
-                const ids = new Set(prev.map((m) => m.id));
-                const merged = [...prev, ...chats.filter((m) => !ids.has(m.id))];
-                saveToStorage("indica_chat_messages", merged);
-                return merged;
-              });
-            }
-          }
-          const indSims = await fetchSimulationsForIndicator(indId);
-          if (indSims.length) {
-            setSimulations((prev) => {
-              const ids = new Set(prev.map((s) => s.id));
-              const merged = [...indSims.filter((s) => !ids.has(s.id)), ...prev];
-              saveToStorage("indica_simulations", merged);
-              return merged;
-            });
-          }
-        }
-      } catch (e) {
-        console.error("[App] cloud hydrate failed", e);
-      }
-    })();
   }, [supaUser, supaRoles, supaLoading]);
 
-  // --- Hidrata platform_config do banco (fonte da verdade, admin edita). ---
+  // --- Query params: link de indicação / produto compartilhado ---
   useEffect(() => {
-    void fetchPlatformConfig().then((cfg) => {
-      if (!cfg) return;
-      setPlatformConfig((prev) => {
-        const next = { ...prev, ...cfg } as PlatformConfig;
-        saveToStorage("indica_config", next);
-        return next;
-      });
-    });
+    const params = new URLSearchParams(window.location.search);
+    const refParam = params.get("ref");
+    const prodParam = params.get("p");
+    const srcParam = params.get("src");
+    const roleParam = params.get("role");
+
+    if (srcParam) localStorage.setItem("indica_cookie_src", srcParam);
+
+    const cachedCookie = localStorage.getItem("indica_cookie_ref");
+    if (cachedCookie) setActiveReferralId(cachedCookie);
+
+    if (refParam) {
+      localStorage.setItem("indica_cookie_ref", refParam);
+      setActiveReferralId(refParam);
+      setCurrentRole("visitante");
+      addNotification(`Link de Indicação ativado! ID Promotor: ${refParam}`, "success");
+    }
+
+    if (prodParam) {
+      setActiveProductId(prodParam);
+      setCurrentRole("visitante");
+      setLockedToSharedProduct(true);
+    }
+
+    // `?role=` não autentica ninguém: a sessão só vem do Supabase Auth (bridge acima).
+    // O parâmetro apenas escolhe qual tela de login exibir.
+    if (roleParam === "anunciante" || roleParam === "indicador") {
+      setCurrentRole(roleParam);
+    }
   }, []);
 
-  // --- Realtime: incoming chat messages + leads updates (dedupe by id). ---
-  useEffect(() => {
-    if (!loggedUser || loggedUser.role === "admin") return;
-    const offChat = subscribeChatMessagesAll((msg) => {
-      setChatMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
-        const next = [...prev, msg];
-        saveToStorage("indica_chat_messages", next);
-        return next;
-      });
-    });
-    const offLeads = subscribeLeads((lead) => {
-      setLeads((prev) => {
-        const idx = prev.findIndex((l) => l.id === lead.id);
-        // preserve local product/indicator names when db payload lacks join info
-        const next = idx >= 0
-          ? prev.map((l) => (l.id === lead.id ? { ...l, ...lead, productTitle: lead.productTitle || l.productTitle, indicatorName: lead.indicatorName || l.indicatorName } : l))
-          : [lead, ...prev];
-        saveToStorage("indica_leads", next);
-        return next;
-      });
-    });
-    const offInd = subscribeIndicators((row) => {
-      setIndicators((prev) => {
-        const idx = prev.findIndex((i) => i.id === row.id);
-        if (idx < 0) return prev;
-        const next = prev.map((i) =>
-          i.id === row.id
-            ? {
-                ...i,
-                balanceAvailable: Number(row.balance_available ?? i.balanceAvailable),
-                balancePending: Number(row.balance_pending ?? i.balancePending),
-                score: Number(row.score ?? i.score),
-                clicks: Number(row.clicks ?? i.clicks),
-                league: row.league ?? i.league,
-              }
-            : i,
-        );
-        saveToStorage("indica_indicators", next);
-        return next;
-      });
-    });
-    return () => {
-      offChat();
-      offLeads();
-      offInd();
-    };
-  }, [loggedUser?.id, loggedUser?.role]);
+  // --- IDs derivados da sessão ---
+  const indicatorId = loggedUser?.role === "indicador" ? loggedUser.id : undefined;
+  const advertiserId = loggedUser?.role === "anunciante" ? loggedUser.id : undefined;
+  const isAdmin = loggedUser?.role === "admin";
+  const profileSeed = loggedUser
+    ? { name: loggedUser.name, email: loggedUser.email, phone: loggedUser.phone }
+    : {};
 
+  // --- Perfis (garante + busca a linha do usuário logado) ---
+  const indicatorProfileQuery = useIndicatorProfile(indicatorId, profileSeed);
+  const advertiserProfileQuery = useAdvertiserProfile(advertiserId, profileSeed);
+  const updateIndicatorMutation = useUpdateIndicator();
+  const updateAdvertiserMutation = useUpdateAdvertiser();
+  useIndicatorRealtimeSync(indicatorProfileQuery.data?.id);
 
+  // --- Produtos ---
+  const activeProductsQuery = useActiveProducts();
+  const advertiserProductsQuery = useAdvertiserProducts(advertiserId);
+  const allProductsQuery = useAllProducts(isAdmin);
+  const createProductMutation = useCreateProduct();
+  const updateProductStatusMutation = useUpdateProductStatus();
 
-  // Sync state helpers
-  const saveToStorage = (key: string, data: any) => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
+  const products = useMemo<Product[]>(() => {
+    if (isAdmin) return allProductsQuery.data ?? [];
+    const byId = new Map<string, Product>();
+    for (const p of activeProductsQuery.data ?? []) byId.set(p.id, p);
+    for (const p of advertiserProductsQuery.data ?? []) byId.set(p.id, p);
+    return Array.from(byId.values());
+  }, [isAdmin, allProductsQuery.data, activeProductsQuery.data, advertiserProductsQuery.data]);
 
-  // --- TOAST NOTIFICATIONS HELPER ---
-  const addNotification = (msg: string, type: "success" | "info" = "info") => {
-    const id = `notif-${Date.now()}`;
-    setNotifications((prev) => [...prev, { id, msg, type }]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-    }, 4000);
-  };
+  // --- Leads ---
+  const advertiserLeadsQuery = useAdvertiserLeads(advertiserId);
+  const indicatorLeadsQuery = useIndicatorLeads(indicatorId);
+  const allLeadsQuery = useAllLeads(isAdmin);
+  const createLeadMutation = useCreateLead();
+  const updateLeadMutation = useUpdateLead();
+  const requestCheckInMutation = useRequestCheckIn();
+  useLeadsRealtimeSync(loggedUser?.role ?? null);
+
+  const leads = useMemo<Lead[]>(() => {
+    if (isAdmin) return allLeadsQuery.data ?? [];
+    if (advertiserId) return advertiserLeadsQuery.data ?? [];
+    if (indicatorId) return indicatorLeadsQuery.data ?? [];
+    return [];
+  }, [
+    isAdmin,
+    advertiserId,
+    indicatorId,
+    allLeadsQuery.data,
+    advertiserLeadsQuery.data,
+    indicatorLeadsQuery.data,
+  ]);
+
+  // --- Anunciantes / Indicadores (listas usadas pelos painéis) ---
+  const allAdvertisersQuery = useAllAdvertisers();
+  const allIndicatorsQuery = useAllIndicators(isAdmin);
+  const advertiserRelatedIndicatorsQuery = useAdvertiserRelatedIndicators(advertiserId);
+  const advertisers = allAdvertisersQuery.data ?? [];
+  const indicators = isAdmin
+    ? (allIndicatorsQuery.data ?? [])
+    : advertiserId
+      ? (advertiserRelatedIndicatorsQuery.data ?? [])
+      : [];
+
+  // --- Simulações de financiamento ---
+  const advertiserSimulationsQuery = useAdvertiserSimulations(advertiserId);
+  const indicatorSimulationsQuery = useIndicatorSimulations(indicatorId);
+  const createSimulationMutation = useCreateSimulation();
+  const updateSimulationStatusMutation = useUpdateSimulationStatus();
+  const simulations: FinancingSimulation[] = advertiserId
+    ? (advertiserSimulationsQuery.data ?? [])
+    : indicatorId
+      ? (indicatorSimulationsQuery.data ?? [])
+      : [];
+
+  // --- Chat: mensagens dos leads visíveis nesta sessão + lead do visitante atual ---
+  const chatLeadIds = useMemo(() => {
+    const ids = new Set(leads.map((l) => l.id));
+    if (visitorLeadId) ids.add(visitorLeadId);
+    return Array.from(ids);
+  }, [leads, visitorLeadId]);
+  const chatQuery = useChatMessages(chatLeadIds);
+  const sendChatMessageMutation = useSendChatMessage();
+  useChatRealtimeSync(chatLeadIds.length > 0);
+  const chatMessages = chatQuery.data ?? [];
+
+  // --- Config da plataforma ---
+  const platformConfigQuery = usePlatformConfig();
+  const updatePlatformConfigMutation = useUpdatePlatformConfig();
 
   // --- HANDLERS ---
+
   const handleSimulateReferral = (refId: string, prodId: string) => {
     localStorage.setItem("indica_cookie_ref", refId);
     setActiveReferralId(refId);
     setActiveProductId(prodId);
-
-    // Increment affiliate clicks
-    setIndicators((prevInds) => {
-      const updated = prevInds.map((ind) => {
-        if (ind.id === refId) {
-          return { ...ind, clicks: ind.clicks + 1 };
-        }
-        return ind;
-      });
-      saveToStorage("indica_indicators", updated);
-      return updated;
-    });
-
     setCurrentRole("visitante");
     addNotification(`Simulando visita via link de indicação de ${refId}!`, "success");
   };
 
-  const handleUpdateIndicator = (updated: Indicator) => {
-    setIndicators((prev) => {
-      const next = prev.map((i) => (i.id === updated.id ? updated : i));
-      saveToStorage("indica_indicators", next);
-      return next;
+  const handleUpdateIndicator = (updated: import("./types").Indicator) => {
+    updateIndicatorMutation.mutate(updated, {
+      onError: () => addNotification("Não foi possível salvar as alterações do indicador.", "info"),
     });
-    // Persist edits to cloud for real users.
-    if (isUuid(updated.id)) {
-      void supabase
-        .from("indicators")
-        .update({
-          name: updated.name,
-          cpf: updated.cpf,
-          phone: updated.phone,
-          email: updated.email,
-          pix_key: updated.pixKey,
-          pix_type: updated.pixType,
-          city: updated.city ?? null,
-          state: updated.state ?? null,
-        })
-        .eq("id", updated.id)
-        .then(({ error }: { error: unknown }) => error && console.error("[App] update indicator", error));
-    }
   };
 
-  const handleUpdateAdvertiser = (updated: Advertiser) => {
-    setAdvertisers((prev) => {
-      const next = prev.map((a) => (a.id === updated.id ? updated : a));
-      saveToStorage("indica_advertisers", next);
-      return next;
+  const handleUpdateAdvertiser = (updated: import("./types").Advertiser) => {
+    updateAdvertiserMutation.mutate(updated, {
+      onError: () =>
+        addNotification("Não foi possível salvar as alterações do anunciante.", "info"),
     });
-    if (isUuid(updated.id)) {
-      void supabase
-        .from("advertisers")
-        .update({
-          name: updated.name,
-          cnpj_or_cpf: updated.cnpjOrCpf,
-          type: updated.type,
-          phone: updated.phone,
-          email: updated.email,
-          plan: updated.plan,
-          categories: updated.categoriesSelected,
-          city: updated.city ?? null,
-          state: updated.state ?? null,
-        })
-        .eq("id", updated.id)
-        .then(({ error }: { error: unknown }) => error && console.error("[App] update advertiser", error));
-    }
   };
 
   const handleAddProduct = (newProd: Product) => {
-    // Garante UUID para persistência em nuvem (mocks começam com "prod-").
     const normalized: Product = isUuid(newProd.id)
       ? newProd
       : { ...newProd, id: crypto.randomUUID() };
-    setProducts((prev) => {
-      const next = [normalized, ...prev];
-      saveToStorage("indica_products", next);
-      return next;
+    createProductMutation.mutate(normalized, {
+      onError: () =>
+        addNotification(
+          "Não foi possível salvar o anúncio na nuvem. Verifique sua conexão.",
+          "info",
+        ),
     });
-    // Espelha no banco (não bloqueia a UI). Só grava se o anunciante for real.
-    if (isUuid(normalized.advertiserId)) {
-      void pushProduct(normalized).catch(() =>
-        addNotification("Não foi possível salvar o anúncio na nuvem. Verifique sua conexão.", "info"),
-      );
-    }
   };
 
-  const handleUpdateProductStatus = (productId: string, status: any) => {
-    setProducts((prev) => {
-      const next = prev.map((p) => (p.id === productId ? { ...p, status } : p));
-      saveToStorage("indica_products", next);
-      return next;
-    });
-    void cloudUpdateProductStatus(productId, status);
-    addNotification(`Status do produto atualizado para: ${status}`, "info");
+  const handleUpdateProductStatus = (productId: string, status: Product["status"]) => {
+    updateProductStatusMutation.mutate(
+      { id: productId, status },
+      { onSuccess: () => addNotification(`Status do produto atualizado para: ${status}`, "info") },
+    );
   };
+
+  const buildSystemMessage = (leadId: string, text: string) => ({
+    leadId,
+    senderId: "system",
+    senderName: "Sistema",
+    senderRole: "system" as const,
+    text,
+    isSystem: true,
+  });
 
   const handleUpdateLeadStatus = (
     leadId: string,
-    status: any,
+    status: Lead["status"],
     extra?: { visitDate?: string; notes?: string; checkInRequested?: boolean },
   ) => {
-    setLeads((prev) => {
-      const next = prev.map((l) => {
-        if (l.id === leadId) {
-          const wasConfirmed = l.status === "visita_confirmada";
-          const isConfirmed = status === "visita_confirmada";
+    updateLeadMutation.mutate({ id: leadId, patch: { status, ...(extra || {}) } });
 
-          if (isConfirmed && !wasConfirmed) {
-            setIndicators((prevInds) => {
-              const updated = prevInds.map((ind) => {
-                if (ind.id === l.indicatorId) {
-                  return {
-                    ...ind,
-                    balancePending: ind.balancePending + l.commissionValue,
-                  };
-                }
-                return ind;
-              });
-              saveToStorage("indica_indicators", updated);
-              return updated;
-            });
-          }
-
-          return {
-            ...l,
-            status,
-            updatedAt: new Date().toISOString(),
-            ...(extra || {}),
-          };
-        }
-        return l;
-      });
-      saveToStorage("indica_leads", next);
-      return next;
-    });
-
-    // Create system message for chat timeline
     const stageLabels: Record<string, string> = {
       lead_recebido: "Lead recebido pela loja",
       contato_feito: "Primeiro contato realizado com o comprador",
@@ -739,7 +306,6 @@ export default function App() {
       proposta: "Proposta comercial apresentada",
       venda_concluida: "Venda concluída com sucesso!",
     };
-
     const label = stageLabels[status] || status.replace("_", " ");
     let systemText = `🔄 STATUS ALTERADO: O atendimento mudou para "${label}".`;
     if (extra?.visitDate) {
@@ -749,94 +315,76 @@ export default function App() {
       });
       systemText += ` Agendamento marcado para: ${formattedDate}.`;
     }
-    if (extra?.notes) {
-      systemText += ` Observações: "${extra.notes}"`;
-    }
+    if (extra?.notes) systemText += ` Observações: "${extra.notes}"`;
     if (extra?.checkInRequested) {
       systemText += ` 📍 O indicador sinalizou chegada com o comprador na loja física e aguarda confirmação.`;
     } else if (status === "visita_confirmada") {
-      systemText += ` 📍 Presença física do indicador confirmada no showroom! Saldo pendente liberado de R$ [Comissão pendente].`;
+      systemText += ` 📍 Presença física do indicador confirmada no showroom! Saldo pendente liberado.`;
     }
-
-    const systemMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      leadId,
-      senderId: "system",
-      senderName: "Sistema",
-      senderRole: "system",
-      text: systemText,
-      isSystem: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    setChatMessages((prev) => {
-      const updated = [...prev, systemMsg];
-      saveToStorage("indica_chat_messages", updated);
-      return updated;
+    const systemMsg = buildSystemMessage(leadId, systemText);
+    sendChatMessageMutation.mutate(systemMsg, {
+      onError: (e) => console.error("[App] system message (status change) failed", e),
     });
-
-    // Persist status + system message to cloud (best-effort).
-    void cloudUpdateLead(leadId, { status, ...(extra || {}) });
-    pushChatMessage(systemMsg).catch((e) => console.error("[App] pushChatMessage system", e));
 
     addNotification(`Etapa do funil alterada: ${status.replace("_", " ")}`, "success");
   };
 
-  const handleAttachLeadContract = (leadId: string, url: string, notes: string) => {
-    setLeads((prev) => {
-      const next = prev.map((l) => {
-        if (l.id === leadId) {
-          // On closing sale, pay the commission to affiliate (transfer pending to available!)
-          setIndicators((prevInds) => {
-            const updated = prevInds.map((ind) => {
-              if (ind.id === l.indicatorId) {
-                return {
-                  ...ind,
-                  balanceAvailable: ind.balanceAvailable + l.commissionValue,
-                  balancePending: Math.max(0, ind.balancePending - l.commissionValue),
-                };
-              }
-              return ind;
-            });
-            saveToStorage("indica_indicators", updated);
-            return updated;
-          });
-
-          // Create system message for chat timeline
-          const systemMsg: ChatMessage = {
-            id: crypto.randomUUID(),
+  // "Cheguei na Loja" — o indicador só sinaliza chegada (RPC estreita, não
+  // consegue mudar status/comissão sozinho). Confirmar a visita continua
+  // sendo exclusivo do anunciante, via handleUpdateLeadStatus acima.
+  const handleRequestCheckIn = (leadId: string) => {
+    requestCheckInMutation.mutate(leadId, {
+      onSuccess: () => {
+        sendChatMessageMutation.mutate(
+          buildSystemMessage(
             leadId,
-            senderId: "system",
-            senderName: "Sistema",
-            senderRole: "system",
-            text: `🎉 CONTRATO DE VENDA ANEXADO! O anunciante oficializou o fechamento do negócio e anexou o comprovante. Uma comissão de R$ ${l.commissionValue.toLocaleString("pt-BR")} foi creditada diretamente na carteira disponível do indicador ${l.indicatorName}!`,
-            isSystem: true,
-            createdAt: new Date().toISOString(),
-          };
-
-          setChatMessages((prev) => {
-            const updated = [...prev, systemMsg];
-            saveToStorage("indica_chat_messages", updated);
-            return updated;
-          });
-
-          // Persist to cloud.
-          void cloudUpdateLead(leadId, { contractUrl: url, notes, commissionPaid: true, status: "venda_concluida" });
-          pushChatMessage(systemMsg).catch((e) => console.error("[App] pushChatMessage contract", e));
-
-          return {
-            ...l,
-            contractUrl: url,
-            notes,
-            commissionPaid: true,
-            status: "venda_concluida" as const,
-          };
-        }
-        return l;
-      });
-      saveToStorage("indica_leads", next);
-      return next;
+            "📍 O indicador sinalizou chegada com o comprador na loja física e aguarda confirmação.",
+          ),
+        );
+        addNotification(
+          "Você sinalizou que chegou à loja com o cliente! Uma notificação foi enviada ao lojista para confirmar.",
+          "success",
+        );
+      },
+      onError: (e) => {
+        console.error("[App] requestCheckIn failed", e);
+        addNotification("Não foi possível sinalizar chegada — tente novamente.", "info");
+      },
     });
+  };
+
+  // O anexo (NF-e/contrato) é opcional — só serve como prova em caso de
+  // disputa. A comissão é paga assim que o anunciante marca a venda como
+  // fechada, com ou sem comprovante.
+  const handleAttachLeadContract = (leadId: string, url: string | null, notes: string) => {
+    const lead = leads.find((l) => l.id === leadId);
+    updateLeadMutation.mutate(
+      {
+        id: leadId,
+        patch: {
+          ...(url ? { contractUrl: url } : {}),
+          notes,
+          commissionPaid: true,
+          status: "venda_concluida",
+        },
+      },
+      {
+        onSuccess: () => {
+          if (lead) {
+            const proofText = url
+              ? "e anexou o comprovante"
+              : "sem anexar comprovante (fica disponível como prova opcional em caso de disputa)";
+            const systemMsg = buildSystemMessage(
+              leadId,
+              `🎉 VENDA FECHADA! O anunciante oficializou o fechamento do negócio ${proofText}. Uma comissão de R$ ${lead.commissionValue.toLocaleString("pt-BR")} foi creditada diretamente na carteira disponível do indicador ${lead.indicatorName}!`,
+            );
+            sendChatMessageMutation.mutate(systemMsg, {
+              onError: (e) => console.error("[App] system message (contract) failed", e),
+            });
+          }
+        },
+      },
+    );
   };
 
   const handleSendChatMessage = (
@@ -846,71 +394,40 @@ export default function App() {
     senderRole: "client" | "advertiser",
     text: string,
   ) => {
-    const { cleanText, hasLeakage, blockedInfoType } = sanitizeChatMessage(text);
-    const newMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      leadId,
-      senderId,
-      senderName,
-      senderRole,
-      text: cleanText,
-      ...(hasLeakage ? { originalText: text } : {}),
-      createdAt: new Date().toISOString(),
-    };
-    let warningMsg: ChatMessage | null = null;
-
-    setChatMessages((prev) => {
-      const updated = [...prev, newMsg];
-
-      if (hasLeakage) {
-        warningMsg = {
-          id: crypto.randomUUID(),
-          leadId,
-          senderId: "system",
-          senderName: "Sistema (Segurança)",
-          senderRole: "system",
-          text: getSecurityWarningMessage(blockedInfoType),
-          isSystem: true,
-          isBlockedBySecurity: true,
-          createdAt: new Date(Date.now() + 1000).toISOString(),
-        };
-        updated.push(warningMsg);
-      }
-
-      saveToStorage("indica_chat_messages", updated);
-      return updated;
-    });
-
-    // Persist to cloud (only for leads that live in the DB).
-    (async () => {
-      try {
-        await pushChatMessage(newMsg);
-        if (warningMsg) await pushChatMessage(warningMsg);
-      } catch (err) {
-        console.error("[App] pushChatMessage send failed", err);
-        addNotification("Falha ao enviar mensagem — tente novamente.", "info");
-      }
-    })();
-
-    if (hasLeakage) {
-      addNotification("Contato externo bloqueado por segurança para proteger a indicação!", "info");
-    } else {
-      addNotification("Mensagem enviada com sucesso!", "success");
-    }
+    // A sanitização (telefone/e-mail/links) roda no servidor, dentro da Edge
+    // Function `send-chat-message` — o cliente só envia o texto bruto.
+    sendChatMessageMutation.mutate(
+      { leadId, senderId, senderName, senderRole, text },
+      {
+        onSuccess: (result) => {
+          if (result.hasLeakage) {
+            addNotification(
+              "Contato externo bloqueado por segurança para proteger a indicação!",
+              "info",
+            );
+          } else {
+            addNotification("Mensagem enviada com sucesso!", "success");
+          }
+        },
+        onError: () => addNotification("Falha ao enviar mensagem — tente novamente.", "info"),
+      },
+    );
   };
 
-  const handleAddCategory = (newCat: any) => {
-    setCategories((prev) => {
-      const next = [...prev, newCat];
-      saveToStorage("indica_categories", next);
-      return next;
-    });
+  const handleAddCategory = (newCat: {
+    id: Category | string;
+    name: string;
+    icon: string;
+    fields: string[];
+  }) => {
+    setCategories((prev) => [...prev, newCat]);
   };
 
-  const handleUpdatePlatformConfig = (newConfig: PlatformConfig) => {
-    setPlatformConfig(newConfig);
-    saveToStorage("indica_config", newConfig);
-    void pushPlatformConfig(newConfig);
+  const handleUpdatePlatformConfig = (newConfig: import("./types").PlatformConfig) => {
+    updatePlatformConfigMutation.mutate(newConfig, {
+      onError: () =>
+        addNotification("Não foi possível salvar a configuração da plataforma.", "info"),
+    });
   };
 
   // Submit Lead from Visitor View
@@ -920,19 +437,15 @@ export default function App() {
     clientEmail: string;
     notes?: string;
   }) => {
-    // 1. Retrieve the product being viewed
     const viewedProduct = products.find((p) => p.id === activeProductId);
     if (!viewedProduct) return;
 
-    // 2. Identify promoter ID (either cookie activeReferralId, logged-in indicator ID, or default to Gabriel ind-1 for simulation)
     const currentRefId =
-      activeReferralId ||
-      (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null) ||
-      "ind-1";
-    const associatedIndicator = indicators.find((i) => i.id === currentRefId);
-
-    // Determine commission tier value (defaults to digital unless they specified presence interest)
-    const comVal = viewedProduct.commissionDigitalValue || 0;
+      activeReferralId || (loggedUser && loggedUser.role === "indicador" ? loggedUser.id : null);
+    if (!currentRefId) {
+      addNotification("Não foi possível identificar o indicador deste link.", "info");
+      return;
+    }
 
     const currentSrc = localStorage.getItem("indica_cookie_src") || "whatsapp";
     let channelLabel = "Link Direto / WhatsApp";
@@ -941,311 +454,83 @@ export default function App() {
     else if (currentSrc === "tiktok") channelLabel = "TikTok Vídeo / Link na Bio";
     else if (currentSrc === "linkedin") channelLabel = "LinkedIn Publicação";
 
-    const newLead: Lead = {
-      id: crypto.randomUUID(),
-      productId: viewedProduct.id,
-      productTitle: viewedProduct.title,
-      productCategory: viewedProduct.category,
-      indicatorId: currentRefId,
-      indicatorName: associatedIndicator?.name || "Indicador parceiro",
-      advertiserId: viewedProduct.advertiserId,
-      clientName: leadData.clientName,
-      clientPhone: leadData.clientPhone,
-      clientEmail: leadData.clientEmail,
-      status: "lead_recebido",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      commissionPaid: false,
-      commissionValue: comVal,
-      commissionType: "digital",
-      notes: leadData.notes,
-      referralChannel: channelLabel,
-    };
-
-    setLeads((prev) => {
-      const next = [newLead, ...prev];
-      saveToStorage("indica_leads", next);
-      return next;
-    });
-
-    // Initialize Chat messages for the new lead
-    const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação de *${associatedIndicator?.name || "Indicador parceiro"}*. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
-    const initialMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      leadId: newLead.id,
-      senderId: "system",
-      senderName: "Sistema",
-      senderRole: "system",
-      text: systemText,
-      isSystem: true,
-      createdAt: new Date().toISOString(),
-    };
-
-    const msgs = [initialMsg];
-    if (leadData.notes) {
-      msgs.push({
-        id: crypto.randomUUID(),
-        leadId: newLead.id,
-        senderId: "client",
-        senderName: leadData.clientName,
-        senderRole: "client",
-        text: leadData.notes,
-        createdAt: new Date(Date.now() + 50).toISOString(),
-      });
-    }
-
-    setChatMessages((prev) => {
-      const nextMsgs = [...prev, ...msgs];
-      saveToStorage("indica_chat_messages", nextMsgs);
-      return nextMsgs;
-    });
-
-    // Persist to cloud (async, best-effort). Chat messages depend on lead existing.
-    void (async () => {
-      try {
-        await pushLead(newLead);
-        for (const m of msgs) await pushChatMessage(m);
-      } catch (err) {
-        console.error("[App] persist lead failed", err);
-        addNotification("Falha ao sincronizar lead/mensagem com o servidor.", "info");
-      }
-    })();
-
-    addNotification(
-      `Novo Lead registrado com sucesso sob indicação de: ${associatedIndicator?.name || "Indicador parceiro"}!`,
-      "success",
+    // A comissão é calculada no servidor (Edge Function `create-lead`) a
+    // partir do produto — o cliente nunca envia um valor de comissão.
+    createLeadMutation.mutate(
+      {
+        productId: viewedProduct.id,
+        indicatorId: currentRefId,
+        clientName: leadData.clientName,
+        clientPhone: leadData.clientPhone,
+        clientEmail: leadData.clientEmail,
+        notes: leadData.notes,
+        referralChannel: channelLabel,
+      },
+      {
+        onSuccess: (lead) => {
+          setVisitorLeadId(lead.id);
+          const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação do parceiro. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
+          sendChatMessageMutation.mutate(buildSystemMessage(lead.id, systemText));
+          if (leadData.notes) {
+            sendChatMessageMutation.mutate({
+              leadId: lead.id,
+              senderId: "client",
+              senderName: leadData.clientName,
+              senderRole: "client",
+              text: leadData.notes,
+            });
+          }
+          addNotification("Novo Lead registrado com sucesso!", "success");
+        },
+        onError: (err) => {
+          console.error("[App] persist lead failed", err);
+          addNotification("Falha ao sincronizar lead com o servidor.", "info");
+        },
+      },
     );
   };
 
-  // --- AUTHENTICATION HANDLERS ---
-  const handleLoginIndicator = (email: string, pass: string): boolean => {
-    const found = indicators.find((i) => i.email.toLowerCase() === email.toLowerCase());
-    if (found) {
-      if (pass === "senha123" || found.password === pass) {
-        const userObj = {
-          id: found.id,
-          name: found.name,
-          email: found.email,
-          role: "indicador" as const,
-        };
-        setLoggedUser(userObj);
-        setCurrentRole("indicador");
-        saveToStorage("indica_logged_user", userObj);
-        addNotification(`Bem-vindo de volta, ${found.name}!`, "success");
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const handleRegisterIndicator = (newInd: Partial<Indicator> & { password?: string }) => {
-    const id = `ind-${Date.now()}`;
-    const indicator: Indicator = {
-      id,
-      name: newInd.name || "Novo Indicador",
-      cpf: newInd.cpf || "",
-      phone: newInd.phone || "",
-      email: newInd.email || "",
-      password: newInd.password,
-      pixKey: newInd.pixKey || "",
-      pixType: newInd.pixType || "email",
-      league: "bronze",
-      score: 100,
-      clicks: 0,
-      hasAcceptedTerms: true,
-      balanceAvailable: 0,
-      balancePending: 0,
-    };
-    setIndicators((prev) => {
-      const next = [...prev, indicator];
-      saveToStorage("indica_indicators", next);
-      return next;
-    });
-    addNotification(`Cadastro realizado para ${indicator.name}! Faça login agora.`, "success");
-  };
-
-  const handleLoginAdvertiser = (email: string, pass: string): boolean => {
-    const found = advertisers.find((a) => a.email.toLowerCase() === email.toLowerCase());
-    if (found) {
-      if (pass === "senha123" || found.password === pass) {
-        const userObj = {
-          id: found.id,
-          name: found.name,
-          email: found.email,
-          role: "anunciante" as const,
-        };
-        setLoggedUser(userObj);
-        setCurrentRole("anunciante");
-        saveToStorage("indica_logged_user", userObj);
-        addNotification(`Bem-vindo ao Painel da Empresa, ${found.name}!`, "success");
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const handleRegisterAdvertiser = (newAdv: Partial<Advertiser> & { password?: string }) => {
-    const id = `adv-${Date.now()}`;
-    const advertiser: Advertiser = {
-      id,
-      name: newAdv.name || "Nova Empresa",
-      cnpjOrCpf: newAdv.cnpjOrCpf || "",
-      type: newAdv.type || "PJ",
-      phone: newAdv.phone || "",
-      email: newAdv.email || "",
-      password: newAdv.password,
-      plan: newAdv.plan || "starter",
-      categoriesSelected: newAdv.categoriesSelected || ["imovel"],
-      hasAcceptedTerms: true,
-    };
-    setAdvertisers((prev) => {
-      const next = [...prev, advertiser];
-      saveToStorage("indica_advertisers", next);
-      return next;
-    });
-    addNotification(`Empresa ${advertiser.name} cadastrada! Faça login agora.`, "success");
-  };
-
-  const handleLoginAdmin = (email: string, pass: string): boolean => {
-    if (email.toLowerCase() === "admin@indicaaqui.com" && pass === "admin123") {
-      const userObj = {
-        id: "admin-1",
-        name: "Admin Geral",
-        email: "admin@indicaaqui.com",
-        role: "admin" as const,
-      };
-      setLoggedUser(userObj);
-      setCurrentRole("admin");
-      saveToStorage("indica_logged_user", userObj);
-      addNotification("Painel Administrativo Autenticado!", "success");
-      return true;
-    }
-    return false;
-  };
-
   const handleLogout = () => {
-    // Fonte da verdade é o Supabase. O bridge acima limpa loggedUser ao detectar sessão nula.
     void supabaseSignOut();
-    localStorage.removeItem("indica_logged_user");
     setLoggedUser(null);
     setCurrentRole("indicador");
     addNotification("Sessão encerrada com segurança.", "info");
   };
 
-  const handleRoleChangeFromSwitcher = (
-    role: "indicador" | "anunciante" | "admin" | "visitante",
-  ) => {
-    setCurrentRole(role);
-    if (role === "indicador") {
-      const firstInd = indicators[0] || INITIAL_INDICATORS[0];
-      const userObj = {
-        id: firstInd.id,
-        name: firstInd.name,
-        email: firstInd.email,
-        role: "indicador" as const,
-      };
-      setLoggedUser(userObj);
-      saveToStorage("indica_logged_user", userObj);
-    } else if (role === "anunciante") {
-      const firstAdv = advertisers[0] || INITIAL_ADVERTISERS[0];
-      const userObj = {
-        id: firstAdv.id,
-        name: firstAdv.name,
-        email: firstAdv.email,
-        role: "anunciante" as const,
-      };
-      setLoggedUser(userObj);
-      saveToStorage("indica_logged_user", userObj);
-    } else if (role === "admin") {
-      const userObj = {
-        id: "admin-1",
-        name: "Admin Geral",
-        email: "admin@indicaaqui.com",
-        role: "admin" as const,
-      };
-      setLoggedUser(userObj);
-      saveToStorage("indica_logged_user", userObj);
-    } else {
-      setLoggedUser(null);
-      localStorage.removeItem("indica_logged_user");
-    }
-  };
-
   const handleAddSimulation = (
     sim: Omit<FinancingSimulation, "id" | "createdAt" | "updatedAt" | "status">,
   ) => {
-    const localId = `sim-${Date.now()}`;
     const newSim: FinancingSimulation = {
       ...sim,
-      id: localId,
+      id: crypto.randomUUID(),
       status: "pendente",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setSimulations((prev) => {
-      const next = [newSim, ...prev];
-      saveToStorage("indica_simulations", next);
-      return next;
+    createSimulationMutation.mutate(newSim, {
+      onSuccess: () =>
+        addNotification(
+          `Simulação de financiamento para ${sim.clientName} enviada à loja!`,
+          "success",
+        ),
+      onError: () => addNotification("Não foi possível enviar a simulação.", "info"),
     });
-    // Persiste no banco se produto/anunciante forem reais. Reconcilia o id local com o UUID gerado pelo banco.
-    if (isUuid(sim.productId) && isUuid(sim.advertiserId)) {
-      void pushSimulation(newSim).then((dbId) => {
-        if (!dbId) return;
-        setSimulations((prev) => {
-          const next = prev.map((s) => (s.id === localId ? { ...s, id: dbId } : s));
-          saveToStorage("indica_simulations", next);
-          return next;
-        });
-      });
-    }
-    addNotification(`Simulação de financiamento para ${sim.clientName} enviada à loja!`, "success");
   };
 
   const handleUpdateSimulationStatus = (
     simId: string,
-    status: FinancingStatus,
-    bankResponses?: BankSimulationResponse[],
-    approvedContract?: ApprovedContract,
+    status: import("./types").FinancingStatus,
+    bankResponses?: import("./types").BankSimulationResponse[],
+    approvedContract?: import("./types").ApprovedContract,
   ) => {
-    setSimulations((prev) => {
-      const next = prev.map((sim) => {
-        if (sim.id === simId) {
-          return {
-            ...sim,
-            status,
-            bankResponses: bankResponses !== undefined ? bankResponses : sim.bankResponses,
-            approvedContract:
-              approvedContract !== undefined ? approvedContract : sim.approvedContract,
-            updatedAt: new Date().toISOString(),
-          };
-        }
-        return sim;
-      });
-      saveToStorage("indica_simulations", next);
-      return next;
-    });
-    void cloudUpdateSimulationStatus(simId, status, bankResponses, approvedContract);
-    addNotification(`Simulação atualizada!`, "info");
-  };
-
-  const handleResetDatabase = () => {
-    localStorage.clear();
-    setProducts(INITIAL_PRODUCTS);
-    setIndicators(INITIAL_INDICATORS);
-    setAdvertisers(INITIAL_ADVERTISERS);
-    setLeads(INITIAL_LEADS);
-    setSimulations(INITIAL_SIMULATIONS);
-    setPlatformConfig(INITIAL_PLATFORM_CONFIG);
-    setActiveReferralId(null);
-    setLoggedUser(null);
-    setCurrentRole("indicador");
-    addNotification("Banco de dados do simulador reiniciado!", "info");
+    updateSimulationStatusMutation.mutate(
+      { id: simId, status, bankResponses, approvedContract },
+      { onSuccess: () => addNotification(`Simulação atualizada!`, "info") },
+    );
   };
 
   // Find active promoter info for Visitor View
   const referralIndicator = indicators.find((i) => i.id === activeReferralId);
-  // Sem fallback para products[0] — se o produto do link não existir localmente,
-  // renderiza uma tela informativa em vez de outro anúncio qualquer.
   const activeProductForVisitor = products.find((p) => p.id === activeProductId) || null;
 
   return (
@@ -1301,21 +586,8 @@ export default function App() {
               lockedToSharedProduct
                 ? undefined
                 : () => {
-                    const stored = localStorage.getItem("indica_logged_user");
-                    if (stored) {
-                      try {
-                        const parsed = JSON.parse(stored);
-                        if (parsed && parsed.role) {
-                          setCurrentRole(parsed.role);
-                          setLoggedUser(parsed);
-                          return;
-                        }
-                      } catch (e) {
-                        // Ignore
-                      }
-                    }
-                    setCurrentRole("indicador");
-                    setLoggedUser(null);
+                    // Volta para o painel da sessão real (vinda do Supabase via bridge).
+                    setCurrentRole(loggedUser ? loggedUser.role : "indicador");
                   }
             }
             onSubmitLead={handleSubmitLeadFromVisitor}
@@ -1327,40 +599,30 @@ export default function App() {
         ) : currentRole === "visitante" ? (
           /* Link único aberto mas produto ainda não carregado (ou removido). */
           <div className="flex-1 min-h-[60vh] flex items-center justify-center p-8">
-            <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-3">
-              <div className="w-12 h-12 mx-auto rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
-                <RefreshCw className="w-6 h-6 animate-spin" />
-              </div>
-              <h2 className="text-lg font-bold text-slate-900">Carregando anúncio…</h2>
+            <div className="max-w-md text-center space-y-3">
+              <h2 className="text-lg font-bold text-slate-900">Anúncio não encontrado</h2>
               <p className="text-sm text-slate-500">
-                Se esta mensagem persistir, o anúncio pode ter sido removido ou o link está incorreto.
+                Se esta mensagem persistir, o anúncio pode ter sido removido ou o link está
+                incorreto.
               </p>
             </div>
           </div>
-
         ) : !loggedUser || loggedUser.role !== currentRole ? (
           /* Render beautiful complete Landing Page with Login Forms if no user is authenticated for this role */
-          <LandingPage
-            indicators={indicators}
-            advertisers={advertisers}
-            onLoginIndicator={handleLoginIndicator}
-            onRegisterIndicator={handleRegisterIndicator}
-            onLoginAdvertiser={handleLoginAdvertiser}
-            onRegisterAdvertiser={handleRegisterAdvertiser}
-            onLoginAdmin={handleLoginAdmin}
-          />
+          <LandingPage />
         ) : (
           /* Render respective authenticated dashboards */
           <>
-            {currentRole === "indicador" && loggedUser && indicators.find((i) => i.id === loggedUser.id) && (
+            {currentRole === "indicador" && loggedUser && indicatorProfileQuery.data && (
               <AffiliateDashboard
-                indicator={indicators.find((i) => i.id === loggedUser.id)!}
+                indicator={indicatorProfileQuery.data}
                 onUpdateIndicator={handleUpdateIndicator}
                 products={products}
                 leads={leads}
                 simulations={simulations}
                 onAddSimulation={handleAddSimulation}
                 onUpdateLeadStatus={handleUpdateLeadStatus}
+                onRequestCheckIn={handleRequestCheckIn}
                 onAddNotification={addNotification}
                 advertisers={advertisers}
                 onViewProduct={(prodId) => {
@@ -1372,10 +634,9 @@ export default function App() {
               />
             )}
 
-            {currentRole === "anunciante" && loggedUser && advertisers.find((a) => a.id === loggedUser.id) && (
+            {currentRole === "anunciante" && loggedUser && advertiserProfileQuery.data && (
               <AdvertiserDashboard
-                advertiser={advertisers.find((a) => a.id === loggedUser.id)!}
-
+                advertiser={advertiserProfileQuery.data}
                 onUpdateAdvertiser={handleUpdateAdvertiser}
                 products={products}
                 onAddProduct={handleAddProduct}
@@ -1392,14 +653,14 @@ export default function App() {
               />
             )}
 
-            {currentRole === "admin" && (
+            {currentRole === "admin" && platformConfigQuery.data && (
               <AdminPanel
                 products={products}
                 onUpdateProductStatus={handleUpdateProductStatus}
                 advertisers={advertisers}
                 indicators={indicators}
                 leads={leads}
-                platformConfig={platformConfig}
+                platformConfig={platformConfigQuery.data}
                 onUpdatePlatformConfig={handleUpdatePlatformConfig}
                 categories={categories}
                 onAddCategory={handleAddCategory}
@@ -1437,16 +698,8 @@ export default function App() {
         ))}
       </div>
 
-      {/* Micro-footer with Reset Database function */}
-      <footer className="bg-white border-t border-slate-100 py-4 px-6 text-center text-xs text-slate-400 font-mono flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto w-full">
-        <span>IndiqueLeads MVP (v1.0) • Prova de Conceito Concluída</span>
-        <button
-          onClick={handleResetDatabase}
-          className="text-red-500 hover:text-red-700 font-bold hover:underline flex items-center gap-1 bg-red-50 hover:bg-red-100/50 px-2.5 py-1 rounded-lg border border-red-100"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Reiniciar Banco do Simulador (Limpar Cache)
-        </button>
+      <footer className="bg-white border-t border-slate-100 py-4 px-6 text-center text-xs text-slate-400 font-mono max-w-7xl mx-auto w-full">
+        <span>IndiqueLeads MVP (v1.0)</span>
       </footer>
     </div>
   );

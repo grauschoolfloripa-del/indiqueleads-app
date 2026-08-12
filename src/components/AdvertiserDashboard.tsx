@@ -73,7 +73,8 @@ interface AdvertiserDashboardProps {
     status: any,
     extra?: { visitDate?: string; notes?: string; checkInRequested?: boolean },
   ) => void;
-  onAttachLeadContract: (leadId: string, url: string, notes: string) => void;
+  /** `url` é opcional — o upload é só prova em caso de disputa, não trava o pagamento. */
+  onAttachLeadContract: (leadId: string, url: string | null, notes: string) => void;
   indicators: Indicator[];
   onAddNotification: (msg: string, type: "success" | "info") => void;
   chatMessages: ChatMessage[];
@@ -167,6 +168,7 @@ export default function AdvertiserDashboard({
     allowNegotiateTier: false,
     commissionDigitalPct: "1",
     commissionPresencialPct: "3",
+    commissionLeadValue: "0",
     coverImage:
       "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=800&q=80",
     attributes: {} as Record<string, any>,
@@ -480,6 +482,7 @@ export default function AdvertiserDashboard({
 
     const digitalPct = parseFloat(productForm.commissionDigitalPct) || 1;
     const presencialPct = parseFloat(productForm.commissionPresencialPct) || 3;
+    const leadCommissionVal = parseFloat(productForm.commissionLeadValue) || 0;
 
     const finalCoverImage = uploadedImages.length > 0 ? uploadedImages[0] : productForm.coverImage;
     const finalGallery = uploadedImages.length > 0 ? uploadedImages : [productForm.coverImage];
@@ -510,6 +513,7 @@ export default function AdvertiserDashboard({
       commissionPresencialValue: productForm.allowPresencialTier
         ? (priceVal * presencialPct) / 100
         : undefined,
+      commissionLeadValue: leadCommissionVal,
       allowPresencialTier: productForm.allowPresencialTier,
       allowNegotiateTier: productForm.allowNegotiateTier,
       attributes: productForm.attributes,
@@ -533,6 +537,7 @@ export default function AdvertiserDashboard({
       allowNegotiateTier: false,
       commissionDigitalPct: "1",
       commissionPresencialPct: "3",
+      commissionLeadValue: "0",
       coverImage: presetImages.imovel[0],
       attributes: {},
     });
@@ -700,6 +705,7 @@ export default function AdvertiserDashboard({
           commissionDigitalValue: cleanPrice * 0.01,
           commissionPresencialPct: 3,
           commissionPresencialValue: cleanPrice * 0.03,
+          commissionLeadValue: 0,
           allowPresencialTier: true,
           allowNegotiateTier: false,
           attributes: {},
@@ -759,6 +765,7 @@ export default function AdvertiserDashboard({
           commissionDigitalValue: price * 0.015,
           commissionPresencialPct: 4,
           commissionPresencialValue: price * 0.04,
+          commissionLeadValue: 0,
           allowPresencialTier: true,
           allowNegotiateTier: true,
           attributes: {},
@@ -872,18 +879,17 @@ export default function AdvertiserDashboard({
     }, 1800);
   };
 
-  // Submitting Proof to Close Sale
+  // Submitting Proof to Close Sale — o anexo (NF-e/contrato) é opcional: só
+  // serve como prova em caso de disputa, não bloqueia mais o pagamento.
   const handleCloseSaleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!invoiceUploaded) {
-      onAddNotification("Anexe uma cópia da NF-e ou Contrato Assinado para auditoria.", "info");
-      return;
-    }
     if (!closingSaleLead) return;
 
     onAttachLeadContract(
       closingSaleLead.id,
-      "https://cdn.pixabay.com/photo/2016/09/20/11/27/document-1682317_1280.png", // simulated PDF link
+      invoiceUploaded
+        ? "https://cdn.pixabay.com/photo/2016/09/20/11/27/document-1682317_1280.png" // simulated PDF link
+        : null,
       saleNotes,
     );
     onUpdateLeadStatus(closingSaleLead.id, "venda_concluida");
@@ -1138,7 +1144,7 @@ export default function AdvertiserDashboard({
     lead_recebido: { label: "Recebido", color: "bg-slate-100 text-slate-700", list: [] },
     contato_feito: { label: "Contato Feito", color: "bg-blue-100 text-blue-800", list: [] },
     visita_agendada: { label: "Visita Agendada", color: "bg-amber-100 text-amber-800", list: [] },
-    visita_confirmada: { label: "Check-In Feito", color: "bg-cyan-100 text-cyan-800", list: [] },
+    visita_confirmada: { label: "Visita Confirmada", color: "bg-cyan-100 text-cyan-800", list: [] },
     proposta: { label: "Proposta", color: "bg-blue-100 text-blue-900", list: [] },
     venda_concluida: { label: "Vendido", color: "bg-emerald-100 text-emerald-800", list: [] },
   };
@@ -1656,9 +1662,9 @@ export default function AdvertiserDashboard({
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-100/80">
                 <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                  💡 <strong>IndiqueLeads Dica:</strong> Bens com fotos de alta qualidade e descrições
-                  detalhadas recebem até 4x mais indicações da nossa rede. Defina comissões
-                  atraentes para incentivar os melhores indicadores.
+                  💡 <strong>IndiqueLeads Dica:</strong> Bens com fotos de alta qualidade e
+                  descrições detalhadas recebem até 4x mais indicações da nossa rede. Defina
+                  comissões atraentes para incentivar os melhores indicadores.
                 </p>
               </div>
 
@@ -1986,8 +1992,8 @@ export default function AdvertiserDashboard({
                       <span className="text-xl">🗺️</span>
                       <div className="text-xs text-amber-800 leading-relaxed">
                         <strong>Mapeamento Inteligente:</strong> Identificamos os cabeçalhos de sua
-                        tabela. Associe cada campo do IndiqueLeads com a respectiva coluna encontrada
-                        no seu arquivo ou texto colado.
+                        tabela. Associe cada campo do IndiqueLeads com a respectiva coluna
+                        encontrada no seu arquivo ou texto colado.
                       </div>
                     </div>
 
@@ -3040,8 +3046,7 @@ export default function AdvertiserDashboard({
                             Parâmetros de Retorno Esperados:
                           </p>
                           <p>
-                            •{" "}
-                            <span className="font-mono font-bold text-blue-700">201 Created</span>
+                            • <span className="font-mono font-bold text-blue-700">201 Created</span>
                             : Produto criado com sucesso.
                           </p>
                           <p>
@@ -3382,7 +3387,8 @@ export default function AdvertiserDashboard({
               {/* DYNAMIC ATTRIBUTES FIELDS — renderizados a partir de src/lib/verticals.ts */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span className="block text-xs font-bold text-slate-800 uppercase mb-3">
-                  Atributos Específicos ({getVertical(newProductCategory)?.shortLabel ?? newProductCategory})
+                  Atributos Específicos (
+                  {getVertical(newProductCategory)?.shortLabel ?? newProductCategory})
                 </span>
                 <DynamicAttributesFields
                   category={newProductCategory}
@@ -3443,6 +3449,28 @@ export default function AdvertiserDashboard({
                     placeholder="3"
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-mono disabled:bg-slate-100 disabled:text-slate-400"
                   />
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-[10px] text-slate-600 font-semibold mb-1 uppercase">
+                    Comissão por Lead Qualificado (R$)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    value={productForm.commissionLeadValue}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, commissionLeadValue: e.target.value })
+                    }
+                    placeholder="0"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-mono"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Pago ao indicador quando a visita é confirmada por você, mesmo antes de fechar a
+                    venda. Some com a comissão de venda se o cliente comprar. Deixe 0 para não pagar
+                    por lead.
+                  </p>
                 </div>
               </div>
 
@@ -3656,7 +3684,8 @@ export default function AdvertiserDashboard({
                 />
               </div>
 
-              {/* Upload contract simulation */}
+              {/* Upload contract simulation — opcional: não bloqueia o pagamento, fica só
+                  como prova em caso de disputa sobre o valor negociado. */}
               <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-5 text-center transition-colors cursor-pointer bg-slate-50/50">
                 <input
                   type="file"
@@ -3674,28 +3703,24 @@ export default function AdvertiserDashboard({
                 <label htmlFor="invoice_file_upload" className="cursor-pointer space-y-1 block">
                   <Upload className="w-6 h-6 text-slate-400 mx-auto" />
                   <span className="block text-xs font-bold text-blue-700">
-                    Anexar NF-e ou Contrato de Compra e Venda
+                    Anexar NF-e ou Contrato de Compra e Venda (opcional)
                   </span>
                   <span className="block text-[9px] text-slate-400">
-                    PDF ou Imagem de comprovação de fechamento
+                    Não é obrigatório para pagar a comissão — serve como prova em caso de
+                    contestação do valor negociado.
                   </span>
                 </label>
               </div>
 
               {invoiceUploaded && (
                 <p className="text-xs text-emerald-600 font-bold text-center flex items-center justify-center gap-1">
-                  ✓ Comprovante anexado! Pronto para liquidar.
+                  ✓ Comprovante anexado!
                 </p>
               )}
 
               <button
                 type="submit"
-                disabled={!invoiceUploaded}
-                className={`w-full py-3 rounded-xl font-semibold text-xs transition-all shadow ${
-                  invoiceUploaded
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                }`}
+                className="w-full py-3 rounded-xl font-semibold text-xs transition-all shadow bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 Confirmar Faturamento e Pagar Comissão
               </button>

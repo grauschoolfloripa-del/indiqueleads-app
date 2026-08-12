@@ -41,6 +41,8 @@ export interface Product {
   commissionDigitalValue?: number;
   commissionPresencialPct?: number;
   commissionPresencialValue?: number;
+  /** Quanto o anunciante paga por lead qualificado (visita confirmada). */
+  commissionLeadValue: number;
   allowPresencialTier: boolean;
   allowNegotiateTier: boolean;
   attributes: Record<string, any>;
@@ -92,13 +94,28 @@ export interface Lead {
   checkInRequested?: boolean;
 }
 
+/**
+ * Ledger de comissões — um evento por linha. Substitui as colunas
+ * `commission_value`/`commission_paid` como fonte de verdade de pagamento:
+ * um lead pode gerar até dois eventos independentes (lead + venda).
+ * Escrito só pelos triggers do banco — nenhuma tela cria/edita isso direto.
+ */
+export interface Commission {
+  id: string;
+  leadId: string;
+  indicatorId: string;
+  kind: "lead" | "venda";
+  amount: number;
+  status: "pending" | "available" | "paid";
+  createdAt: string;
+}
+
 export interface Indicator {
   id: string;
   name: string;
   cpf: string;
   phone: string;
   email: string;
-  password?: string;
   pixKey: string;
   pixType: "cpf" | "email" | "phone" | "random";
   league: "bronze" | "prata" | "ouro";
@@ -119,7 +136,6 @@ export interface Advertiser {
   type: "PF" | "PJ";
   phone: string;
   email: string;
-  password?: string;
   hasAcceptedTerms: boolean;
   termsAcceptedAt?: string;
   plan: "gratuito" | "starter" | "premium" | "pro";
@@ -132,6 +148,8 @@ export interface PlatformConfig {
   feePercent: number; // platform fee on indicator payout
   feePerLead: number; // platform charge per lead generated
   minCommissionValue: Record<Category, number>;
+  /** Teto mensal de comissão por lead, por indicador (freio antifraude). null = sem teto. */
+  maxLeadCommissionPerIndicatorMonth: number | null;
 }
 
 export type FinancingStatus =

@@ -130,11 +130,11 @@ export default function AdminPanel({
     {
       id: "alert-2",
       indicatorName: "Juliana Silva",
-      type: "Check-In GPS Suspeito",
+      type: "Divergência de IP em Lead",
       severity: "media",
       time: "Há 25 minutos",
       description:
-        "Coordenadas do dispositivo divergem do endereço da Porsche GTS por mais de 800 metros. Proximidade de geofencing rejeitada, check-in forçado com fallback de foto.",
+        "O lead da Porsche GTS chegou de um IP associado a mais de 12 leads diferentes na última hora, sem relação com o histórico de cliques do indicador.",
     },
     {
       id: "alert-3",
@@ -626,11 +626,11 @@ export default function AdminPanel({
             <div>
               <h3 className="font-display font-bold text-slate-900 text-sm flex items-center gap-1.5">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
-                Auditoria de Fraudes & Logs de Geofencing
+                Auditoria de Fraudes
               </h3>
               <p className="text-xs text-slate-500">
-                Alertas em tempo real gerados pelo sistema de cookies de atribuição e do geofencing
-                de check-ins.
+                Alertas em tempo real gerados pelo sistema de cookies de atribuição e por
+                divergências de cliques/IP.
               </p>
             </div>
           </div>
@@ -740,6 +740,30 @@ export default function AdminPanel({
                 />
                 <span className="text-[10px] text-slate-400 block mt-1">
                   Valor fixo faturado do anunciante por lead de interesse gerado.
+                </span>
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                  Teto Mensal de Comissão por Lead / Indicador (R$)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={configEdit.maxLeadCommissionPerIndicatorMonth ?? ""}
+                  placeholder="Sem teto"
+                  onChange={(e) =>
+                    setConfigEdit({
+                      ...configEdit,
+                      maxLeadCommissionPerIndicatorMonth:
+                        e.target.value === "" ? null : parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono text-slate-900"
+                />
+                <span className="text-[10px] text-slate-400 block mt-1">
+                  Freio de emergência contra abuso da comissão por lead. Deixe em branco para não
+                  aplicar teto.
                 </span>
               </div>
             </div>

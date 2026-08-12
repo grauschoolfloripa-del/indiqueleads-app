@@ -1,3 +1,20 @@
+-- Bug pré-existente: este schema nunca foi criado por uma migration (deve ter
+-- sido criado manualmente pelo SQL editor no projeto original). CREATE SCHEMA
+-- IF NOT EXISTS é idempotente e seguro em qualquer ambiente.
+CREATE SCHEMA IF NOT EXISTS app_private;
+
+-- Mesma lacuna: usada/GRANT-ada abaixo mas nunca definida por uma migration.
+-- Espelha public.has_role (mesma assinatura e corpo).
+CREATE OR REPLACE FUNCTION app_private.has_role(_user_id uuid, _role public.app_role)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role);
+$$;
+
 CREATE OR REPLACE FUNCTION app_private.can_read_indicator(_indicator_id uuid, _viewer_id uuid)
 RETURNS boolean
 LANGUAGE sql

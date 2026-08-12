@@ -20,6 +20,17 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Environment variables (chaves do Supabase — nunca versionar)
+.env
+.env.*
+!.env.example
+
+# Configuração local do Claude Code
+.claude/
+
+# Cache local do Supabase CLI
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
