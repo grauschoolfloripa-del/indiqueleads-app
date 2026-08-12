@@ -23,8 +23,11 @@ dist-ssr
 # Vercel
 .vercel/
 
-# Environment variables (chaves do Supabase — nunca versionar)
-.env
+# Environment variables
+# .env é versionado temporariamente (repo privado) só para destravar o build na
+# Vercel — contém apenas a chave "anon"/publicável do Supabase (feita para ser
+# exposta no client, protegida por RLS, não é segredo). Remover do git assim que
+# as env vars forem cadastradas direto no painel da Vercel.
 .env.*
 !.env.example
 
