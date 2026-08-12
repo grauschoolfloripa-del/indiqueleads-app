@@ -12,4 +12,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // O preset padrão do Nitro aqui é "cloudflare-module" (build para Cloudflare Workers).
+  // O deploy é feito na Vercel, então precisamos do preset "vercel" — sem isso, o build
+  // gera um formato que a Vercel não sabe executar (causa da tela "Esta página não carregou").
+  nitro: {
+    preset: "vercel",
+  },
 });
