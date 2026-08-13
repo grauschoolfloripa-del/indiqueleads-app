@@ -624,14 +624,22 @@ export default function AffiliateDashboard({
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
       {/* Header Profile Summary */}
-      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-blue-950/20 relative overflow-hidden">
-        <div className="absolute right-0 bottom-0 top-0 opacity-10 flex items-center mr-12 pointer-events-none">
+      <div className="bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-white/10 relative overflow-hidden">
+        <div className="absolute right-0 bottom-0 top-0 opacity-[0.07] flex items-center mr-12 pointer-events-none">
           <Award className="w-64 h-64 text-white" />
         </div>
+        {/* brilho da marca no canto */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl"
+          style={{
+            background: "radial-gradient(circle, rgba(72,168,72,0.28) 0%, transparent 70%)",
+          }}
+        />
 
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center font-bold text-2xl uppercase shadow-md border-2 border-blue-500 text-white">
+            <div className="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center font-bold text-2xl uppercase shadow-lg shadow-brand-500/30 border-2 border-brand-400 text-white">
               {indicator.name.substring(0, 2)}
             </div>
             <div>
@@ -787,7 +795,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("vitrine")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "vitrine"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -797,7 +805,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("desempenho")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "desempenho"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -807,7 +815,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("carteira")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "carteira"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -817,7 +825,7 @@ export default function AffiliateDashboard({
           onClick={() => setActiveTab("financiamentos")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "financiamentos"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >

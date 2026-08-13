@@ -47,3 +47,7 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+
+# Lockfile único: npm (package-lock.json). Dois lockfiles no mesmo repo
+# fazem a Vercel escolher um deles de forma imprevisível.
+bun.lock

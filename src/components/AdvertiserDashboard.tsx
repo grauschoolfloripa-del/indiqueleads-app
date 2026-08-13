@@ -1158,10 +1158,18 @@ export default function AdvertiserDashboard({
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
       {/* Header Info */}
-      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-slate-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-blue-950/20">
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
+      <div className="bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-white/10 relative overflow-hidden">
+        {/* brilho da marca no canto */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl"
+          style={{
+            background: "radial-gradient(circle, rgba(72,168,72,0.28) 0%, transparent 70%)",
+          }}
+        />
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-blue-700 rounded-xl flex items-center justify-center font-bold text-xl uppercase shadow border border-blue-500">
+            <div className="w-14 h-14 bg-brand-500 rounded-xl flex items-center justify-center font-bold text-xl uppercase shadow-lg shadow-brand-500/30 border border-brand-400">
               {advertiser.name.substring(0, 2)}
             </div>
             <div>
@@ -1296,7 +1304,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("funnel")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "funnel"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1306,7 +1314,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("produtos")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "produtos"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1316,7 +1324,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("financeiro")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "financeiro"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1326,7 +1334,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("afiliados")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "afiliados"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
@@ -1336,7 +1344,7 @@ export default function AdvertiserDashboard({
           onClick={() => setActiveTab("financiamentos")}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === "financiamentos"
-              ? "border-blue-700 text-blue-700 font-bold"
+              ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >

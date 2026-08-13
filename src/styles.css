@@ -23,18 +23,34 @@
   --font-display: "Urbanist", "Epilogue", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Luxury Navy Trust palette */
-  --color-navy-950: #060a1a;
-  --color-navy-900: #0a1230;
-  --color-navy-800: #0f1b3d;
-  --color-navy-700: #1e3a5f;
-  --color-royal-500: #3b6fa0;
-  --color-royal-400: #5a8bc0;
-  --color-platinum-100: #e8edf3;
-  --color-platinum-200: #c9d3e0;
-  --color-gold-400: #d4b56a;
-  --color-gold-500: #c9a84c;
-  --color-gold-600: #a88a35;
+  /*
+   * Paleta derivada do logo oficial (amostrada do PNG da marca):
+   * navy #0C486C + verde #48A848. Substituiu a paleta "navy/gold" anterior,
+   * que não tinha relação com a identidade real.
+   */
+
+  /* Canvas escuro — navy dessaturado, nunca preto puro */
+  --color-ink-950: #04121b;
+  --color-ink-900: #071d2b;
+  --color-ink-850: #09263a;
+  --color-ink-800: #0b2f47;
+
+  /* Azul da marca */
+  --color-sea-700: #0c486c;
+  --color-sea-600: #14608f;
+  --color-sea-500: #1c78b3;
+  --color-sea-400: #4b9bd0;
+
+  /* Verde da marca (ação / sucesso / dinheiro) */
+  --color-brand-600: #2f8a35;
+  --color-brand-500: #48a848;
+  --color-brand-400: #63c463;
+  --color-brand-300: #8dd98d;
+
+  /* Neutros frios para texto sobre o canvas escuro */
+  --color-mist-100: #eaf2f7;
+  --color-mist-200: #c2d6e3;
+  --color-mist-300: #8fadc0;
 }
 
 @theme inline {
