@@ -28,7 +28,7 @@ function Index() {
   useEffect(() => setHydrated(true), []);
 
   if (!hydrated) {
-    return <div className="min-h-screen bg-slate-50" />;
+    return <div className="min-h-screen bg-[#0B1728]" />;
   }
 
   return <App />;

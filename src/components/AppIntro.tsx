@@ -71,7 +71,7 @@ export default function AppIntro({ onDone }: { onDone: () => void }) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] grid place-items-center bg-[#0a1420] transition-opacity duration-[450ms] ${
+      className={`fixed inset-0 z-[100] grid place-items-center bg-[#0B1728] transition-opacity duration-[450ms] ${
         saindo ? "opacity-0" : "opacity-100"
       }`}
       // A abertura é decorativa: leitor de tela deve pular direto para o app.
