@@ -92,8 +92,14 @@ network-first; só `/assets/` (nome com hash) pode ser cache-first.
 trigger engole a própria exceção **de propósito** — push é um extra e não pode
 derrubar o registro de uma comissão.
 
-Falta publicar a função e cadastrar os segredos (o endereço e o segredo
-compartilhado já estão em `app_private.push_config`):
+⚠️ Edge Function publicada sem `--no-verify-jwt` fica atrás do gateway do
+Supabase, que exige um `Authorization` válido. Por isso `app_private.push_config`
+guarda também a chave `anon` — o trigger a envia como Bearer. Ela não é segredo
+(já vai no bundle do navegador); quem autoriza de fato é o `shared_secret`,
+conferido dentro da função. Sem esse cabeçalho o push morre com
+`UNAUTHORIZED_NO_AUTH_HEADER` e **em silêncio**, porque o trigger engole erro.
+
+Configuração já feita neste projeto. Para recriar em outro ambiente:
 
 ```bash
 SUPABASE_ACCESS_TOKEN=<seu-token> npx supabase secrets set --project-ref ichydxicjootuaokhgkz VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... PUSH_SHARED_SECRET=... VAPID_SUBJECT=mailto:contato@midiaeco.com
