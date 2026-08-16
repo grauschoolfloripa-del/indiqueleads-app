@@ -852,6 +852,7 @@ export default function AdminPanel({
 
       {activeTab === "mensagens" && (
         <PushCenter
+          products={products}
           indicators={indicators}
           advertisers={advertisers}
           onAddNotification={onAddNotification}

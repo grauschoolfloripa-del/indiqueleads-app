@@ -13,7 +13,7 @@ import {
 
 import { usePushCampaigns, usePushReach, useSendPushCampaign } from "@/hooks/queries";
 import { VERTICALS, VERTICALS_ORDER } from "@/lib/verticals";
-import type { Advertiser, Category, Indicator, PushAudience } from "@/types";
+import type { Advertiser, Category, Indicator, Product, PushAudience } from "@/types";
 
 /**
  * Central de mensagens do admin.
@@ -30,8 +30,9 @@ import type { Advertiser, Category, Indicator, PushAudience } from "@/types";
  * uma notificação da plataforma não tem caso de uso que compense.
  */
 
-/** Valor sentinela do seletor — não é URL, só marca "vou digitar o meu". */
+/** Sentinelas do seletor — não são URL, marcam "monte o destino comigo". */
 const LINK_PERSONALIZADO = "__personalizado__";
+const ANUNCIO_ESPECIFICO = "__anuncio__";
 
 const DESTINOS: Array<{ url: string; label: string }> = [
   { url: "/?fonte=app", label: "Abrir o app" },
@@ -39,6 +40,7 @@ const DESTINOS: Array<{ url: string; label: string }> = [
   { url: "/?aba=carteira&fonte=app", label: "Carteira / PIX" },
   { url: "/?aba=desempenho&fonte=app", label: "Meu desempenho" },
   { url: "/?aba=financiamentos&fonte=app", label: "Financiamentos" },
+  { url: ANUNCIO_ESPECIFICO, label: "Um anúncio específico…" },
   { url: LINK_PERSONALIZADO, label: "Link personalizado…" },
 ];
 
@@ -52,6 +54,8 @@ const PUBLICOS: Array<{ id: PushAudience; label: string; hint: string }> = [
 interface Props {
   indicators: Indicator[];
   advertisers: Advertiser[];
+  /** Catálogo, para montar o link do anúncio sem ninguém digitar id na mão. */
+  products: Product[];
   onAddNotification: (msg: string, type: "success" | "info") => void;
   /** Id do admin logado — usado no envio de teste só para ele. */
   adminUserId: string;
@@ -60,6 +64,7 @@ interface Props {
 export default function PushCenter({
   indicators,
   advertisers,
+  products,
   onAddNotification,
   adminUserId,
 }: Props) {
@@ -68,6 +73,7 @@ export default function PushCenter({
   const [imageUrl, setImageUrl] = useState("");
   const [destino, setDestino] = useState(DESTINOS[0].url);
   const [linkProprio, setLinkProprio] = useState("");
+  const [produtoId, setProdutoId] = useState("");
   const [actionLabel, setActionLabel] = useState("");
 
   const [audience, setAudience] = useState<PushAudience>("indicadores");
@@ -80,7 +86,14 @@ export default function PushCenter({
   const campanhas = usePushCampaigns(true);
 
   const usaLinkProprio = destino === LINK_PERSONALIZADO;
-  const targetUrl = usaLinkProprio ? linkProprio.trim() : destino;
+  const usaAnuncio = destino === ANUNCIO_ESPECIFICO;
+  const targetUrl = usaLinkProprio
+    ? linkProprio.trim()
+    : usaAnuncio
+      ? produtoId
+        ? `/?p=${produtoId}&fonte=app`
+        : ""
+      : destino;
 
   /**
    * Mesma regra do banco, aplicada aqui só para avisar antes de errar: caminho
@@ -226,6 +239,43 @@ export default function PushCenter({
                   />
                 </div>
               </div>
+
+              {usaAnuncio && (
+                <div>
+                  <label className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase text-slate-700">
+                    <Link2 className="h-3.5 w-3.5" /> Qual anúncio
+                  </label>
+                  <select
+                    value={produtoId}
+                    onChange={(e) => setProdutoId(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sea-500"
+                  >
+                    <option value="">Escolha um anúncio…</option>
+                    {products
+                      .filter((p) => p.status === "ativo" || p.status === "reservado")
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {VERTICALS[p.category]?.emoji} {p.title} —{" "}
+                          {p.price.toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                            maximumFractionDigits: 0,
+                          })}
+                        </option>
+                      ))}
+                  </select>
+                  {produtoId ? (
+                    <p className="mt-1.5 break-all font-mono text-[11px] text-slate-500">
+                      {targetUrl}
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
+                      Leva direto ao anúncio, com o rastreio de indicação funcionando. Só aparecem
+                      anúncios ativos ou reservados.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {usaLinkProprio && (
                 <div>

@@ -1119,3 +1119,19 @@ export const pushCampaignsRepo = {
     return (data ?? []).map(campaignFromDb);
   },
 };
+
+/**
+ * Quantas tentativas de avaliação ainda restam hoje neste curso.
+ *
+ * Vive fora do `academyRepo` por acidente de ordem — o objeto já estava
+ * fechado. Mantido aqui para não reabrir e arriscar o que já funciona.
+ */
+export async function quizAttemptsLeft(courseId: string): Promise<number> {
+  const { data, error } = await supabase.rpc("quiz_attempts_left", { _course_id: courseId });
+  if (error) {
+    console.error("[repositories] quizAttemptsLeft", error);
+    // Na dúvida, não trava a pessoa: quem barra de verdade é o servidor.
+    return 3;
+  }
+  return Number(data ?? 0);
+}

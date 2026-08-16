@@ -20,6 +20,7 @@ import {
   useMyProgress,
   useCompleteLesson,
   useMyCertifications,
+  useQuizAttemptsLeft,
   useSubmitQuiz,
 } from "@/hooks/queries";
 
@@ -88,6 +89,7 @@ export default function Academy({
     if (course) {
       return (
         <CoursePlayer
+          jaCertificado={certifiedCourseIds.has(course.id)}
           course={course}
           completedLessons={new Set(progressQuery.data ?? [])}
           onBack={() => setOpenCourseId(null)}
@@ -533,22 +535,45 @@ function Area({
 function CoursePlayer({
   course,
   completedLessons,
+  jaCertificado,
   onBack,
   onAddNotification,
 }: {
   course: Course;
   completedLessons: Set<string>;
+  /** Curso já concluído: refazer é revisão, não consome nem esbarra no limite. */
+  jaCertificado: boolean;
   onBack: () => void;
   onAddNotification: (msg: string, type: "success" | "info") => void;
 }) {
   const { lessons, questions } = useCourseContent(course.id);
   const completeLesson = useCompleteLesson();
   const submitQuiz = useSubmitQuiz();
+  const tentativasQuery = useQuizAttemptsLeft(course.id, !jaCertificado);
+  const tentativasRestantes = tentativasQuery.data;
 
   const [index, setIndex] = useState(0);
   const [mode, setMode] = useState<"lessons" | "quiz" | "result">("lessons");
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<{ score: number; passed: boolean } | null>(null);
+
+  /**
+   * Marca a aula como concluída avisando se não der.
+   *
+   * A tela avança de propósito mesmo em caso de falha — travar a leitura por
+   * causa de uma gravação seria pior. Mas o silêncio era pior ainda: a pessoa
+   * estudava o módulo inteiro, o progresso não gravava, e ela só descobria ao
+   * ver tudo em branco no dia seguinte.
+   */
+  const concluirAula = (lessonId: string) => {
+    completeLesson.mutate(lessonId, {
+      onError: () =>
+        onAddNotification(
+          "Não conseguimos salvar a conclusão desta aula. Confira sua conexão e abra a aula de novo.",
+          "info",
+        ),
+    });
+  };
 
   const list = lessons.data ?? [];
   const qs = questions.data ?? [];
@@ -606,6 +631,36 @@ function CoursePlayer({
           {qs.length} questões • {course.passScore}% para aprovar
         </p>
 
+        {/* O aviso vem ANTES das questões de propósito: descobrir que acabaram
+            as tentativas depois de responder tudo seria cruel. */}
+        {!jaCertificado && tentativasRestantes !== undefined && (
+          <p
+            className={`mt-3 rounded-xl px-3 py-2.5 text-xs leading-relaxed ${
+              tentativasRestantes === 0
+                ? "bg-amber-50 text-amber-900"
+                : tentativasRestantes === 1
+                  ? "bg-amber-50 text-amber-900"
+                  : "bg-slate-50 text-slate-600"
+            }`}
+          >
+            {tentativasRestantes === 0 ? (
+              <>
+                Você usou as 3 tentativas de hoje. Reveja as aulas — a avaliação reabre amanhã. Não
+                é castigo: o certificado é o que libera você a indicar bens de alto valor, então ele
+                precisa significar alguma coisa.
+              </>
+            ) : (
+              <>
+                <strong>
+                  {tentativasRestantes}{" "}
+                  {tentativasRestantes === 1 ? "tentativa restante" : "tentativas restantes"} hoje.
+                </strong>{" "}
+                São 3 por dia. Se acabarem, a avaliação reabre no dia seguinte.
+              </>
+            )}
+          </p>
+        )}
+
         <div className="mt-6 space-y-5">
           {qs.map((q, qi) => (
             <div key={q.id} className="rounded-2xl border border-slate-200 bg-white p-4">
@@ -638,7 +693,11 @@ function CoursePlayer({
         </div>
 
         <button
-          disabled={Object.keys(answers).length < qs.length || submitQuiz.isPending}
+          disabled={
+            Object.keys(answers).length < qs.length ||
+            submitQuiz.isPending ||
+            (!jaCertificado && tentativasRestantes === 0)
+          }
           onClick={() =>
             submitQuiz.mutate(
               {
@@ -652,6 +711,7 @@ function CoursePlayer({
                 onSuccess: (r) => {
                   setResult({ score: r.score, passed: r.passed });
                   setMode("result");
+                  void tentativasQuery.refetch();
                 },
                 onError: (err) =>
                   onAddNotification(
@@ -663,11 +723,13 @@ function CoursePlayer({
           }
           className="mt-6 w-full rounded-xl bg-brand-500 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-400 disabled:opacity-50 cursor-pointer"
         >
-          {Object.keys(answers).length < qs.length
-            ? `Responda todas (${Object.keys(answers).length}/${qs.length})`
-            : submitQuiz.isPending
-              ? "Corrigindo…"
-              : "Enviar avaliação"}
+          {!jaCertificado && tentativasRestantes === 0
+            ? "Tentativas esgotadas por hoje"
+            : Object.keys(answers).length < qs.length
+              ? `Responda todas (${Object.keys(answers).length}/${qs.length})`
+              : submitQuiz.isPending
+                ? "Corrigindo…"
+                : "Enviar avaliação"}
         </button>
       </div>
     );
@@ -722,7 +784,7 @@ function CoursePlayer({
         {index < list.length - 1 ? (
           <button
             onClick={() => {
-              if (lesson) completeLesson.mutate(lesson.id);
+              if (lesson) concluirAula(lesson.id);
               setIndex((i) => i + 1);
             }}
             className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white cursor-pointer hover:bg-slate-800"
@@ -732,7 +794,7 @@ function CoursePlayer({
         ) : (
           <button
             onClick={() => {
-              if (lesson) completeLesson.mutate(lesson.id);
+              if (lesson) concluirAula(lesson.id);
               setMode("quiz");
             }}
             className="flex items-center gap-1.5 rounded-xl bg-brand-500 px-5 py-2.5 text-xs font-bold text-white cursor-pointer hover:bg-brand-400"

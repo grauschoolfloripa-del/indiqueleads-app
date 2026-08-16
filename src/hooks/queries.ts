@@ -460,7 +460,7 @@ export function useUpdatePlatformConfig() {
 // ---------------- Academy / credenciamento ----------------
 
 import { academyRepo, type ApplicationInput } from "@/lib/repositories";
-import { pushCampaignsRepo, type CampaignInput } from "@/lib/repositories";
+import { pushCampaignsRepo, quizAttemptsLeft, type CampaignInput } from "@/lib/repositories";
 import type { Category, PushAudience } from "@/types";
 
 export function useMyApplication(enabled: boolean) {
@@ -585,5 +585,14 @@ export function useSendPushCampaign() {
   return useMutation({
     mutationFn: (input: CampaignInput) => pushCampaignsRepo.send(input),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["push"] }),
+  });
+}
+
+/** Tentativas restantes na avaliação — some quando o curso já foi concluído. */
+export function useQuizAttemptsLeft(courseId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ["quiz", "attempts", courseId] as const,
+    queryFn: () => quizAttemptsLeft(courseId as string),
+    enabled: enabled && !!courseId,
   });
 }

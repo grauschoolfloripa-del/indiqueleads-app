@@ -319,7 +319,10 @@ export default function App() {
   const handleUpdateProductStatus = (productId: string, status: Product["status"]) => {
     updateProductStatusMutation.mutate(
       { id: productId, status },
-      { onSuccess: () => addNotification(`Status do produto atualizado para: ${status}`, "info") },
+      {
+        onSuccess: () => addNotification(`Status do produto atualizado para: ${status}`, "info"),
+        onError: () => addNotification("Não foi possível alterar o status do anúncio.", "info"),
+      },
     );
   };
 
@@ -365,7 +368,21 @@ export default function App() {
     status: Lead["status"],
     extra?: { visitDate?: string; notes?: string; checkInRequested?: boolean },
   ) => {
-    updateLeadMutation.mutate({ id: leadId, patch: { status, ...(extra || {}) } });
+    // A mudança de etapa é o que move dinheiro: "visita confirmada" libera a
+    // comissão de lead, "venda concluída" a de venda. Falhar em silêncio aqui
+    // faz o anunciante achar que confirmou e o indicador nunca receber.
+    updateLeadMutation.mutate(
+      { id: leadId, patch: { status, ...(extra || {}) } },
+      {
+        onError: (e) =>
+          addNotification(
+            e instanceof Error
+              ? `A etapa não foi salva: ${e.message}`
+              : "A etapa não foi salva. Recarregue e tente de novo.",
+            "info",
+          ),
+      },
+    );
 
     const stageLabels: Record<string, string> = {
       lead_recebido: "Lead recebido pela loja",
@@ -409,6 +426,9 @@ export default function App() {
             leadId,
             "📍 O indicador sinalizou chegada com o comprador na loja física e aguarda confirmação.",
           ),
+          // A sinalização em si já foi gravada pela RPC acima; esta mensagem é
+          // o aviso no chat. Falhar não invalida a chegada.
+          { onError: (e) => console.error("[App] system message (check-in) failed", e) },
         );
         addNotification(
           "Você sinalizou que chegou à loja com o cliente! Uma notificação foi enviada ao lojista para confirmar.",
@@ -539,15 +559,29 @@ export default function App() {
         onSuccess: (lead) => {
           setVisitorLeadId(lead.id);
           const systemText = `🚀 ATENDIMENTO INICIADO: Novo lead recebido sob indicação do parceiro. Canal de origem: *${channelLabel}*. O chat direto entre você e a loja parceira está ativo e protegido contra fraudes!`;
-          sendChatMessageMutation.mutate(buildSystemMessage(lead.id, systemText));
+          sendChatMessageMutation.mutate(buildSystemMessage(lead.id, systemText), {
+            // Mensagem de sistema: se falhar, o lead já existe e vale. Só registramos.
+            onError: (e) => console.error("[App] system message (novo lead) failed", e),
+          });
           if (leadData.notes) {
-            sendChatMessageMutation.mutate({
-              leadId: lead.id,
-              senderId: "client",
-              senderName: leadData.clientName,
-              senderRole: "client",
-              text: leadData.notes,
-            });
+            sendChatMessageMutation.mutate(
+              {
+                leadId: lead.id,
+                senderId: "client",
+                senderName: leadData.clientName,
+                senderRole: "client",
+                text: leadData.notes,
+              },
+              {
+                // Esta carrega o que o cliente escreveu. Perder em silêncio faz
+                // a loja atender sem saber o que a pessoa pediu.
+                onError: () =>
+                  addNotification(
+                    "Seu recado não chegou ao chat. Abra a conversa e envie de novo.",
+                    "info",
+                  ),
+              },
+            );
           }
           addNotification("Novo Lead registrado com sucesso!", "success");
         },
@@ -594,7 +628,18 @@ export default function App() {
   ) => {
     updateSimulationStatusMutation.mutate(
       { id: simId, status, bankResponses, approvedContract },
-      { onSuccess: () => addNotification(`Simulação atualizada!`, "info") },
+      {
+        onSuccess: () => addNotification(`Simulação atualizada!`, "info"),
+        // Concluir a simulação gera a comissão de venda por financiamento —
+        // mesmo peso da mudança de etapa do funil.
+        onError: (e) =>
+          addNotification(
+            e instanceof Error
+              ? `A simulação não foi atualizada: ${e.message}`
+              : "A simulação não foi atualizada.",
+            "info",
+          ),
+      },
     );
   };
 
@@ -606,7 +651,13 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-500 selection:text-white">
       <CommissionCelebration
         notifications={notificationsQuery.data ?? []}
-        onDismiss={(ids) => markNotificationsReadMutation.mutate(ids)}
+        onDismiss={(ids) =>
+          markNotificationsReadMutation.mutate(ids, {
+            // Se falhar, a comemoração volta na próxima abertura. Chato, não
+            // grave — mas o log evita virar "bug fantasma" no suporte.
+            onError: (e) => console.error("[App] marcar notificação como lida falhou", e),
+          })
+        }
       />
 
       {/* Persistent Profile / Session Bar for Logged-In Users */}

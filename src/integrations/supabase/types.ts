@@ -964,6 +964,10 @@ export type Database = {
           created_at: string;
         };
       };
+      quiz_attempts_left: {
+        Args: { _course_id: string };
+        Returns: number;
+      };
       complete_lesson: {
         Args: { _lesson_id: string };
         Returns: undefined;
