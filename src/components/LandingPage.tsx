@@ -347,10 +347,7 @@ export default function LandingPage() {
       {/* ================= NICHOS (cards com foto) ================= */}
       {/* overflow-hidden: o GlowBlob decorativo sangra para fora da seção e,
           sem clipping, criava scroll horizontal na página inteira. */}
-      <section
-        id="nichos"
-        className="py-24 border-y border-white/5 relative overflow-hidden"
-      >
+      <section id="nichos" className="py-24 border-y border-white/5 relative overflow-hidden">
         <VideoBackdrop name="nichos" overlay="strong" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Reveal className="text-center max-w-2xl mx-auto mb-16 space-y-4">

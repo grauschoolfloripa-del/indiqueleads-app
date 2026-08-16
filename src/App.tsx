@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import InstallApp from "@/components/InstallApp";
+import PushOptIn from "@/components/PushOptIn";
+import { useIsStandalone } from "@/hooks/usePwa";
 import { CheckCircle2, Info, X } from "lucide-react";
 
 import { Product, Lead, Category, FinancingSimulation } from "./types";
@@ -199,6 +202,11 @@ export default function App() {
     .filter((c): c is Category => !!c);
   const hasGeneralCert = (myCertificationsQuery.data ?? []).some((c) => c.category === null);
   const indicatorReady = isApproved && hasGeneralCert && certifiedCategories.length > 0;
+
+  // Aberto pelo ícone da tela inicial? Governa a trava de app exclusivo do indicador.
+  // Anunciante, admin e visitante nunca são travados: o anunciante trabalha no
+  // computador e a vitrine pública precisa abrir para qualquer um, sempre.
+  const runningAsApp = useIsStandalone();
 
   const products = useMemo<Product[]>(() => {
     if (isAdmin) return allProductsQuery.data ?? [];
@@ -682,19 +690,38 @@ export default function App() {
             {/* Credenciamento: sem cadastro aprovado + Fundamentos + ao menos um
                 nicho, o indicador vê a Academy no lugar da vitrine. A trava que
                 importa (atribuição da comissão) é server-side, na create-lead. */}
-            {currentRole === "indicador" && loggedUser && !indicatorReady && (
-              <Academy
-                userId={loggedUser.id}
-                userName={loggedUser.name}
-                userEmail={loggedUser.email}
-                userPhone={loggedUser.phone}
+            {/* App exclusivo: aprovada a candidatura, o indicador continua a
+                jornada pelo app instalado. Antes da aprovação ele segue no
+                navegador — é lá que preenche o cadastro, e exigir instalação
+                antes de existir vínculo só afastaria candidato. */}
+            {currentRole === "indicador" && loggedUser && isApproved && !runningAsApp && (
+              <InstallApp
+                firstName={loggedUser.name.split(" ")[0]}
                 onAddNotification={addNotification}
               />
             )}
 
             {currentRole === "indicador" &&
               loggedUser &&
+              !indicatorReady &&
+              !(isApproved && !runningAsApp) && (
+                <Academy
+                  userId={loggedUser.id}
+                  userName={loggedUser.name}
+                  userEmail={loggedUser.email}
+                  userPhone={loggedUser.phone}
+                  onAddNotification={addNotification}
+                />
+              )}
+
+            {currentRole === "indicador" && loggedUser && indicatorReady && runningAsApp && (
+              <PushOptIn userId={loggedUser.id} onAddNotification={addNotification} />
+            )}
+
+            {currentRole === "indicador" &&
+              loggedUser &&
               indicatorReady &&
+              runningAsApp &&
               indicatorProfileQuery.data && (
                 <AffiliateDashboard
                   indicator={indicatorProfileQuery.data}

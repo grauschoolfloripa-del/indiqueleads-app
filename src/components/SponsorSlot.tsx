@@ -161,10 +161,7 @@ export default function SponsorSlot({
   const hasSponsors = sponsors && sponsors.length > 0;
 
   return (
-    <section
-      aria-label={label ?? "Espaço patrocinado"}
-      className={`w-full ${className}`}
-    >
+    <section aria-label={label ?? "Espaço patrocinado"} className={`w-full ${className}`}>
       {label && (
         <div className="mb-2 flex items-center justify-between gap-2">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">

@@ -181,3 +181,25 @@
     color: var(--color-foreground);
   }
 }
+
+/* Barra de abas dos painéis: rola no celular sem mostrar a barra de rolagem.
+   Sem isso, os rótulos longos ("Simular Financiamentos (3)") estouram a
+   largura da tela e o app inteiro passa a rolar de lado. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Área segura do aparelho — vale só no app instalado.
+   No iPhone o indicador de home fica sobre o conteúdo; sem este recuo o último
+   botão da tela fica embaixo dele e não dá para tocar. */
+@media (display-mode: standalone) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}

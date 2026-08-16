@@ -1,4 +1,5 @@
 import React, { useState, FormEvent, UIEvent } from "react";
+import { useTabParam } from "@/hooks/useTabParam";
 import {
   Building2,
   PlusCircle,
@@ -115,9 +116,10 @@ export default function AdvertiserDashboard({
   onSendChatMessage,
 }: AdvertiserDashboardProps) {
   // Navigation
-  const [activeTab, setActiveTab] = useState<
-    "funnel" | "produtos" | "financeiro" | "afiliados" | "financiamentos"
-  >("funnel");
+  const [activeTab, setActiveTab] = useTabParam(
+    ["funnel", "produtos", "financeiro", "afiliados", "financiamentos"] as const,
+    "funnel",
+  );
 
   // Local Chat state
   const [advertiserChatText, setAdvertiserChatText] = useState("");
@@ -1382,10 +1384,10 @@ export default function AdvertiserDashboard({
 
       {/* Navigation tabs inside dashboard */}
 
-      <div className="flex border-b border-slate-200 mb-6 font-display font-medium text-sm">
+      <div className="flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
         <button
           onClick={() => setActiveTab("funnel")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "funnel"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -1395,7 +1397,7 @@ export default function AdvertiserDashboard({
         </button>
         <button
           onClick={() => setActiveTab("produtos")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "produtos"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -1405,7 +1407,7 @@ export default function AdvertiserDashboard({
         </button>
         <button
           onClick={() => setActiveTab("financeiro")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "financeiro"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -1415,7 +1417,7 @@ export default function AdvertiserDashboard({
         </button>
         <button
           onClick={() => setActiveTab("afiliados")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "afiliados"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -1425,7 +1427,7 @@ export default function AdvertiserDashboard({
         </button>
         <button
           onClick={() => setActiveTab("financiamentos")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "financiamentos"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"

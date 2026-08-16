@@ -11,7 +11,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Entrar — IndiqueLeads" },
-      { name: "description", content: "Acesse sua conta IndiqueLeads — indicadores, anunciantes e administradores." },
+      {
+        name: "description",
+        content: "Acesse sua conta IndiqueLeads — indicadores, anunciantes e administradores.",
+      },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -90,7 +93,6 @@ function AuthPage() {
           </span>
         </Link>
 
-
         <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
           <div className="flex bg-slate-100 rounded-lg p-1 mb-6">
             <button
@@ -119,17 +121,33 @@ function AuthPage() {
             className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition mb-4"
           >
             <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.5 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 5.8 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
-              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 5.8 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-              <path fill="#4CAF50" d="M24 44c5.2 0 9.8-2 13.3-5.2l-6.1-5.2C29.1 35 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.6 39.6 16.2 44 24 44z"/>
-              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.1 5.2C41 34.2 44 29.5 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+              <path
+                fill="#FFC107"
+                d="M43.6 20.5H42V20H24v8h11.3C33.7 32.5 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 5.8 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
+              />
+              <path
+                fill="#FF3D00"
+                d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 5.8 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+              />
+              <path
+                fill="#4CAF50"
+                d="M24 44c5.2 0 9.8-2 13.3-5.2l-6.1-5.2C29.1 35 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.6 39.6 16.2 44 24 44z"
+              />
+              <path
+                fill="#1976D2"
+                d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.1 5.2C41 34.2 44 29.5 44 24c0-1.3-.1-2.4-.4-3.5z"
+              />
             </svg>
             Continuar com Google
           </button>
 
           <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
-            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-slate-400">ou com email</span></div>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-400">ou com email</span>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -192,8 +210,16 @@ function AuthPage() {
               </div>
             </label>
 
-            {error && <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md p-2">{error}</div>}
-            {info && <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md p-2">{info}</div>}
+            {error && (
+              <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+                {error}
+              </div>
+            )}
+            {info && (
+              <div className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md p-2">
+                {info}
+              </div>
+            )}
 
             <button
               type="submit"

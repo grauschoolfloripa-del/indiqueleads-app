@@ -1,0 +1,61 @@
+{
+  "id": "/?fonte=app",
+  "name": "IndiqueLeads",
+  "short_name": "IndiqueLeads",
+  "description": "Indique produtos de alto valor e receba comissão por lead e por venda.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "/?fonte=app",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#ffffff",
+  "theme_color": "#0C486C",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Minha carteira",
+      "short_name": "Carteira",
+      "description": "Saldo, comissões e repasses",
+      "url": "/?aba=carteira&fonte=app"
+    },
+    {
+      "name": "Vitrine",
+      "short_name": "Vitrine",
+      "description": "Produtos liberados para indicar",
+      "url": "/?aba=vitrine&fonte=app"
+    },
+    {
+      "name": "Meu desempenho",
+      "short_name": "Desempenho",
+      "description": "Leads, conversões e ganhos",
+      "url": "/?aba=desempenho&fonte=app"
+    }
+  ]
+}

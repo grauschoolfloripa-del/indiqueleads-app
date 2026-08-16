@@ -1,4 +1,5 @@
 import { useState, FormEvent, UIEvent } from "react";
+import { useTabParam } from "@/hooks/useTabParam";
 import {
   Share2,
   MapPin,
@@ -92,9 +93,10 @@ export default function AffiliateDashboard({
   onSendChatMessage,
 }: AffiliateDashboardProps) {
   // Navigation / Tabs inside Dashboard
-  const [activeTab, setActiveTab] = useState<
-    "vitrine" | "desempenho" | "carteira" | "financiamentos"
-  >("vitrine");
+  const [activeTab, setActiveTab] = useTabParam(
+    ["vitrine", "desempenho", "carteira", "financiamentos"] as const,
+    "vitrine",
+  );
 
   // Active Chat lead monitor
   const [activeChatLeadId, setActiveChatLeadId] = useState<string | null>(null);
@@ -794,10 +796,10 @@ export default function AffiliateDashboard({
 
       {/* Dashboard Sub-navigation Tabs */}
 
-      <div className="flex border-b border-slate-200 mb-6 font-display font-medium text-sm">
+      <div className="flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
         <button
           onClick={() => setActiveTab("vitrine")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "vitrine"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -807,7 +809,7 @@ export default function AffiliateDashboard({
         </button>
         <button
           onClick={() => setActiveTab("desempenho")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "desempenho"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -817,7 +819,7 @@ export default function AffiliateDashboard({
         </button>
         <button
           onClick={() => setActiveTab("carteira")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "carteira"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -827,7 +829,7 @@ export default function AffiliateDashboard({
         </button>
         <button
           onClick={() => setActiveTab("financiamentos")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "financiamentos"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"

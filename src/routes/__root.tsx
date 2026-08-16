@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { registerServiceWorker, watchInstallPrompt } from "../lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -76,8 +77,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // viewport-fit=cover deixa o app usar a área toda do iPhone; o recorte da
+      // ilha e do indicador de home é devolvido pelas env(safe-area-inset-*).
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
       { title: "Indiqueleads — Plataforma de Indicações" },
+      { name: "theme-color", content: "#0C486C" },
+      { name: "application-name", content: "IndiqueLeads" },
+      // iOS ignora o manifest para isto: precisa das metas próprias da Apple.
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "IndiqueLeads" },
+      // "default" faz o iOS reservar a faixa da barra de status. Com
+      // "black-translucent" o conteúdo sobe por baixo do entalhe e todo layout
+      // existente precisaria de recuo próprio — risco desnecessário aqui.
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "mobile-web-app-capable", content: "yes" },
       {
         name: "description",
         content:
@@ -92,11 +108,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Indiqueleads — Plataforma de Indicações" },
-      { name: "description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
-      { property: "og:description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
-      { name: "twitter:description", content: "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31474af4-b458-4797-b4de-f8a4e4c04a6f/id-preview-53458672--59267e10-8ce6-4542-af3e-3921c95632d7.lovable.app-1783437774974.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31474af4-b458-4797-b4de-f8a4e4c04a6f/id-preview-53458672--59267e10-8ce6-4542-af3e-3921c95632d7.lovable.app-1783437774974.png" },
+      {
+        name: "description",
+        content:
+          "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
+      },
+      {
+        property: "og:description",
+        content:
+          "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Plataforma multivertical que conecta anunciantes a uma rede de indicadores autônomos com links rastreáveis e comissionamento em camadas.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31474af4-b458-4797-b4de-f8a4e4c04a6f/id-preview-53458672--59267e10-8ce6-4542-af3e-3921c95632d7.lovable.app-1783437774974.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/31474af4-b458-4797-b4de-f8a4e4c04a6f/id-preview-53458672--59267e10-8ce6-4542-af3e-3921c95632d7.lovable.app-1783437774974.png",
+      },
     ],
     links: [
       {
@@ -104,6 +140,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -111,7 +149,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800;900&family=Epilogue:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
-
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -121,7 +158,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -135,6 +172,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    registerServiceWorker();
+    watchInstallPrompt();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

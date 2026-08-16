@@ -1,4 +1,5 @@
 import { useState, FormEvent } from "react";
+import { useTabParam } from "@/hooks/useTabParam";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ShieldAlert,
@@ -63,16 +64,19 @@ export default function AdminPanel({
   onAddNotification,
 }: AdminPanelProps) {
   // Navigation
-  const [activeTab, setActiveTab] = useState<
-    | "geral"
-    | "candidaturas"
-    | "financeiro"
-    | "categorias"
-    | "verticais"
-    | "fraudes"
-    | "taxas"
-    | "admins"
-  >("geral");
+  const [activeTab, setActiveTab] = useTabParam(
+    [
+      "geral",
+      "candidaturas",
+      "financeiro",
+      "categorias",
+      "verticais",
+      "fraudes",
+      "taxas",
+      "admins",
+    ] as const,
+    "geral",
+  );
 
   // Criação de novos administradores
   const createAdminFn = useServerFn(createAdminUser);
@@ -207,10 +211,10 @@ export default function AdminPanel({
       </div>
 
       {/* Tabs Submenu */}
-      <div className="flex border-b border-slate-200 mb-6 font-display font-medium text-sm">
+      <div className="flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
         <button
           onClick={() => setActiveTab("geral")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "geral"
               ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -220,7 +224,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("categorias")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "categorias"
               ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -230,7 +234,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("candidaturas")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "candidaturas"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -240,7 +244,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("financeiro")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "financeiro"
               ? "border-brand-500 text-brand-600 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -250,7 +254,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("fraudes")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "fraudes"
               ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -260,7 +264,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("taxas")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "taxas"
               ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -270,7 +274,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("verticais")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "verticais"
               ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
@@ -280,7 +284,7 @@ export default function AdminPanel({
         </button>
         <button
           onClick={() => setActiveTab("admins")}
-          className={`pb-3 px-4 border-b-2 transition-all ${
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
             activeTab === "admins"
               ? "border-blue-700 text-blue-700 font-bold"
               : "border-transparent text-slate-500 hover:text-slate-800"
