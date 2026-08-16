@@ -76,13 +76,30 @@ export async function ensurePushSynced(userId: string): Promise<boolean> {
   return subscribeAndSave(userId);
 }
 
+/**
+ * `serviceWorker.ready` nunca rejeita: se o registro falhar, a promessa fica
+ * pendente para sempre. Sem um limite, `enablePush` trava e o botão gira até
+ * a pessoa desistir — sem erro, sem log, sem nada.
+ */
+async function registrationOrTimeout(segundos = 10): Promise<ServiceWorkerRegistration> {
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error("service worker não ficou pronto a tempo")),
+        segundos * 1000,
+      ),
+    ),
+  ]);
+}
+
 async function subscribeAndSave(userId: string): Promise<boolean> {
   if (!VAPID_PUBLIC_KEY) {
     console.error("[push] VITE_VAPID_PUBLIC_KEY não configurada");
     return false;
   }
 
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await registrationOrTimeout();
 
   // Reaproveita a inscrição existente; criar outra para o mesmo aparelho só
   // geraria envio duplicado.
@@ -128,6 +145,61 @@ export async function disablePush(): Promise<void> {
 /** True se este aparelho já está inscrito. */
 export async function isPushEnabled(): Promise<boolean> {
   if (!pushSupported() || Notification.permission !== "granted") return false;
-  const registration = await navigator.serviceWorker.ready;
-  return (await registration.pushManager.getSubscription()) !== null;
+  try {
+    const registration = await registrationOrTimeout();
+    return (await registration.pushManager.getSubscription()) !== null;
+  } catch {
+    return false;
+  }
+}
+
+export type PushDiag = {
+  suportado: boolean;
+  permissao: PushPermission;
+  serviceWorkerPronto: boolean;
+  inscritoNoAparelho: boolean;
+  registradoNoServidor: boolean;
+  erro?: string;
+};
+
+/**
+ * Estado real dos avisos neste aparelho, passo a passo.
+ *
+ * Ligar push tem quatro etapas que falham de formas diferentes e todas
+ * silenciosas. Sem isto, "não chega notificação" é indistinguível de
+ * "permissão negada", "service worker morto" ou "gravação recusada" — e não há
+ * como descobrir sem o aparelho na mão.
+ */
+export async function pushDiagnostics(userId: string): Promise<PushDiag> {
+  const diag: PushDiag = {
+    suportado: pushSupported(),
+    permissao: pushPermission(),
+    serviceWorkerPronto: false,
+    inscritoNoAparelho: false,
+    registradoNoServidor: false,
+  };
+  if (!diag.suportado) return diag;
+
+  try {
+    const registration = await registrationOrTimeout(8);
+    diag.serviceWorkerPronto = true;
+
+    const sub = await registration.pushManager.getSubscription();
+    diag.inscritoNoAparelho = sub !== null;
+
+    if (sub) {
+      const { data, error } = await supabase
+        .from("push_subscriptions")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("endpoint", sub.endpoint)
+        .maybeSingle();
+      if (error) diag.erro = error.message;
+      diag.registradoNoServidor = !!data;
+    }
+  } catch (e) {
+    diag.erro = e instanceof Error ? e.message : String(e);
+  }
+
+  return diag;
 }

@@ -1,4 +1,5 @@
 import { useState, FormEvent, UIEvent } from "react";
+import PushSettings from "@/components/PushSettings";
 import { useTabParam } from "@/hooks/useTabParam";
 import {
   Share2,
@@ -194,6 +195,10 @@ export default function CarteiraTab({ ctx }: { ctx: AffiliateCtx }) {
             ✓ Saque enviado! Verifique seu banco cadastrado na chave PIX.
           </div>
         )}
+
+        {/* indicators.id é o próprio id do usuário — mesma convenção que o
+            resto do app usa para buscar comissões e perfil. */}
+        <PushSettings userId={indicator.id} onAddNotification={onAddNotification} />
       </div>
 
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-2 space-y-4">
