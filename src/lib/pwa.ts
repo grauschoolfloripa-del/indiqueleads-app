@@ -107,9 +107,20 @@ export function registerServiceWorker(): void {
   // serve bundle antigo e o app "não atualiza" sem motivo aparente.
   if (!import.meta.env.PROD) return;
 
-  window.addEventListener("load", () => {
+  const registrar = () => {
     navigator.serviceWorker.register("/sw.js").catch((err) => {
       console.error("[pwa] falha ao registrar o service worker", err);
     });
-  });
+  };
+
+  // `load` já pode ter disparado quando o React hidrata — e no app instalado,
+  // com todos os assets vindo do disco, é o caso comum. Nesse cenário o
+  // addEventListener nunca é chamado: o service worker jamais é registrado, o
+  // push nunca funciona, e nada na tela indica o problema. Foi exatamente isso
+  // que segurou as notificações.
+  if (document.readyState === "complete") {
+    registrar();
+  } else {
+    window.addEventListener("load", registrar, { once: true });
+  }
 }

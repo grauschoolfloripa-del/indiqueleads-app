@@ -82,6 +82,14 @@ export async function ensurePushSynced(userId: string): Promise<boolean> {
  * a pessoa desistir — sem erro, sem log, sem nada.
  */
 async function registrationOrTimeout(segundos = 10): Promise<ServiceWorkerRegistration> {
+  // Se ninguém registrou ainda, registra aqui em vez de esperar para sempre.
+  // `ready` só resolve quando existe registro ativo — sem isto, uma falha no
+  // registro inicial deixa o push morto permanentemente, sem sintoma.
+  const existente = await navigator.serviceWorker.getRegistration();
+  if (!existente) {
+    await navigator.serviceWorker.register("/sw.js");
+  }
+
   return Promise.race([
     navigator.serviceWorker.ready,
     new Promise<never>((_, reject) =>
