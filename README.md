@@ -86,6 +86,28 @@ Errar aqui prende o usuário numa versão velha, então: nunca interceptar nada
 além de GET; nunca tocar em chamada do Supabase; navegação sempre
 network-first; só `/assets/` (nome com hash) pode ser cache-first.
 
+### Central de mensagens (admin)
+
+Aba **Mensagens Push**. O admin compõe (título, corpo, imagem, botão,
+destino), escolhe o público e dispara. Para indicadores há filtro por nicho
+certificado.
+
+Três travas, porque o disparo é irreversível e chega em gente real:
+
+1. O alcance é calculado **antes**, pela mesma `push_audience_users` que o
+   envio usa. Duas consultas diferentes deixariam a prévia dizer 40 e o
+   disparo pegar 400.
+2. "Enviar teste só para mim" antes do disparo real.
+3. Confirmação com o número de pessoas na frente.
+
+O destino precisa ser caminho interno — `admin_send_push_campaign` recusa URL
+externa. Push com link para fora é vetor de phishing, e quem clica confia na
+marca.
+
+Entrega em lote: **uma** chamada à Edge Function por campanha. É para isso que
+existe `notifications.campaign_id` — o trigger individual pula essas linhas,
+senão 500 destinatários virariam 500 requisições HTTP.
+
 ### Push
 
 `notifications` ganhou um trigger que chama a Edge Function `send-push`. O
