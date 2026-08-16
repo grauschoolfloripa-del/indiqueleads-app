@@ -32,6 +32,7 @@ import {
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
 import { useApplications, useReviewApplication } from "@/hooks/queries";
+import PushCenter from "./admin/PushCenter";
 
 interface AdminPanelProps {
   products: Product[];
@@ -47,6 +48,8 @@ interface AdminPanelProps {
   categories: Array<{ id: Category | string; name: string; icon: string; fields: string[] }>;
   onAddCategory: (cat: { id: string; name: string; icon: string; fields: string[] }) => void;
   onAddNotification: (msg: string, type: "success" | "info") => void;
+  /** Admin logado — destino do envio de teste na central de mensagens. */
+  adminUserId: string;
 }
 
 export default function AdminPanel({
@@ -62,12 +65,14 @@ export default function AdminPanel({
   categories,
   onAddCategory,
   onAddNotification,
+  adminUserId,
 }: AdminPanelProps) {
   // Navigation
   const [activeTab, setActiveTab] = useTabParam(
     [
       "geral",
       "candidaturas",
+      "mensagens",
       "financeiro",
       "categorias",
       "verticais",
@@ -241,6 +246,16 @@ export default function AdminPanel({
           }`}
         >
           Candidaturas{pendingApplications > 0 ? ` (${pendingApplications})` : ""}
+        </button>
+        <button
+          onClick={() => setActiveTab("mensagens")}
+          className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
+            activeTab === "mensagens"
+              ? "border-blue-700 text-blue-700 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          Mensagens Push
         </button>
         <button
           onClick={() => setActiveTab("financeiro")}
@@ -833,6 +848,15 @@ export default function AdminPanel({
             ))}
           </div>
         </div>
+      )}
+
+      {activeTab === "mensagens" && (
+        <PushCenter
+          indicators={indicators}
+          advertisers={advertisers}
+          onAddNotification={onAddNotification}
+          adminUserId={adminUserId}
+        />
       )}
 
       {activeTab === "financeiro" && (

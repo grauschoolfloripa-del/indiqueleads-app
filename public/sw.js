@@ -11,7 +11,7 @@
  *  4. Só /assets/ (nomes com hash, imutáveis) pode ser cache-first.
  */
 
-const VERSION = "v1";
+const VERSION = "v2"; // subir a cada mudança neste arquivo, para o cache antigo ser descartado
 const SHELL = `il-shell-${VERSION}`;
 const ASSETS = `il-assets-${VERSION}`;
 const MEDIA = `il-media-${VERSION}`;
@@ -139,17 +139,26 @@ self.addEventListener("push", (event) => {
   }
 
   const title = payload.title || "IndiqueLeads";
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body: payload.body || "",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      tag: payload.tag || "indiqueleads",
-      renotify: Boolean(payload.tag),
-      data: { url: payload.url || "/?fonte=app" },
-      vibrate: [90, 50, 90],
-    }),
-  );
+  const opcoes = {
+    body: payload.body || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    tag: payload.tag || "indiqueleads",
+    renotify: Boolean(payload.tag),
+    data: { url: payload.url || "/?fonte=app" },
+    vibrate: [90, 50, 90],
+  };
+
+  // Imagem grande no corpo do aviso. Android mostra; iOS ignora sem quebrar.
+  if (payload.image) opcoes.image = payload.image;
+
+  // Botão de ação. Sem `action` definida, o toque no botão cai no mesmo
+  // destino do aviso — que é o comportamento desejado aqui.
+  if (payload.actionLabel) {
+    opcoes.actions = [{ action: "abrir", title: payload.actionLabel }];
+  }
+
+  event.waitUntil(self.registration.showNotification(title, opcoes));
 });
 
 self.addEventListener("notificationclick", (event) => {

@@ -460,6 +460,8 @@ export function useUpdatePlatformConfig() {
 // ---------------- Academy / credenciamento ----------------
 
 import { academyRepo, type ApplicationInput } from "@/lib/repositories";
+import { pushCampaignsRepo, type CampaignInput } from "@/lib/repositories";
+import type { Category, PushAudience } from "@/types";
 
 export function useMyApplication(enabled: boolean) {
   return useQuery({
@@ -548,5 +550,40 @@ export function useSubmitQuiz() {
       void qc.invalidateQueries({ queryKey: ["certifications"] });
       void qc.invalidateQueries({ queryKey: ["products"] });
     },
+  });
+}
+
+/* ------------------------------------------------------- campanhas de push -- */
+
+/** Alcance do público escolhido — recalculado a cada mudança no formulário. */
+export function usePushReach(
+  audience: PushAudience,
+  userIds: string[],
+  categories: Category[],
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ["push", "reach", audience, [...userIds].sort(), [...categories].sort()] as const,
+    queryFn: () => pushCampaignsRepo.reach(audience, userIds, categories),
+    enabled,
+  });
+}
+
+export function usePushCampaigns(enabled: boolean) {
+  return useQuery({
+    queryKey: ["push", "campaigns"] as const,
+    queryFn: pushCampaignsRepo.list,
+    enabled,
+    // A Edge Function grava o resultado do disparo depois da resposta da RPC,
+    // então a linha recém-criada aparece sem números por alguns segundos.
+    refetchInterval: 10_000,
+  });
+}
+
+export function useSendPushCampaign() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CampaignInput) => pushCampaignsRepo.send(input),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["push"] }),
   });
 }

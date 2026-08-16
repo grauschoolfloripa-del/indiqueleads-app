@@ -782,6 +782,7 @@ export default function App() {
                 categories={categories}
                 onAddCategory={handleAddCategory}
                 onAddNotification={addNotification}
+                adminUserId={loggedUser.id}
               />
             )}
           </>

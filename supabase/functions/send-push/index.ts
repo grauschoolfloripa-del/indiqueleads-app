@@ -23,6 +23,9 @@ interface Target {
   title: string;
   body: string;
   url: string;
+  /** Só em campanha: imagem grande e botão de ação. */
+  image?: string | null;
+  action_label?: string | null;
 }
 
 /** Comparação em tempo constante: evita vazar o segredo por medida de tempo. */
@@ -52,21 +55,28 @@ Deno.serve(async (req) => {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
 
   let notificationId: string | undefined;
+  let campaignId: string | undefined;
   try {
-    ({ notification_id: notificationId } = await req.json());
+    ({ notification_id: notificationId, campaign_id: campaignId } = await req.json());
   } catch {
     return new Response("corpo inválido", { status: 400 });
   }
-  if (!notificationId) return new Response("notification_id ausente", { status: 400 });
+  if (!notificationId && !campaignId) {
+    return new Response("informe notification_id ou campaign_id", { status: 400 });
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  const { data, error } = await supabase.rpc("push_targets_for_notification", {
-    _notification_id: notificationId,
-  });
+  // Dois caminhos, mesma entrega: evento do sistema (uma pessoa) e campanha do
+  // admin (muitas). A campanha carrega imagem e botão; o evento, não.
+  const { data, error } = campaignId
+    ? await supabase.rpc("push_targets_for_campaign", { _campaign_id: campaignId })
+    : await supabase.rpc("push_targets_for_notification", {
+        _notification_id: notificationId,
+      });
 
   if (error) {
     console.error("[send-push] falha ao buscar destinos", error);
@@ -90,7 +100,11 @@ Deno.serve(async (req) => {
         title: t.title,
         body: t.body,
         url: t.url,
-        tag: `il-${notificationId}`,
+        image: t.image ?? undefined,
+        actionLabel: t.action_label ?? undefined,
+        // A tag agrupa: um novo aviso da mesma campanha substitui o anterior
+        // em vez de empilhar na barra de notificações.
+        tag: `il-${campaignId ?? notificationId}`,
       });
 
       try {
@@ -112,6 +126,15 @@ Deno.serve(async (req) => {
 
   if (dead.length > 0) {
     await supabase.from("push_subscriptions").delete().in("endpoint", dead);
+  }
+
+  if (campaignId) {
+    // O admin precisa ver o resultado do disparo na tela, não só nos logs.
+    await supabase.rpc("push_campaign_report", {
+      _campaign_id: campaignId,
+      _sent: sent,
+      _failed: targets.length - sent,
+    });
   }
 
   return new Response(JSON.stringify({ sent, removed: dead.length }), {

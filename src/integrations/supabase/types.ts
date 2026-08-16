@@ -569,6 +569,28 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_campaigns: {
+        Row: {
+          action_label: string | null;
+          audience: "todos" | "indicadores" | "anunciantes" | "especificos";
+          audience_categories: string[];
+          audience_user_ids: string[];
+          body: string;
+          created_at: string;
+          created_by: string;
+          devices_failed: number | null;
+          devices_sent: number | null;
+          dispatched_at: string | null;
+          id: string;
+          image_url: string | null;
+          recipients: number;
+          target_url: string;
+          title: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       push_subscriptions: {
         Row: {
           auth: string;
@@ -907,6 +929,40 @@ export type Database = {
       admin_review_application: {
         Args: { _application_id: string; _approve: boolean; _notes?: string | null };
         Returns: undefined;
+      };
+      push_audience_reach: {
+        Args: {
+          _audience: "todos" | "indicadores" | "anunciantes" | "especificos";
+          _user_ids?: string[];
+          _categories?: string[];
+        };
+        Returns: { pessoas: number; aparelhos: number }[];
+      };
+      admin_send_push_campaign: {
+        Args: {
+          _title: string;
+          _body: string;
+          _audience: "todos" | "indicadores" | "anunciantes" | "especificos";
+          _user_ids?: string[];
+          _categories?: string[];
+          _image_url?: string | null;
+          _target_url?: string;
+          _action_label?: string | null;
+        };
+        Returns: {
+          id: string;
+          title: string;
+          body: string;
+          image_url: string | null;
+          target_url: string;
+          action_label: string | null;
+          audience: "todos" | "indicadores" | "anunciantes" | "especificos";
+          recipients: number;
+          devices_sent: number | null;
+          devices_failed: number | null;
+          dispatched_at: string | null;
+          created_at: string;
+        };
       };
       complete_lesson: {
         Args: { _lesson_id: string };

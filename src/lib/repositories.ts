@@ -6,6 +6,10 @@
  */
 import { supabase } from "@/integrations/supabase/client";
 import type {
+  Category,
+  PushAudience,
+  PushCampaign,
+  PushReach,
   Product,
   ProductStatus,
   Lead,
@@ -1013,5 +1017,105 @@ export const academyRepo = {
       correct: Number(row?.correct ?? 0),
       total: Number(row?.total ?? 0),
     };
+  },
+};
+
+/* ------------------------------------------------------- campanhas de push -- */
+
+function campaignFromDb(row: {
+  id: string;
+  title: string;
+  body: string;
+  image_url: string | null;
+  target_url: string;
+  action_label: string | null;
+  audience: PushAudience;
+  recipients: number;
+  devices_sent: number | null;
+  devices_failed: number | null;
+  dispatched_at: string | null;
+  created_at: string;
+}): PushCampaign {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    imageUrl: row.image_url,
+    targetUrl: row.target_url,
+    actionLabel: row.action_label,
+    audience: row.audience,
+    recipients: row.recipients,
+    devicesSent: row.devices_sent,
+    devicesFailed: row.devices_failed,
+    dispatchedAt: row.dispatched_at,
+    createdAt: row.created_at,
+  };
+}
+
+export interface CampaignInput {
+  title: string;
+  body: string;
+  audience: PushAudience;
+  userIds?: string[];
+  categories?: Category[];
+  imageUrl?: string | null;
+  targetUrl?: string;
+  actionLabel?: string | null;
+}
+
+export const pushCampaignsRepo = {
+  /**
+   * Quantas pessoas e quantos aparelhos o público escolhido alcança.
+   *
+   * A conta vem do mesmo `push_audience_users` que o envio usa — se fossem
+   * duas consultas diferentes, a prévia poderia dizer 40 e o disparo pegar 400.
+   */
+  async reach(
+    audience: PushAudience,
+    userIds: string[] = [],
+    categories: Category[] = [],
+  ): Promise<PushReach> {
+    const { data, error } = await supabase.rpc("push_audience_reach", {
+      _audience: audience,
+      _user_ids: userIds,
+      _categories: categories,
+    });
+    if (error) {
+      console.error("[repositories] pushCampaignsRepo.reach", error);
+      return { pessoas: 0, aparelhos: 0 };
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return { pessoas: Number(row?.pessoas ?? 0), aparelhos: Number(row?.aparelhos ?? 0) };
+  },
+
+  async send(input: CampaignInput): Promise<PushCampaign> {
+    const { data, error } = await supabase.rpc("admin_send_push_campaign", {
+      _title: input.title,
+      _body: input.body,
+      _audience: input.audience,
+      _user_ids: input.userIds ?? [],
+      _categories: input.categories ?? [],
+      _image_url: input.imageUrl ?? null,
+      _target_url: input.targetUrl ?? "/?fonte=app",
+      _action_label: input.actionLabel ?? null,
+    });
+    if (error) {
+      console.error("[repositories] pushCampaignsRepo.send", error);
+      throw error;
+    }
+    return campaignFromDb(data as Parameters<typeof campaignFromDb>[0]);
+  },
+
+  async list(): Promise<PushCampaign[]> {
+    const { data, error } = await supabase
+      .from("push_campaigns")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) {
+      console.error("[repositories] pushCampaignsRepo.list", error);
+      return [];
+    }
+    return (data ?? []).map(campaignFromDb);
   },
 };

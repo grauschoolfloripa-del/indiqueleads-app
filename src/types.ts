@@ -306,3 +306,29 @@ export interface QuizResult {
   correct: number;
   total: number;
 }
+
+/** Público de uma campanha de push. */
+export type PushAudience = "todos" | "indicadores" | "anunciantes" | "especificos";
+
+/** Mensagem que o admin envia para a base. */
+export interface PushCampaign {
+  id: string;
+  title: string;
+  body: string;
+  imageUrl: string | null;
+  targetUrl: string;
+  actionLabel: string | null;
+  audience: PushAudience;
+  /** Pessoas que receberam a notificação in-app. */
+  recipients: number;
+  /** Aparelhos que aceitaram a entrega. Nulo enquanto o disparo não terminou. */
+  devicesSent: number | null;
+  devicesFailed: number | null;
+  dispatchedAt: string | null;
+  createdAt: string;
+}
+
+export interface PushReach {
+  pessoas: number;
+  aparelhos: number;
+}
