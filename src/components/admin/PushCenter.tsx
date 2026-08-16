@@ -25,9 +25,13 @@ import type { Advertiser, Category, Indicator, PushAudience } from "@/types";
  *  2. Dá para mandar só para você antes de mandar para a base.
  *  3. Disparo pede confirmação com o número na frente.
  *
- * O destino é sempre um caminho interno — o banco recusa URL externa. Push com
- * link para fora é vetor de phishing, e aqui quem clica confia na marca.
+ * O destino pode ser uma tela do app ou um endereço https. `http://` é
+ * recusado pelo banco: mandar gente para página sem criptografia a partir de
+ * uma notificação da plataforma não tem caso de uso que compense.
  */
+
+/** Valor sentinela do seletor — não é URL, só marca "vou digitar o meu". */
+const LINK_PERSONALIZADO = "__personalizado__";
 
 const DESTINOS: Array<{ url: string; label: string }> = [
   { url: "/?fonte=app", label: "Abrir o app" },
@@ -35,6 +39,7 @@ const DESTINOS: Array<{ url: string; label: string }> = [
   { url: "/?aba=carteira&fonte=app", label: "Carteira / PIX" },
   { url: "/?aba=desempenho&fonte=app", label: "Meu desempenho" },
   { url: "/?aba=financiamentos&fonte=app", label: "Financiamentos" },
+  { url: LINK_PERSONALIZADO, label: "Link personalizado…" },
 ];
 
 const PUBLICOS: Array<{ id: PushAudience; label: string; hint: string }> = [
@@ -61,7 +66,8 @@ export default function PushCenter({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [targetUrl, setTargetUrl] = useState(DESTINOS[0].url);
+  const [destino, setDestino] = useState(DESTINOS[0].url);
+  const [linkProprio, setLinkProprio] = useState("");
   const [actionLabel, setActionLabel] = useState("");
 
   const [audience, setAudience] = useState<PushAudience>("indicadores");
@@ -73,7 +79,18 @@ export default function PushCenter({
   const enviar = useSendPushCampaign();
   const campanhas = usePushCampaigns(true);
 
-  const preenchido = title.trim().length > 0 && body.trim().length > 0;
+  const usaLinkProprio = destino === LINK_PERSONALIZADO;
+  const targetUrl = usaLinkProprio ? linkProprio.trim() : destino;
+
+  /**
+   * Mesma regra do banco, aplicada aqui só para avisar antes de errar: caminho
+   * interno ou https. A validação que vale é a do servidor.
+   */
+  const linkValido = targetUrl.startsWith("/") || /^https:\/\/\S+$/i.test(targetUrl);
+  const linkExterno = /^https:\/\//i.test(targetUrl);
+  const linkInseguro = /^http:\/\//i.test(linkProprio.trim());
+
+  const preenchido = title.trim().length > 0 && body.trim().length > 0 && linkValido;
   const publicoValido = audience !== "especificos" || userIds.length > 0;
 
   const reach = usePushReach(audience, userIds, categories, publicoValido);
@@ -184,8 +201,8 @@ export default function PushCenter({
                     <Link2 className="h-3.5 w-3.5" /> Ao tocar, abrir
                   </label>
                   <select
-                    value={targetUrl}
-                    onChange={(e) => setTargetUrl(e.target.value)}
+                    value={destino}
+                    onChange={(e) => setDestino(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sea-500"
                   >
                     {DESTINOS.map((d) => (
@@ -209,6 +226,50 @@ export default function PushCenter({
                   />
                 </div>
               </div>
+
+              {usaLinkProprio && (
+                <div>
+                  <label className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase text-slate-700">
+                    <Link2 className="h-3.5 w-3.5" /> Endereço da página
+                  </label>
+                  <input
+                    value={linkProprio}
+                    onChange={(e) => setLinkProprio(e.target.value)}
+                    placeholder="https://indiqueleads.vercel.app/?p=id-do-anuncio"
+                    className={`w-full rounded-xl border bg-slate-50 px-4 py-2.5 font-mono text-xs focus:outline-none focus:ring-2 ${
+                      linkProprio.trim() && !linkValido
+                        ? "border-red-300 focus:ring-red-400"
+                        : "border-slate-200 focus:ring-sea-500"
+                    }`}
+                  />
+
+                  {linkInseguro ? (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-red-700">
+                      Endereços <code className="font-mono">http://</code> não são aceitos. Use{" "}
+                      <code className="font-mono">https://</code> — mandar alguém para uma página
+                      sem criptografia a partir de um aviso da plataforma expõe quem confiou nela.
+                    </p>
+                  ) : linkProprio.trim() && !linkValido ? (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-red-700">
+                      Use um caminho interno começando com <code className="font-mono">/</code> ou
+                      um endereço <code className="font-mono">https://</code> completo.
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
+                      Uma tela do app (ex.: <code className="font-mono">/?p=id-do-anuncio</code>) ou
+                      um endereço https completo.
+                    </p>
+                  )}
+
+                  {linkExterno && (
+                    <p className="mt-2 flex items-start gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-900">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      Este link sai do aplicativo e abre no navegador. Quem toca está confiando na
+                      IndiqueLeads — confira o endereço antes de disparar.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <label className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase text-slate-700">
