@@ -51,13 +51,36 @@ function keyToBase64(key: ArrayBuffer | null): string {
  */
 export async function enablePush(userId: string): Promise<boolean> {
   if (!pushSupported()) return false;
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return false;
+
+  return subscribeAndSave(userId);
+}
+
+/**
+ * Garante que um aparelho com permissão já concedida tenha inscrição gravada.
+ *
+ * Existe porque conceder a permissão e gravar no banco são dois passos, e o
+ * segundo pode falhar (rede caiu, sessão expirou). Quando isso acontecia, a
+ * permissão ficava "granted", o convite não reaparecia — ele só é oferecido
+ * quando a permissão está "default" — e o aparelho ficava mudo para sempre,
+ * sem nada na tela indicando o problema.
+ *
+ * Roda a cada abertura do app: é idempotente e barata, e também conserta
+ * inscrição que o navegador tenha rotacionado por conta própria.
+ */
+export async function ensurePushSynced(userId: string): Promise<boolean> {
+  if (!pushSupported()) return false;
+  if (Notification.permission !== "granted") return false;
+  return subscribeAndSave(userId);
+}
+
+async function subscribeAndSave(userId: string): Promise<boolean> {
   if (!VAPID_PUBLIC_KEY) {
     console.error("[push] VITE_VAPID_PUBLIC_KEY não configurada");
     return false;
   }
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") return false;
 
   const registration = await navigator.serviceWorker.ready;
 

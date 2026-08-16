@@ -1,9 +1,26 @@
 import { useEffect, useState } from "react";
 import { BellRing, X } from "lucide-react";
 
-import { enablePush, isPushEnabled, pushPermission, pushSupported } from "@/lib/push";
+import { enablePush, ensurePushSynced, pushPermission, pushSupported } from "@/lib/push";
 
 const DISMISSED_KEY = "il_push_dispensado";
+const DISMISS_DIAS = 7;
+
+/**
+ * "Agora não" adia, não cancela para sempre.
+ *
+ * Guardamos a data em vez de um sinalizador: quem recusou uma vez muda de
+ * ideia quando a primeira comissão entra, e sem isso não haveria como voltar
+ * a oferecer — o convite só aparece com a permissão em "default", estado que
+ * não se repete.
+ */
+function dispensadoRecentemente(): boolean {
+  const marca = localStorage.getItem(DISMISSED_KEY);
+  if (!marca) return false;
+  const quando = Date.parse(marca);
+  if (Number.isNaN(quando)) return false; // formato antigo ("1"): volta a oferecer
+  return Date.now() - quando < DISMISS_DIAS * 24 * 60 * 60 * 1000;
+}
 
 /**
  * Convite para ligar os avisos no aparelho.
@@ -23,6 +40,7 @@ export default function PushOptIn({
   onAddNotification: (msg: string, type: "success" | "info") => void;
 }) {
   const [show, setShow] = useState(false);
+  const [blocked, setBlocked] = useState(false);
   const [working, setWorking] = useState(false);
 
   useEffect(() => {
@@ -30,23 +48,66 @@ export default function PushOptIn({
 
     void (async () => {
       if (!pushSupported()) return;
-      if (pushPermission() !== "default") return;
-      if (localStorage.getItem(DISMISSED_KEY) === "1") return;
-      if (await isPushEnabled()) return;
+      const permissao = pushPermission();
+
+      // Permissão já concedida: nada a perguntar, mas é aqui que consertamos o
+      // aparelho que concedeu e não chegou a ser gravado no banco.
+      if (permissao === "granted") {
+        const ok = await ensurePushSynced(userId);
+        if (!ok) console.error("[push] permissão concedida mas a inscrição não foi salva");
+        return;
+      }
+
+      if (dispensadoRecentemente()) return;
+
+      // Permissão negada: o navegador não deixa perguntar de novo. A única
+      // saída é as configurações do aparelho, então explicamos o caminho.
+      if (permissao === "denied") {
+        if (alive) setBlocked(true);
+        return;
+      }
+
       if (alive) setShow(true);
     })();
 
     return () => {
       alive = false;
     };
-  }, []);
-
-  if (!show) return null;
+  }, [userId]);
 
   const dismiss = () => {
-    localStorage.setItem(DISMISSED_KEY, "1");
+    localStorage.setItem(DISMISSED_KEY, new Date().toISOString());
     setShow(false);
+    setBlocked(false);
   };
+
+  if (blocked) {
+    return (
+      <div className="mx-auto mb-4 max-w-7xl px-4">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-500 text-white">
+            <BellRing className="h-4.5 w-4.5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-slate-900">Avisos bloqueados neste aparelho</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-slate-600">
+              Você não vai saber quando sua comissão for liberada. Para religar, abra as
+              configurações do aparelho, procure o app IndiqueLeads e permita notificações.
+            </p>
+          </div>
+          <button
+            onClick={dismiss}
+            aria-label="Dispensar"
+            className="cursor-pointer rounded-lg p-1 text-slate-400 transition-colors hover:bg-amber-100 hover:text-slate-600"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!show) return null;
 
   const handleEnable = async () => {
     setWorking(true);
