@@ -24,6 +24,8 @@ import {
   useAllSimulations,
   useNotifications,
   useMarkNotificationsRead,
+  useMyApplication,
+  useMyCertifications,
   useAdvertiserLeads,
   useIndicatorLeads,
   useAllLeads,
@@ -52,6 +54,7 @@ import VisitorView from "./components/VisitorView";
 import LandingPage from "./components/LandingPage";
 import AuthBar from "./components/AuthBar";
 import CommissionCelebration from "./components/CommissionCelebration";
+import Academy from "./components/Academy";
 import { useAuth, signOut as supabaseSignOut } from "./hooks/useAuth";
 
 type LoggedUser = {
@@ -186,6 +189,16 @@ export default function App() {
   // Comemoração de comissão paga — só o indicador recebe esse tipo de aviso.
   const notificationsQuery = useNotifications(!!indicatorId);
   const markNotificationsReadMutation = useMarkNotificationsRead();
+
+  // --- Credenciamento: só indicador certificado acessa a vitrine ---
+  const myApplicationQuery = useMyApplication(!!indicatorId);
+  const myCertificationsQuery = useMyCertifications(!!indicatorId);
+  const isApproved = myApplicationQuery.data?.status === "aprovado";
+  const certifiedCategories = (myCertificationsQuery.data ?? [])
+    .map((c) => c.category)
+    .filter((c): c is Category => !!c);
+  const hasGeneralCert = (myCertificationsQuery.data ?? []).some((c) => c.category === null);
+  const indicatorReady = isApproved && hasGeneralCert && certifiedCategories.length > 0;
 
   const products = useMemo<Product[]>(() => {
     if (isAdmin) return allProductsQuery.data ?? [];
@@ -666,27 +679,43 @@ export default function App() {
         ) : (
           /* Render respective authenticated dashboards */
           <>
-            {currentRole === "indicador" && loggedUser && indicatorProfileQuery.data && (
-              <AffiliateDashboard
-                indicator={indicatorProfileQuery.data}
-                onUpdateIndicator={handleUpdateIndicator}
-                products={products}
-                leads={leads}
-                simulations={simulations}
-                commissions={indicatorCommissionsQuery.data ?? []}
-                onAddSimulation={handleAddSimulation}
-                onUpdateLeadStatus={handleUpdateLeadStatus}
-                onRequestCheckIn={handleRequestCheckIn}
+            {/* Credenciamento: sem cadastro aprovado + Fundamentos + ao menos um
+                nicho, o indicador vê a Academy no lugar da vitrine. A trava que
+                importa (atribuição da comissão) é server-side, na create-lead. */}
+            {currentRole === "indicador" && loggedUser && !indicatorReady && (
+              <Academy
+                userId={loggedUser.id}
+                userName={loggedUser.name}
+                userEmail={loggedUser.email}
+                userPhone={loggedUser.phone}
                 onAddNotification={addNotification}
-                advertisers={advertisers}
-                onViewProduct={(prodId) => {
-                  setActiveProductId(prodId);
-                  setCurrentRole("visitante");
-                }}
-                chatMessages={chatMessages}
-                onSendChatMessage={handleSendChatMessage}
               />
             )}
+
+            {currentRole === "indicador" &&
+              loggedUser &&
+              indicatorReady &&
+              indicatorProfileQuery.data && (
+                <AffiliateDashboard
+                  indicator={indicatorProfileQuery.data}
+                  onUpdateIndicator={handleUpdateIndicator}
+                  products={products.filter((p) => certifiedCategories.includes(p.category))}
+                  leads={leads}
+                  simulations={simulations}
+                  commissions={indicatorCommissionsQuery.data ?? []}
+                  onAddSimulation={handleAddSimulation}
+                  onUpdateLeadStatus={handleUpdateLeadStatus}
+                  onRequestCheckIn={handleRequestCheckIn}
+                  onAddNotification={addNotification}
+                  advertisers={advertisers}
+                  onViewProduct={(prodId) => {
+                    setActiveProductId(prodId);
+                    setCurrentRole("visitante");
+                  }}
+                  chatMessages={chatMessages}
+                  onSendChatMessage={handleSendChatMessage}
+                />
+              )}
 
             {currentRole === "anunciante" && loggedUser && advertiserProfileQuery.data && (
               <AdvertiserDashboard

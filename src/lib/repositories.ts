@@ -791,3 +791,227 @@ export const payoutsRepo = {
     return data;
   },
 };
+
+// ---------------- Academy / credenciamento ----------------
+
+import type {
+  IndicatorApplication,
+  Course,
+  CourseLesson,
+  CourseQuestion,
+  Certification,
+  QuizResult,
+} from "@/types";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const applicationFromDb = (r: any): IndicatorApplication => ({
+  id: r.id,
+  userId: r.user_id,
+  fullName: r.full_name,
+  cpf: r.cpf,
+  birthDate: r.birth_date ?? null,
+  phone: r.phone,
+  email: r.email,
+  addressCity: r.address_city ?? null,
+  addressState: r.address_state ?? null,
+  occupation: r.occupation ?? null,
+  experience: r.experience ?? null,
+  motivation: r.motivation ?? null,
+  socialLinks: r.social_links ?? null,
+  referralSource: r.referral_source ?? null,
+  interestCategories: (r.interest_categories ?? []) as IndicatorApplication["interestCategories"],
+  acceptedTerms: !!r.accepted_terms,
+  status: r.status,
+  reviewNotes: r.review_notes ?? null,
+  reviewedAt: r.reviewed_at ?? null,
+  createdAt: r.created_at,
+});
+
+const courseFromDb = (r: any): Course => ({
+  id: r.id,
+  slug: r.slug,
+  category: r.category ?? null,
+  title: r.title,
+  subtitle: r.subtitle ?? null,
+  description: r.description ?? null,
+  emoji: r.emoji ?? null,
+  position: r.position ?? 0,
+  passScore: r.pass_score ?? 70,
+});
+
+const lessonFromDb = (r: any): CourseLesson => ({
+  id: r.id,
+  courseId: r.course_id,
+  position: r.position,
+  title: r.title,
+  summary: r.summary ?? null,
+  content: r.content,
+  durationMin: r.duration_min ?? 5,
+});
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export type ApplicationInput = Omit<
+  IndicatorApplication,
+  "id" | "userId" | "status" | "reviewNotes" | "reviewedAt" | "createdAt"
+>;
+
+export const academyRepo = {
+  /** Candidatura do usuário logado (null se ainda não enviou). */
+  async myApplication(): Promise<IndicatorApplication | null> {
+    const { data, error } = await supabase.from("indicator_applications").select("*").maybeSingle();
+    if (error) {
+      console.error("[repositories] academyRepo.myApplication", error);
+      return null;
+    }
+    return data ? applicationFromDb(data) : null;
+  },
+
+  async submitApplication(userId: string, input: ApplicationInput): Promise<void> {
+    const row = {
+      user_id: userId,
+      full_name: input.fullName,
+      cpf: input.cpf,
+      birth_date: input.birthDate || null,
+      phone: input.phone,
+      email: input.email,
+      address_city: input.addressCity,
+      address_state: input.addressState,
+      occupation: input.occupation,
+      experience: input.experience,
+      motivation: input.motivation,
+      social_links: input.socialLinks,
+      referral_source: input.referralSource,
+      interest_categories: input.interestCategories as never,
+      accepted_terms: input.acceptedTerms,
+      status: "em_analise" as const,
+    };
+    const { error } = await supabase
+      .from("indicator_applications")
+      .upsert(row, { onConflict: "user_id" });
+    if (error) {
+      console.error("[repositories] academyRepo.submitApplication", error);
+      throw error;
+    }
+  },
+
+  /** Fila de avaliação (admin). */
+  async listApplications(): Promise<IndicatorApplication[]> {
+    const { data, error } = await supabase
+      .from("indicator_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[repositories] academyRepo.listApplications", error);
+      return [];
+    }
+    return (data ?? []).map(applicationFromDb);
+  },
+
+  async reviewApplication(id: string, approve: boolean, notes?: string): Promise<void> {
+    const { error } = await supabase.rpc("admin_review_application", {
+      _application_id: id,
+      _approve: approve,
+      _notes: notes ?? null,
+    });
+    if (error) {
+      console.error("[repositories] academyRepo.reviewApplication", error);
+      throw error;
+    }
+  },
+
+  async listCourses(): Promise<Course[]> {
+    const { data, error } = await supabase.from("courses").select("*").order("position");
+    if (error) {
+      console.error("[repositories] academyRepo.listCourses", error);
+      return [];
+    }
+    return (data ?? []).map(courseFromDb);
+  },
+
+  async listLessons(courseId: string): Promise<CourseLesson[]> {
+    const { data, error } = await supabase
+      .from("course_lessons")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("position");
+    if (error) {
+      console.error("[repositories] academyRepo.listLessons", error);
+      return [];
+    }
+    return (data ?? []).map(lessonFromDb);
+  },
+
+  /** Questões sem gabarito — o correct_index não é exposto pela API. */
+  async listQuestions(courseId: string): Promise<CourseQuestion[]> {
+    const { data, error } = await supabase
+      .from("course_questions_public")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("position");
+    if (error) {
+      console.error("[repositories] academyRepo.listQuestions", error);
+      return [];
+    }
+    return (data ?? []).map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      courseId: r.course_id as string,
+      position: r.position as number,
+      question: r.question as string,
+      options: (r.options ?? []) as string[],
+    }));
+  },
+
+  async myProgress(): Promise<string[]> {
+    const { data, error } = await supabase.from("lesson_progress").select("lesson_id");
+    if (error) {
+      console.error("[repositories] academyRepo.myProgress", error);
+      return [];
+    }
+    return (data ?? []).map((r: { lesson_id: string }) => r.lesson_id);
+  },
+
+  async completeLesson(lessonId: string): Promise<void> {
+    const { error } = await supabase.rpc("complete_lesson", { _lesson_id: lessonId });
+    if (error) {
+      console.error("[repositories] academyRepo.completeLesson", error);
+      throw error;
+    }
+  },
+
+  async myCertifications(): Promise<Certification[]> {
+    const { data, error } = await supabase.from("indicator_certifications").select("*");
+    if (error) {
+      console.error("[repositories] academyRepo.myCertifications", error);
+      return [];
+    }
+    return (data ?? []).map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      courseId: r.course_id as string,
+      category: (r.category ?? null) as Certification["category"],
+      score: Number(r.score ?? 0),
+      grantedAt: r.granted_at as string,
+    }));
+  },
+
+  /** Correção acontece no servidor; aqui só enviamos as escolhas. */
+  async submitQuiz(
+    courseId: string,
+    answers: Array<{ question_id: string; choice: number }>,
+  ): Promise<QuizResult> {
+    const { data, error } = await supabase.rpc("submit_quiz", {
+      _course_id: courseId,
+      _answers: answers as never,
+    });
+    if (error) {
+      console.error("[repositories] academyRepo.submitQuiz", error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      score: Number(row?.score ?? 0),
+      passed: !!row?.passed,
+      correct: Number(row?.correct ?? 0),
+      total: Number(row?.total ?? 0),
+    };
+  },
+};

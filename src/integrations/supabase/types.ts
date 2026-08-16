@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
@@ -496,6 +497,42 @@ export type Database = {
           },
         ];
       };
+      indicator_applications: {
+        Row: { [k: string]: any };
+        Insert: { [k: string]: any };
+        Update: { [k: string]: any };
+        Relationships: [];
+      };
+      courses: {
+        Row: { [k: string]: any };
+        Insert: { [k: string]: any };
+        Update: { [k: string]: any };
+        Relationships: [];
+      };
+      course_lessons: {
+        Row: { [k: string]: any };
+        Insert: { [k: string]: any };
+        Update: { [k: string]: any };
+        Relationships: [];
+      };
+      course_questions_public: {
+        Row: { [k: string]: any };
+        Insert: { [k: string]: any };
+        Update: { [k: string]: any };
+        Relationships: [];
+      };
+      lesson_progress: {
+        Row: { [k: string]: any };
+        Insert: { [k: string]: any };
+        Update: { [k: string]: any };
+        Relationships: [];
+      };
+      indicator_certifications: {
+        Row: { [k: string]: any };
+        Insert: { [k: string]: any };
+        Update: { [k: string]: any };
+        Relationships: [];
+      };
       notifications: {
         Row: {
           amount: number | null;
@@ -834,6 +871,26 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_review_application: {
+        Args: { _application_id: string; _approve: boolean; _notes?: string | null };
+        Returns: undefined;
+      };
+      complete_lesson: {
+        Args: { _lesson_id: string };
+        Returns: undefined;
+      };
+      submit_quiz: {
+        Args: { _course_id: string; _answers: Json };
+        Returns: { score: number; passed: boolean; correct: number; total: number }[];
+      };
+      my_certified_categories: {
+        Args: Record<string, never>;
+        Returns: Database["public"]["Enums"]["product_category"][];
+      };
+      indicator_can_earn_on_product: {
+        Args: { _indicator_id: string; _product_id: string };
+        Returns: boolean;
+      };
       advertiser_pay_commission: {
         Args: {
           _commission_id: string;

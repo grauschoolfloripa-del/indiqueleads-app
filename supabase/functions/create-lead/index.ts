@@ -87,6 +87,12 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Atribuição só vale se o indicador existir E for certificado na categoria
+  // deste produto. Sem atribuição não há comissão — é assim que o
+  // credenciamento é realmente aplicado. Bloquear a leitura do anúncio não
+  // serviria: os anúncios são públicos por natureza (o visitante abre a página
+  // sem login), então a trava tem que estar em quem PODE GANHAR, não em quem
+  // pode ver.
   let validIndicatorId: string | null = null;
   if (isUuid(indicatorId)) {
     const { data: indicator } = await supabase
@@ -94,7 +100,26 @@ Deno.serve(async (req) => {
       .select("id")
       .eq("id", indicatorId)
       .maybeSingle();
-    if (indicator) validIndicatorId = indicator.id;
+
+    if (indicator) {
+      const { data: canEarn, error: certErr } = await supabase.rpc(
+        "indicator_can_earn_on_product",
+        { _indicator_id: indicator.id, _product_id: productId },
+      );
+      if (certErr) {
+        console.error("[create-lead] certification check failed", certErr);
+      }
+      if (canEarn === true) {
+        validIndicatorId = indicator.id;
+      } else {
+        // O lead continua sendo criado (o anunciante não pode perder o
+        // cliente por um problema de credenciamento), mas sem indicador
+        // atribuído — logo, sem comissão.
+        console.warn(
+          `[create-lead] indicador ${indicator.id} sem certificação para o produto ${productId}; lead criado sem atribuição`,
+        );
+      }
+    }
   }
 
   const { data: inserted, error: insertErr } = await supabase

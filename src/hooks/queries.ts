@@ -456,3 +456,97 @@ export function useUpdatePlatformConfig() {
     },
   });
 }
+
+// ---------------- Academy / credenciamento ----------------
+
+import { academyRepo, type ApplicationInput } from "@/lib/repositories";
+
+export function useMyApplication(enabled: boolean) {
+  return useQuery({
+    queryKey: ["application", "mine"] as const,
+    queryFn: academyRepo.myApplication,
+    enabled,
+  });
+}
+
+export function useSubmitApplication() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, input }: { userId: string; input: ApplicationInput }) =>
+      academyRepo.submitApplication(userId, input),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["application"] }),
+  });
+}
+
+/** Fila de candidaturas — admin. */
+export function useApplications(enabled: boolean) {
+  return useQuery({
+    queryKey: ["applications", "all"] as const,
+    queryFn: academyRepo.listApplications,
+    enabled,
+  });
+}
+
+export function useReviewApplication() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, approve, notes }: { id: string; approve: boolean; notes?: string }) =>
+      academyRepo.reviewApplication(id, approve, notes),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["applications"] }),
+  });
+}
+
+export function useCourses(enabled: boolean) {
+  return useQuery({ queryKey: ["courses"] as const, queryFn: academyRepo.listCourses, enabled });
+}
+
+export function useCourseContent(courseId: string | undefined) {
+  const lessons = useQuery({
+    queryKey: ["course-lessons", courseId] as const,
+    queryFn: () => academyRepo.listLessons(courseId as string),
+    enabled: !!courseId,
+  });
+  const questions = useQuery({
+    queryKey: ["course-questions", courseId] as const,
+    queryFn: () => academyRepo.listQuestions(courseId as string),
+    enabled: !!courseId,
+  });
+  return { lessons, questions };
+}
+
+export function useMyProgress(enabled: boolean) {
+  return useQuery({ queryKey: ["progress"] as const, queryFn: academyRepo.myProgress, enabled });
+}
+
+export function useCompleteLesson() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (lessonId: string) => academyRepo.completeLesson(lessonId),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["progress"] }),
+  });
+}
+
+export function useMyCertifications(enabled: boolean) {
+  return useQuery({
+    queryKey: ["certifications"] as const,
+    queryFn: academyRepo.myCertifications,
+    enabled,
+  });
+}
+
+export function useSubmitQuiz() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      courseId,
+      answers,
+    }: {
+      courseId: string;
+      answers: Array<{ question_id: string; choice: number }>;
+    }) => academyRepo.submitQuiz(courseId, answers),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["certifications"] });
+      void qc.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}

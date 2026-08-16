@@ -231,3 +231,78 @@ export interface ChatMessage {
   isBlockedBySecurity?: boolean;
   createdAt: string;
 }
+
+// ---------------- Academy / credenciamento ----------------
+
+export type ApplicationStatus = "rascunho" | "em_analise" | "aprovado" | "rejeitado";
+
+/** Cadastro completo do candidato a indicador, avaliado por um admin. */
+export interface IndicatorApplication {
+  id: string;
+  userId: string;
+  fullName: string;
+  cpf: string;
+  birthDate: string | null;
+  phone: string;
+  email: string;
+  addressCity: string | null;
+  addressState: string | null;
+  occupation: string | null;
+  experience: string | null;
+  motivation: string | null;
+  socialLinks: string | null;
+  referralSource: string | null;
+  interestCategories: Category[];
+  acceptedTerms: boolean;
+  status: ApplicationStatus;
+  reviewNotes: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+}
+
+export interface Course {
+  id: string;
+  slug: string;
+  /** null = módulo geral (Fundamentos), pré-requisito dos nichos. */
+  category: Category | null;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  emoji: string | null;
+  position: number;
+  passScore: number;
+}
+
+export interface CourseLesson {
+  id: string;
+  courseId: string;
+  position: number;
+  title: string;
+  summary: string | null;
+  content: string;
+  durationMin: number;
+}
+
+/** Questão como o cliente a recebe — sem o gabarito. */
+export interface CourseQuestion {
+  id: string;
+  courseId: string;
+  position: number;
+  question: string;
+  options: string[];
+}
+
+export interface Certification {
+  id: string;
+  courseId: string;
+  category: Category | null;
+  score: number;
+  grantedAt: string;
+}
+
+export interface QuizResult {
+  score: number;
+  passed: boolean;
+  correct: number;
+  total: number;
+}

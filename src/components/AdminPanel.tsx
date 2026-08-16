@@ -30,6 +30,7 @@ import {
   FinancingSimulation,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
+import { useApplications, useReviewApplication } from "@/hooks/queries";
 
 interface AdminPanelProps {
   products: Product[];
@@ -63,7 +64,14 @@ export default function AdminPanel({
 }: AdminPanelProps) {
   // Navigation
   const [activeTab, setActiveTab] = useState<
-    "geral" | "financeiro" | "categorias" | "verticais" | "fraudes" | "taxas" | "admins"
+    | "geral"
+    | "candidaturas"
+    | "financeiro"
+    | "categorias"
+    | "verticais"
+    | "fraudes"
+    | "taxas"
+    | "admins"
   >("geral");
 
   // Criação de novos administradores
@@ -79,6 +87,13 @@ export default function AdminPanel({
   const [newCatName, setNewCatName] = useState("");
   const [newCatIcon, setNewCatIcon] = useState("📦");
   const [newCatFields, setNewCatFields] = useState("");
+
+  // Candidaturas a indicador
+  const applicationsQuery = useApplications(true);
+  const reviewApplication = useReviewApplication();
+  const applications = applicationsQuery.data ?? [];
+  const pendingApplications = applications.filter((a) => a.status === "em_analise").length;
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
 
   // Local config edits
   const [configEdit, setConfigEdit] = useState({ ...platformConfig });
@@ -212,6 +227,16 @@ export default function AdminPanel({
           }`}
         >
           Campos Dinâmicos (Verticais)
+        </button>
+        <button
+          onClick={() => setActiveTab("candidaturas")}
+          className={`pb-3 px-4 border-b-2 transition-all ${
+            activeTab === "candidaturas"
+              ? "border-brand-500 text-brand-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          Candidaturas{pendingApplications > 0 ? ` (${pendingApplications})` : ""}
         </button>
         <button
           onClick={() => setActiveTab("financeiro")}
@@ -657,6 +682,145 @@ export default function AdminPanel({
       )}
 
       {/* VIEW: SUSPICIOUS FRAUDS */}
+      {activeTab === "candidaturas" && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+          <div>
+            <h3 className="font-display font-bold text-slate-800 text-base">
+              Credenciamento de indicadores
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              São bens de alto valor: cada candidatura é avaliada por uma pessoa. Aprovar libera o
+              acesso à Academy — a vitrine só abre depois dos módulos concluídos.
+            </p>
+          </div>
+
+          {applications.length === 0 && (
+            <p className="text-xs text-slate-400 text-center py-10">
+              Nenhuma candidatura recebida ainda.
+            </p>
+          )}
+
+          <div className="space-y-3">
+            {applications.map((a) => (
+              <div
+                key={a.id}
+                className={`rounded-2xl border p-4 ${
+                  a.status === "em_analise"
+                    ? "border-amber-200 bg-amber-50/50"
+                    : a.status === "aprovado"
+                      ? "border-emerald-100 bg-emerald-50/40"
+                      : "border-slate-100 bg-slate-50"
+                }`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-sm text-slate-900">{a.fullName}</h4>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                          a.status === "aprovado"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : a.status === "rejeitado"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {a.status === "em_analise" ? "em análise" : a.status}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                      CPF {a.cpf} • {a.phone} • {a.email}
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      {a.addressCity}/{a.addressState}
+                      {a.occupation ? ` • ${a.occupation}` : ""}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {a.interestCategories.map((cat) => (
+                        <span
+                          key={cat}
+                          className="bg-white border border-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                        >
+                          {VERTICALS[cat]?.emoji} {VERTICALS[cat]?.shortLabel ?? cat}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                    {new Date(a.createdAt).toLocaleDateString("pt-BR")}
+                  </span>
+                </div>
+
+                {(a.experience || a.motivation) && (
+                  <div className="mt-3 space-y-1.5 border-t border-slate-200/60 pt-3">
+                    {a.experience && (
+                      <p className="text-[11px] text-slate-600">
+                        <strong className="text-slate-800">Experiência:</strong> {a.experience}
+                      </p>
+                    )}
+                    {a.motivation && (
+                      <p className="text-[11px] text-slate-600">
+                        <strong className="text-slate-800">Motivação:</strong> {a.motivation}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {a.status === "em_analise" && (
+                  <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                    <input
+                      value={reviewNotes[a.id] ?? ""}
+                      onChange={(e) => setReviewNotes((n) => ({ ...n, [a.id]: e.target.value }))}
+                      placeholder="Observação (obrigatória ao rejeitar)"
+                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                    <button
+                      onClick={() =>
+                        reviewApplication.mutate(
+                          { id: a.id, approve: true, notes: reviewNotes[a.id] },
+                          {
+                            onSuccess: () =>
+                              onAddNotification(`${a.fullName} aprovado(a)!`, "success"),
+                          },
+                        )
+                      }
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-colors"
+                    >
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() => {
+                        const notes = (reviewNotes[a.id] ?? "").trim();
+                        if (!notes) {
+                          onAddNotification(
+                            "Escreva o motivo — o candidato recebe essa mensagem.",
+                            "info",
+                          );
+                          return;
+                        }
+                        reviewApplication.mutate(
+                          { id: a.id, approve: false, notes },
+                          {
+                            onSuccess: () => onAddNotification("Candidatura recusada.", "info"),
+                          },
+                        );
+                      }}
+                      className="border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-colors"
+                    >
+                      Recusar
+                    </button>
+                  </div>
+                )}
+
+                {a.reviewNotes && a.status !== "em_analise" && (
+                  <p className="mt-2 text-[11px] text-slate-500 italic">"{a.reviewNotes}"</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {activeTab === "financeiro" && (
         <div className="space-y-6">
           {/* Totais do ledger */}
