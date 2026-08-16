@@ -343,7 +343,8 @@ export function approvedContractToDb(
 export function commissionFromDb(row: any): Commission {
   return {
     id: row.id,
-    leadId: row.lead_id,
+    leadId: row.lead_id ?? null,
+    simulationId: row.simulation_id ?? null,
     indicatorId: row.indicator_id,
     kind: row.kind,
     amount: Number(row.amount ?? 0),

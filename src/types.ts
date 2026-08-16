@@ -102,7 +102,13 @@ export interface Lead {
  */
 export interface Commission {
   id: string;
-  leadId: string;
+  /**
+   * Origem da comissão — exatamente uma das duas é preenchida:
+   * o lead que gerou o evento, ou a simulação de financiamento cuja venda
+   * foi concluída pelo anunciante.
+   */
+  leadId: string | null;
+  simulationId: string | null;
   indicatorId: string;
   kind: "lead" | "venda";
   amount: number;
@@ -153,11 +159,7 @@ export interface PlatformConfig {
 }
 
 export type FinancingStatus =
-  | "pendente"
-  | "analise_bancos"
-  | "aprovado"
-  | "rejeitado"
-  | "concluido";
+  "pendente" | "analise_bancos" | "aprovado" | "rejeitado" | "concluido";
 
 export interface BankSimulationResponse {
   bankName: string;
