@@ -781,6 +781,11 @@ export default function AdminPanel({
                           {
                             onSuccess: () =>
                               onAddNotification(`${a.fullName} aprovado(a)!`, "success"),
+                            onError: (e) =>
+                              onAddNotification(
+                                e instanceof Error ? e.message : "Não foi possível aprovar.",
+                                "info",
+                              ),
                           },
                         )
                       }
@@ -802,6 +807,11 @@ export default function AdminPanel({
                           { id: a.id, approve: false, notes },
                           {
                             onSuccess: () => onAddNotification("Candidatura recusada.", "info"),
+                            onError: (e) =>
+                              onAddNotification(
+                                e instanceof Error ? e.message : "Não foi possível recusar.",
+                                "info",
+                              ),
                           },
                         );
                       }}
