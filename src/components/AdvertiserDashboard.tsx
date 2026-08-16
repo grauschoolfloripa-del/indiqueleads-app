@@ -64,6 +64,7 @@ interface AdvertiserDashboardProps {
   onUpdateProductStatus: (productId: string, status: ProductStatus) => void;
   onUpdateProduct: (product: Product) => void;
   onDeleteProduct: (productId: string) => void;
+  onPayCommission: (commissionId: string, reference?: string) => void;
   /** Ledger de comissões dos negócios deste anunciante (leads e simulações). */
   commissions: Commission[];
   leads: Lead[];
@@ -101,6 +102,7 @@ export default function AdvertiserDashboard({
   onUpdateProductStatus,
   onUpdateProduct,
   onDeleteProduct,
+  onPayCommission,
   commissions,
   leads,
   simulations,
@@ -168,6 +170,10 @@ export default function AdvertiserDashboard({
   // Quando preenchido, o mesmo modal do cadastro opera em modo edição.
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+  // Comissão sendo quitada (abre o modal de repasse PIX).
+  const [payingCommission, setPayingCommission] = useState<Commission | null>(null);
+  const [payReference, setPayReference] = useState<string>("");
+  const [pixCopied, setPixCopied] = useState<boolean>(false);
   const [newProductCategory, setNewProductCategory] = useState<Category>("imovel");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [productForm, setProductForm] = useState({
@@ -3212,102 +3218,149 @@ export default function AdvertiserDashboard({
 
       {/* VIEW: FINANCEIRO */}
       {activeTab === "financeiro" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-1 space-y-4">
-            <h3 className="font-display font-bold text-slate-800 text-base">
-              Fatura / Mensalidade
-            </h3>
-            <p className="text-xs text-slate-500">Seu plano ativo na plataforma IndiqueLeads.</p>
-
-            <div className="bg-gradient-to-br from-blue-950 to-slate-950 text-white rounded-2xl p-5 border border-blue-950/30 relative overflow-hidden">
-              <span className="text-[9px] bg-blue-700 text-white px-2.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                PREMIUM
-              </span>
-              <h4 className="font-display font-bold text-lg mt-2">Plano Corporativo</h4>
-              <p className="text-xs text-slate-300 mt-1">
-                Limite de anúncios ilimitado • Acesso a todas as verticais.
-              </p>
-
-              <div className="border-t border-blue-950/20 mt-4 pt-3 flex justify-between items-baseline">
-                <span className="text-xs text-slate-400">Vencimento em 10/07/2026:</span>
-                <span className="text-lg font-mono font-bold text-white">R$ 199,00/mês</span>
-              </div>
-            </div>
+        <div className="space-y-6">
+          {/* Resumo do que é devido */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {(() => {
+              const aPagar = commissions
+                .filter((c) => c.status === "available")
+                .reduce((a, c) => a + c.amount, 0);
+              const aguardando = commissions
+                .filter((c) => c.status === "pending")
+                .reduce((a, c) => a + c.amount, 0);
+              const pago = commissions
+                .filter((c) => c.status === "paid")
+                .reduce((a, c) => a + c.amount, 0);
+              const cards = [
+                {
+                  label: "Liberado para pagamento",
+                  value: aPagar,
+                  hint: "venda/visita já confirmada por você",
+                  tone: "bg-amber-50 border-amber-200 text-amber-800",
+                },
+                {
+                  label: "Aguardando confirmação",
+                  value: aguardando,
+                  hint: "só vira devido quando você confirmar",
+                  tone: "bg-slate-50 border-slate-200 text-slate-700",
+                },
+                {
+                  label: "Já pago",
+                  value: pago,
+                  hint: "histórico auditável de repasses",
+                  tone: "bg-emerald-50 border-emerald-200 text-emerald-800",
+                },
+              ];
+              return cards.map((c) => (
+                <div key={c.label} className={`rounded-2xl border p-4 ${c.tone}`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{c.label}</span>
+                  <span className="block font-mono font-black text-2xl mt-1">
+                    R$ {c.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </span>
+                  <span className="block text-[10px] opacity-70 mt-0.5">{c.hint}</span>
+                </div>
+              ));
+            })()}
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm lg:col-span-2 space-y-4">
-            <h3 className="font-display font-bold text-slate-800 text-base">
-              Comissões Pagas ou Pendentes
-            </h3>
-            <p className="text-xs text-slate-500">
-              Auditoria completa de repasses devidos aos indicadores que trouxeram vendas.
-            </p>
+          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <div>
+              <h3 className="font-display font-bold text-slate-800 text-base">
+                Repasses aos Indicadores
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Cada linha é um evento de comissão do ledger — indicação, venda ou financiamento. O
+                PIX é feito por você, fora da plataforma; aqui você registra a quitação e o
+                indicador é avisado na hora.
+              </p>
+            </div>
 
             <div className="space-y-3">
-              {myLeads
-                .filter((l) => l.status === "venda_concluida")
-                .map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="flex justify-between items-center border border-slate-100 rounded-2xl p-4 bg-slate-50"
-                  >
-                    <div className="flex gap-3">
-                      <div className="bg-emerald-100 text-emerald-800 w-10 h-10 rounded-xl flex items-center justify-center font-bold">
-                        ✓
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-950">Comissão Quitada</h4>
-                        <p className="text-xs text-slate-500">
-                          {lead.productTitle} • Recebido por: {lead.indicatorName}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right font-mono">
-                      <span className="text-sm font-bold text-emerald-600 block">
-                        R$ {lead.commissionValue.toLocaleString("pt-BR")}
-                      </span>
-                      <span className="text-[9px] text-slate-400 uppercase font-bold block">
-                        Ref: {lead.commissionType}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              {myLeads
-                .filter((l) => l.status === "proposta")
-                .map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="flex justify-between items-center border border-slate-150 rounded-2xl p-4 bg-amber-50"
-                  >
-                    <div className="flex gap-3">
-                      <div className="bg-amber-100 text-amber-800 w-10 h-10 rounded-xl flex items-center justify-center font-bold">
-                        🕒
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-950">Aguardando Faturamento</h4>
-                        <p className="text-xs text-slate-500">
-                          {lead.productTitle} • Negociação de proposta por: {lead.indicatorName}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right font-mono">
-                      <span className="text-sm font-bold text-amber-600 block">
-                        R$ {lead.commissionValue.toLocaleString("pt-BR")}
-                      </span>
-                      <button
-                        onClick={() => setClosingSaleLead(lead)}
-                        className="bg-emerald-600 text-white font-semibold text-[10px] px-2 py-0.5 rounded mt-1"
-                      >
-                        Pagar e Fechar
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              {myLeads.length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-8">
-                  Sem movimentação de comissão relevante
+              {commissions.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-10">
+                  Nenhuma comissão gerada ainda. Elas aparecem quando você confirma uma visita
+                  (comissão de indicação), fecha uma venda ou conclui um financiamento.
                 </p>
               )}
+
+              {commissions.map((c) => {
+                const lead = c.leadId ? leads.find((l) => l.id === c.leadId) : undefined;
+                const sim = c.simulationId
+                  ? (simulations ?? []).find((s) => s.id === c.simulationId)
+                  : undefined;
+                const indicator = indicators.find((i) => i.id === c.indicatorId);
+                const produto = lead?.productTitle ?? sim?.productTitle ?? "Anúncio";
+                const cliente = lead?.clientName ?? sim?.clientName ?? "—";
+                const origem = sim
+                  ? "Financiamento"
+                  : c.kind === "lead"
+                    ? "Indicação (visita confirmada)"
+                    : "Venda";
+
+                const tone =
+                  c.status === "paid"
+                    ? { bg: "bg-emerald-50 border-emerald-100", icon: "✓", label: "Pago" }
+                    : c.status === "available"
+                      ? { bg: "bg-amber-50 border-amber-200", icon: "R$", label: "A pagar" }
+                      : { bg: "bg-slate-50 border-slate-100", icon: "🕒", label: "Pendente" };
+
+                return (
+                  <div
+                    key={c.id}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border rounded-2xl p-4 ${tone.bg}`}
+                  >
+                    <div className="flex gap-3 min-w-0">
+                      <div className="bg-white/70 w-10 h-10 rounded-xl flex items-center justify-center font-bold text-slate-700 shrink-0 text-xs">
+                        {tone.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-slate-950 truncate">{produto}</h4>
+                        <p className="text-xs text-slate-600 truncate">
+                          {origem} • Cliente: {cliente}
+                        </p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Indicador: <strong>{indicator?.name ?? "—"}</strong>
+                          {indicator?.pixKey && (
+                            <>
+                              {" "}
+                              • PIX ({indicator.pixType}):{" "}
+                              <span className="font-mono">{indicator.pixKey}</span>
+                            </>
+                          )}
+                        </p>
+                        {c.status === "paid" && c.paidAt && (
+                          <p className="text-[10px] text-emerald-700 mt-0.5">
+                            Pago em {new Date(c.paidAt).toLocaleDateString("pt-BR")}
+                            {c.paymentReference ? ` • ref: ${c.paymentReference}` : ""}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right font-mono shrink-0">
+                      <span className="text-base font-bold text-slate-900 block">
+                        R$ {c.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </span>
+                      <span className="text-[9px] uppercase font-bold text-slate-500 block">
+                        {tone.label}
+                      </span>
+                      {c.status === "available" && (
+                        <button
+                          onClick={() => setPayingCommission(c)}
+                          className="mt-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Pagar via PIX
+                        </button>
+                      )}
+                      {c.status === "pending" && (
+                        <span className="mt-1 block text-[9px] text-slate-400 max-w-[10rem]">
+                          confirme a visita/venda para liberar
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -3395,6 +3448,115 @@ export default function AdvertiserDashboard({
           </div>
         </div>
       )}
+
+      {/* REPASSE: PAGAR COMISSÃO DO INDICADOR */}
+      {payingCommission &&
+        (() => {
+          const c = payingCommission;
+          const indicator = indicators.find((i) => i.id === c.indicatorId);
+          const sim = c.simulationId
+            ? (simulations ?? []).find((s) => s.id === c.simulationId)
+            : undefined;
+          const lead = c.leadId ? leads.find((l) => l.id === c.leadId) : undefined;
+          const origem = sim
+            ? "Financiamento"
+            : c.kind === "lead"
+              ? "Indicação (visita confirmada)"
+              : "Venda";
+
+          return (
+            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 font-sans shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="text-center">
+                  <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                    Repasse ao indicador
+                  </span>
+                  <h3 className="font-display font-black text-slate-900 text-2xl mt-3">
+                    R$ {c.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {origem} • {lead?.productTitle ?? sim?.productTitle ?? "Anúncio"}
+                  </p>
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Pagar para
+                  </span>
+                  <p className="font-bold text-slate-900 text-sm mt-1">
+                    {indicator?.name ?? "Indicador"}
+                  </p>
+                  {indicator?.pixKey ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <code className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-xs font-mono text-slate-800 break-all">
+                        {indicator.pixKey}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(indicator.pixKey);
+                          setPixCopied(true);
+                          setTimeout(() => setPixCopied(false), 2000);
+                        }}
+                        className="shrink-0 px-3 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-white transition-colors cursor-pointer"
+                      >
+                        {pixCopied ? "Copiado!" : "Copiar"}
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-[11px] bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-2">
+                      Este indicador ainda não cadastrou uma chave PIX. Combine o pagamento com ele
+                      antes de registrar a quitação.
+                    </p>
+                  )}
+                  <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">
+                    Chave {indicator?.pixType ?? "—"}. Faça o PIX no seu banco e registre abaixo — a
+                    plataforma não movimenta dinheiro, ela mantém o registro auditável.
+                  </p>
+                </div>
+
+                <label className="block mt-4">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Comprovante / ID da transação (opcional)
+                  </span>
+                  <input
+                    value={payReference}
+                    onChange={(e) => setPayReference(e.target.value)}
+                    placeholder="ex: E1234567890..."
+                    className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    Fica guardado como prova em caso de contestação.
+                  </span>
+                </label>
+
+                <div className="flex gap-2 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPayingCommission(null);
+                      setPayReference("");
+                    }}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onPayCommission(c.id, payReference.trim() || undefined);
+                      setPayingCommission(null);
+                      setPayReference("");
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    Confirmar que paguei
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
       {/* CONFIRMAÇÃO: REMOVER ANÚNCIO
           Remoção é irreversível e o histórico de leads/comissões daquele bem

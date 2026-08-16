@@ -13,6 +13,7 @@ import type {
   Advertiser,
   Indicator,
   Commission,
+  AppNotification,
   FinancingSimulation,
   FinancingStatus,
   BankSimulationResponse,
@@ -349,6 +350,21 @@ export function commissionFromDb(row: any): Commission {
     kind: row.kind,
     amount: Number(row.amount ?? 0),
     status: row.status,
+    createdAt: row.created_at,
+    paidAt: row.paid_at ?? null,
+    paymentReference: row.payment_reference ?? null,
+  };
+}
+
+export function notificationFromDb(row: any): AppNotification {
+  return {
+    id: row.id,
+    kind: row.kind,
+    title: row.title,
+    body: row.body,
+    amount: row.amount === null || row.amount === undefined ? null : Number(row.amount),
+    metadata: (row.metadata ?? {}) as Record<string, unknown>,
+    readAt: row.read_at ?? null,
     createdAt: row.created_at,
   };
 }

@@ -13,6 +13,7 @@ import type {
   Advertiser,
   Indicator,
   Commission,
+  AppNotification,
   ChatMessage,
   FinancingSimulation,
   FinancingStatus,
@@ -38,6 +39,7 @@ import {
   platformConfigFromDb,
   platformConfigToDb,
   commissionFromDb,
+  notificationFromDb,
 } from "@/lib/mappers";
 
 export { isUuid };
@@ -682,6 +684,23 @@ export const commissionsRepo = {
    * dele. A RLS (`commissions_select_advertiser`) é quem garante o recorte:
    * aqui pedimos tudo e o banco devolve só o que é dele.
    */
+  /**
+   * Registra a quitação de uma comissão. O PIX acontece fora da plataforma;
+   * aqui gravamos o fato. Vai por RPC (não UPDATE direto) porque a função
+   * valida que quem chama é mesmo o anunciante do negócio, exige status
+   * 'available' e cria a notificação para o indicador — regras que não podem
+   * ficar do lado do cliente.
+   */
+  async pay(commissionId: string, reference?: string): Promise<void> {
+    const { error } = await supabase.rpc("advertiser_pay_commission", {
+      _commission_id: commissionId,
+      _reference: reference ?? null,
+    });
+    if (error) {
+      console.error("[repositories] commissionsRepo.pay", error);
+      throw error;
+    }
+  },
   async listForAdvertiser(): Promise<Commission[]> {
     const { data, error } = await supabase
       .from("commissions")
@@ -692,6 +711,31 @@ export const commissionsRepo = {
       return [];
     }
     return (data ?? []).map(commissionFromDb);
+  },
+};
+
+// ---------------- Notifications ----------------
+
+export const notificationsRepo = {
+  async listForCurrentUser(): Promise<AppNotification[]> {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) {
+      console.error("[repositories] notificationsRepo.listForCurrentUser", error);
+      return [];
+    }
+    return (data ?? []).map(notificationFromDb);
+  },
+  async markRead(ids: string[]): Promise<void> {
+    if (!ids.length) return;
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .in("id", ids);
+    if (error) console.error("[repositories] notificationsRepo.markRead", error);
   },
 };
 

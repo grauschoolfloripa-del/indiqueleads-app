@@ -18,6 +18,9 @@ import {
   useUpdateProduct,
   useDeleteProduct,
   useAdvertiserCommissions,
+  usePayCommission,
+  useNotifications,
+  useMarkNotificationsRead,
   useAdvertiserLeads,
   useIndicatorLeads,
   useAllLeads,
@@ -45,6 +48,7 @@ import AdminPanel from "./components/AdminPanel";
 import VisitorView from "./components/VisitorView";
 import LandingPage from "./components/LandingPage";
 import AuthBar from "./components/AuthBar";
+import CommissionCelebration from "./components/CommissionCelebration";
 import { useAuth, signOut as supabaseSignOut } from "./hooks/useAuth";
 
 type LoggedUser = {
@@ -175,6 +179,10 @@ export default function App() {
   const updateProductStatusMutation = useUpdateProductStatus();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
+  const payCommissionMutation = usePayCommission();
+  // Comemoração de comissão paga — só o indicador recebe esse tipo de aviso.
+  const notificationsQuery = useNotifications(!!indicatorId);
+  const markNotificationsReadMutation = useMarkNotificationsRead();
 
   const products = useMemo<Product[]>(() => {
     if (isAdmin) return allProductsQuery.data ?? [];
@@ -293,6 +301,20 @@ export default function App() {
       onSuccess: () => addNotification(`Anúncio "${updated.title}" atualizado.`, "success"),
       onError: () => addNotification("Não foi possível atualizar o anúncio.", "info"),
     });
+  };
+
+  const handlePayCommission = (commissionId: string, reference?: string) => {
+    payCommissionMutation.mutate(
+      { commissionId, reference },
+      {
+        onSuccess: () => addNotification("Repasse registrado! O indicador foi avisado.", "success"),
+        onError: (err) =>
+          addNotification(
+            err instanceof Error ? err.message : "Não foi possível registrar o repasse.",
+            "info",
+          ),
+      },
+    );
   };
 
   const handleDeleteProduct = (productId: string) => {
@@ -555,6 +577,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-500 selection:text-white">
+      <CommissionCelebration
+        notifications={notificationsQuery.data ?? []}
+        onDismiss={(ids) => markNotificationsReadMutation.mutate(ids)}
+      />
+
       {/* Persistent Profile / Session Bar for Logged-In Users */}
       {loggedUser && currentRole !== "visitante" && (
         <div className="bg-blue-50/80 backdrop-blur-sm border-b border-blue-100/60 py-2.5 px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-950 font-medium font-sans">
@@ -663,6 +690,7 @@ export default function App() {
                 onUpdateProductStatus={handleUpdateProductStatus}
                 onUpdateProduct={handleUpdateProduct}
                 onDeleteProduct={handleDeleteProduct}
+                onPayCommission={handlePayCommission}
                 commissions={advertiserCommissionsQuery.data ?? []}
                 leads={leads}
                 simulations={simulations}

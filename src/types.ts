@@ -114,6 +114,21 @@ export interface Commission {
   amount: number;
   status: "pending" | "available" | "paid";
   createdAt: string;
+  /** Preenchidos quando o anunciante registra a quitação. */
+  paidAt?: string | null;
+  paymentReference?: string | null;
+}
+
+/** Aviso persistente para um usuário (hoje: comissão paga). */
+export interface AppNotification {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  amount: number | null;
+  metadata: Record<string, unknown>;
+  readAt: string | null;
+  createdAt: string;
 }
 
 export interface Indicator {

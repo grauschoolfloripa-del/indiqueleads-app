@@ -111,6 +111,9 @@ export type Database = {
       };
       commissions: {
         Row: {
+          paid_at: string | null;
+          payment_reference: string | null;
+          simulation_id: string | null;
           amount: number;
           created_at: string;
           id: string;
@@ -121,6 +124,9 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          paid_at?: string | null;
+          payment_reference?: string | null;
+          simulation_id?: string | null;
           amount: number;
           created_at?: string;
           id?: string;
@@ -131,6 +137,9 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          paid_at?: string | null;
+          payment_reference?: string | null;
+          simulation_id?: string | null;
           amount?: number;
           created_at?: string;
           id?: string;
@@ -487,6 +496,42 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          amount: number | null;
+          body: string;
+          created_at: string;
+          id: string;
+          kind: string;
+          metadata: Json;
+          read_at: string | null;
+          title: string;
+          user_id: string;
+        };
+        Insert: {
+          amount?: number | null;
+          body: string;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          metadata?: Json;
+          read_at?: string | null;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          amount?: number | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          metadata?: Json;
+          read_at?: string | null;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       payouts: {
         Row: {
           amount: number;
@@ -789,6 +834,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      advertiser_pay_commission: {
+        Args: {
+          _commission_id: string;
+          _reference?: string | null;
+        };
+        Returns: undefined;
+      };
       admin_set_user_role: {
         Args: {
           _grant: boolean;

@@ -14,6 +14,7 @@ import {
   simulationsRepo,
   platformConfigRepo,
   commissionsRepo,
+  notificationsRepo,
   type SendChatMessageInput,
   type CreateLeadInput,
 } from "@/lib/repositories";
@@ -202,6 +203,41 @@ export function useDeleteProduct() {
     mutationFn: (id: string) => productsRepo.remove(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+/** Registra a quitação de uma comissão (RPC valida dono, status e notifica). */
+export function usePayCommission() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ commissionId, reference }: { commissionId: string; reference?: string }) =>
+      commissionsRepo.pay(commissionId, reference),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["commissions"] });
+      void qc.invalidateQueries({ queryKey: ["indicators"] });
+      void qc.invalidateQueries({ queryKey: ["indicator"] });
+    },
+  });
+}
+
+// ---------------- Notifications ----------------
+
+export function useNotifications(enabled: boolean) {
+  return useQuery({
+    queryKey: ["notifications"] as const,
+    queryFn: notificationsRepo.listForCurrentUser,
+    enabled,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useMarkNotificationsRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => notificationsRepo.markRead(ids),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }
