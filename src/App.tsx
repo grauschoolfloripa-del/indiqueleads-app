@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import InstallApp from "@/components/InstallApp";
 import PushOptIn from "@/components/PushOptIn";
 import { useIsStandalone } from "@/hooks/usePwa";
@@ -202,6 +203,11 @@ export default function App() {
     .filter((c): c is Category => !!c);
   const hasGeneralCert = (myCertificationsQuery.data ?? []).some((c) => c.category === null);
   const indicatorReady = isApproved && hasGeneralCert && certifiedCategories.length > 0;
+
+  // `?aba=academy` reabre a Academy para quem já está certificado — é como o
+  // indicador volta para liberar um segundo nicho.
+  const abaAtual = useRouterState().location.search as Record<string, unknown>;
+  const naAcademy = abaAtual.aba === "academy";
 
   // Aberto pelo ícone da tela inicial? Governa a trava de app exclusivo do indicador.
   // Anunciante, admin e visitante nunca são travados: o anunciante trabalha no
@@ -752,9 +758,14 @@ export default function App() {
               />
             )}
 
+            {/* A Academy aparece em dois momentos: enquanto o indicador ainda
+                não está pronto, e sempre que ele pedir (`?aba=academy`).
+                Sem a segunda porta, quem concluísse um nicho ficaria preso a
+                ele para sempre — o painel substituía a Academy e não havia
+                caminho de volta para liberar o segundo. */}
             {currentRole === "indicador" &&
               loggedUser &&
-              !indicatorReady &&
+              (naAcademy || !indicatorReady) &&
               !(isApproved && !runningAsApp) && (
                 <Academy
                   userId={loggedUser.id}
@@ -765,14 +776,19 @@ export default function App() {
                 />
               )}
 
-            {currentRole === "indicador" && loggedUser && indicatorReady && runningAsApp && (
-              <PushOptIn userId={loggedUser.id} onAddNotification={addNotification} />
-            )}
+            {currentRole === "indicador" &&
+              loggedUser &&
+              indicatorReady &&
+              runningAsApp &&
+              !naAcademy && (
+                <PushOptIn userId={loggedUser.id} onAddNotification={addNotification} />
+              )}
 
             {currentRole === "indicador" &&
               loggedUser &&
               indicatorReady &&
               runningAsApp &&
+              !naAcademy &&
               indicatorProfileQuery.data && (
                 <AffiliateDashboard
                   indicator={indicatorProfileQuery.data}

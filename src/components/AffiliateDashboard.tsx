@@ -1,5 +1,6 @@
 import { useState, FormEvent, UIEvent } from "react";
 import { useTabParam } from "@/hooks/useTabParam";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Share2,
   MapPin,
@@ -61,6 +62,7 @@ import FinanciamentosTab from "./affiliate/FinanciamentosTab";
  */
 export default function AffiliateDashboard(props: AffiliateDashboardProps) {
   const ctx = useAffiliateState(props);
+  const navigate = useNavigate();
   const {
     certifiedCategories,
     activeChatLeadId,
@@ -382,6 +384,25 @@ export default function AffiliateDashboard(props: AffiliateDashboardProps) {
         >
           Simular Financiamentos (
           {simulations?.filter((s) => s.indicatorId === indicator.id).length || 0})
+        </button>
+
+        {/* Porta de volta para a Academy. Sem ela, quem concluiu um nicho fica
+            preso a ele: o painel substitui a Academy e não há como liberar o
+            segundo. Fica na barra, à direita, porque é navegação — não ação.
+
+            Navegação de cliente, não <a href>: link comum recarrega a página
+            inteira, o que num app instalado dá tela branca e perde os demais
+            parâmetros da URL. */}
+        <button
+          onClick={() =>
+            void navigate({
+              to: "/",
+              search: (prev: Record<string, unknown>) => ({ ...prev, aba: "academy" }),
+            })
+          }
+          className="ml-auto shrink-0 cursor-pointer whitespace-nowrap border-b-2 border-transparent px-4 pb-3 font-bold text-brand-600 transition-all hover:text-brand-500"
+        >
+          + Liberar outro nicho
         </button>
       </div>
 

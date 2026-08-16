@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import {
   GraduationCap,
@@ -48,6 +49,7 @@ export default function Academy({
   userPhone,
   onAddNotification,
 }: AcademyProps) {
+  const navigate = useNavigate();
   const applicationQuery = useMyApplication(true);
   const application = applicationQuery.data ?? null;
   const approved = application?.status === "aprovado";
@@ -104,6 +106,26 @@ export default function Academy({
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      {/* Só aparece para quem já tem um nicho liberado — antes disso não existe
+          painel para onde voltar, e o link seria um beco. */}
+      {certifications.some((c) => c.category) && (
+        <button
+          onClick={() =>
+            void navigate({
+              to: "/",
+              search: (prev: Record<string, unknown>) => {
+                const { aba, ...resto } = prev;
+                void aba;
+                return resto;
+              },
+            })
+          }
+          className="inline-flex cursor-pointer items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao painel
+        </button>
+      )}
+
       <header className="rounded-3xl bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 p-6 text-white relative overflow-hidden">
         <div
           aria-hidden
