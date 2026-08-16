@@ -29,11 +29,15 @@
    * que não tinha relação com a identidade real.
    */
 
-  /* Canvas escuro — navy dessaturado, nunca preto puro */
-  --color-ink-950: #04121b;
-  --color-ink-900: #071d2b;
-  --color-ink-850: #09263a;
-  --color-ink-800: #0b2f47;
+  /*
+   * Canvas escuro neutro (near-black), no espírito do site da Mídia Eco que
+   * serviu de referência: o fundo não compete com o vídeo nem tinge as
+   * imagens. O azul da marca vive nos acentos, não no canvas.
+   */
+  --color-ink-950: #08090b;
+  --color-ink-900: #0f1113;
+  --color-ink-850: #16181b;
+  --color-ink-800: #1d2024;
 
   /* Azul da marca */
   --color-sea-700: #0c486c;

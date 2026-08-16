@@ -22,6 +22,7 @@ import { Category } from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
 import { MEDIA, VERTICAL_PHOTO, photo } from "../lib/landing-media";
 import SponsorSlot from "./SponsorSlot";
+import VideoBackdrop from "./landing/VideoBackdrop";
 import {
   Reveal,
   RevealGroup,
@@ -146,13 +147,13 @@ export default function LandingPage() {
 
       {/* ================= HERO ================= */}
       <section className="relative overflow-hidden pt-20 pb-28">
-        {/* Camadas de fundo: gradiente → grid → partículas → glow */}
-        <div className="absolute inset-0 -z-30 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,#0c486c_0%,#071d2b_45%,#04121b_100%)]" />
+        {/* Camadas: vídeo + overlay → grid sutil → partículas */}
+        <VideoBackdrop name="hero" overlay="soft" />
         <div
           aria-hidden
-          className="absolute inset-0 -z-20 opacity-[0.04] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:72px_72px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_40%,transparent_100%)]"
+          className="absolute inset-0 z-[1] opacity-[0.04] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:72px_72px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_40%,transparent_100%)]"
         />
-        <div className="absolute inset-0 -z-10 h-full w-full">
+        <div className="absolute inset-0 z-[2] h-full w-full">
           <SparklesField
             id="hero-sparkles"
             background="transparent"
@@ -164,10 +165,6 @@ export default function LandingPage() {
             className="h-full w-full"
           />
         </div>
-        <GlowBlob
-          className="w-[34rem] h-[34rem] -top-52 left-1/2 -translate-x-1/2"
-          color="radial-gradient(circle, rgba(72,168,72,0.20) 0%, transparent 70%)"
-        />
 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <motion.div
@@ -193,33 +190,20 @@ export default function LandingPage() {
             </span>
           </motion.h1>
 
-          {/* Feixe de luz sob o wordmark */}
-          <div className="relative mx-auto mt-6 h-24 w-full max-w-2xl">
-            <div className="absolute inset-x-16 top-0 h-[2px] w-3/4 mx-auto bg-gradient-to-r from-transparent via-sea-400 to-transparent blur-sm" />
-            <div className="absolute inset-x-16 top-0 h-px w-3/4 mx-auto bg-gradient-to-r from-transparent via-sea-400 to-transparent" />
-            <div className="absolute inset-x-48 top-0 h-[5px] w-1/4 mx-auto bg-gradient-to-r from-transparent via-brand-400 to-transparent blur-sm" />
-            <div className="absolute inset-x-48 top-0 h-px w-1/4 mx-auto bg-gradient-to-r from-transparent via-brand-300 to-transparent" />
-            <SparklesField
-              id="hero-beam"
-              background="transparent"
-              minSize={0.4}
-              maxSize={1}
-              particleDensity={420}
-              speed={2}
-              particleColor="#ffffff"
-              className="h-full w-full"
-            />
-            {/* Máscara radial: apaga as bordas duras do campo de partículas.
-                Fica atrás do conteúdo (-z-10) porque é pintura de fundo — sem
-                isso ela cobria a primeira linha do parágrafo abaixo. */}
-            <div className="absolute inset-0 -z-10 h-full w-full bg-ink-950 [mask-image:radial-gradient(340px_120px_at_top,transparent_20%,white)]" />
+          {/* Filete de luz sob o wordmark. O bloco anterior tinha uma máscara
+              retangular opaca que funcionava sobre fundo sólido, mas sobre
+              vídeo virava uma caixa cinza visível — trocado por uma linha
+              simples, que é o que o fundo em vídeo pede. */}
+          <div className="relative mx-auto mt-8 h-px w-full max-w-md">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-400 to-transparent" />
+            <div className="absolute inset-0 h-[3px] -top-px bg-gradient-to-r from-transparent via-brand-400/60 to-transparent blur-sm" />
           </div>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 -mt-4 text-base sm:text-lg text-mist-300 max-w-2xl mx-auto leading-relaxed"
+            className="relative z-10 mt-8 text-base sm:text-lg text-mist-200 max-w-2xl mx-auto leading-relaxed [text-shadow:0_1px_12px_rgba(8,9,11,0.9)]"
           >
             A rede que conecta indicadores autônomos a imóveis, veículos e embarcações de alto
             padrão. Você indica com um link rastreável e recebe a comissão via PIX quando o negócio
@@ -365,12 +349,9 @@ export default function LandingPage() {
           sem clipping, criava scroll horizontal na página inteira. */}
       <section
         id="nichos"
-        className="py-24 bg-ink-900/40 border-y border-white/5 relative overflow-hidden"
+        className="py-24 border-y border-white/5 relative overflow-hidden"
       >
-        <GlowBlob
-          className="w-[28rem] h-[28rem] top-10 -right-40"
-          color="radial-gradient(circle, rgba(28,120,179,0.18) 0%, transparent 70%)"
-        />
+        <VideoBackdrop name="nichos" overlay="strong" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Reveal className="text-center max-w-2xl mx-auto mb-16 space-y-4">
             <span className="text-[11px] bg-white/5 border border-white/10 text-brand-300 font-bold tracking-widest uppercase px-3.5 py-1 rounded-full inline-block">
@@ -388,7 +369,7 @@ export default function LandingPage() {
           <RevealGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {nichesData.map((niche) => (
               <RevealItem key={niche.id}>
-                <div className="group h-full overflow-hidden rounded-2xl border border-white/8 bg-ink-950/60 transition-all duration-300 hover:border-brand-400/30 hover:-translate-y-1 hover:shadow-[0_24px_60px_-24px] hover:shadow-brand-500/25">
+                <div className="group h-full overflow-hidden rounded-2xl border border-white/10 bg-ink-950/70 backdrop-blur-md transition-all duration-300 hover:border-brand-400/30 hover:-translate-y-1 hover:shadow-[0_24px_60px_-24px] hover:shadow-brand-500/25">
                   {niche.image ? (
                     <div className="relative h-32 overflow-hidden">
                       <img
@@ -435,11 +416,12 @@ export default function LandingPage() {
       </section>
 
       {/* ================= SIMULADOR ================= */}
-      <section id="como-lucrar" className="py-24 bg-ink-950 relative overflow-hidden">
+      <section id="como-lucrar" className="py-24 relative overflow-hidden">
+        <VideoBackdrop name="lucrar" overlay="strong" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Calculadora */}
-            <Reveal className="lg:col-span-7 rounded-3xl border border-white/8 bg-ink-900/70 p-6 sm:p-8 backdrop-blur-sm relative overflow-hidden">
+            <Reveal className="lg:col-span-7 rounded-3xl border border-white/10 bg-ink-950/75 p-6 sm:p-8 backdrop-blur-xl relative overflow-hidden">
               <GlowBlob
                 className="w-64 h-64 -top-24 -right-24"
                 color="radial-gradient(circle, rgba(72,168,72,0.16) 0%, transparent 70%)"
@@ -602,7 +584,7 @@ export default function LandingPage() {
                   },
                 ].map((item) => (
                   <RevealItem key={item.title}>
-                    <div className="flex gap-4 rounded-2xl border border-white/8 bg-ink-900/50 p-4 transition-colors hover:border-white/15">
+                    <div className="flex gap-4 rounded-2xl border border-white/10 bg-ink-950/65 backdrop-blur-md p-4 transition-colors hover:border-white/20">
                       <div
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                           item.tone === "brand"
@@ -805,8 +787,8 @@ export default function LandingPage() {
 
       {/* ================= CTA FINAL ================= */}
       <section className="relative overflow-hidden py-24">
-        <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_80%_at_50%_100%,#0c486c_0%,#071d2b_50%,#04121b_100%)]" />
-        <div className="absolute inset-0 -z-10">
+        <VideoBackdrop name="cta" overlay="default" />
+        <div className="absolute inset-0 z-[1]">
           <SparklesField
             id="cta-sparkles"
             background="transparent"
