@@ -185,6 +185,36 @@ export function useUpdateProductStatus() {
   });
 }
 
+/** Edição completa do anúncio (título, preço, comissões, fotos, atributos). */
+export function useUpdateProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (p: Product) => productsRepo.update(p),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+export function useDeleteProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => productsRepo.remove(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
+/** Comissões devidas pelo anunciante logado (recorte garantido pela RLS). */
+export function useAdvertiserCommissions(advertiserId: string | undefined) {
+  return useQuery({
+    queryKey: ["commissions", "advertiser", advertiserId] as const,
+    queryFn: () => commissionsRepo.listForAdvertiser(),
+    enabled: !!advertiserId,
+  });
+}
+
 // ---------------- Leads ----------------
 
 export function useAdvertiserLeads(advertiserId: string | undefined) {

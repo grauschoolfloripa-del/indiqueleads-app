@@ -31,6 +31,7 @@ import {
   Settings2,
   Activity,
   Trash2,
+  Pencil,
   HelpCircle,
   FileUp,
   ArrowRightLeft,
@@ -49,6 +50,7 @@ import {
   BankSimulationResponse,
   ApprovedContract,
   ChatMessage,
+  Commission,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, getVertical } from "@/lib/verticals";
 import SponsorSlot from "./SponsorSlot";
@@ -60,6 +62,10 @@ interface AdvertiserDashboardProps {
   products: Product[];
   onAddProduct: (newProduct: Product) => void;
   onUpdateProductStatus: (productId: string, status: ProductStatus) => void;
+  onUpdateProduct: (product: Product) => void;
+  onDeleteProduct: (productId: string) => void;
+  /** Ledger de comissões dos negócios deste anunciante (leads e simulações). */
+  commissions: Commission[];
   leads: Lead[];
   simulations: FinancingSimulation[];
   onUpdateSimulationStatus: (
@@ -93,6 +99,9 @@ export default function AdvertiserDashboard({
   products,
   onAddProduct,
   onUpdateProductStatus,
+  onUpdateProduct,
+  onDeleteProduct,
+  commissions,
   leads,
   simulations,
   onUpdateSimulationStatus,
@@ -156,6 +165,9 @@ export default function AdvertiserDashboard({
 
   // New Product Modal/Form States
   const [isAddingProduct, setIsAddingProduct] = useState<boolean>(false);
+  // Quando preenchido, o mesmo modal do cadastro opera em modo edição.
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [newProductCategory, setNewProductCategory] = useState<Category>("imovel");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [productForm, setProductForm] = useState({
@@ -487,8 +499,13 @@ export default function AdvertiserDashboard({
     const finalCoverImage = uploadedImages.length > 0 ? uploadedImages[0] : productForm.coverImage;
     const finalGallery = uploadedImages.length > 0 ? uploadedImages : [productForm.coverImage];
 
+    // Em modo edição preservamos identidade e histórico do anúncio: mesmo id,
+    // mesma data de criação e o status atual (editar um anúncio vendido não o
+    // devolve para "ativo").
+    const existing = editingProductId ? myProducts.find((p) => p.id === editingProductId) : null;
+
     const newProd: Product = {
-      id: `prod-${Date.now()}`,
+      id: existing ? existing.id : `prod-${Date.now()}`,
       category: newProductCategory,
       advertiserId: advertiser.id,
       advertiserName: advertiser.name,
@@ -496,7 +513,7 @@ export default function AdvertiserDashboard({
       description: productForm.description,
       price: priceVal,
       currency: "BRL",
-      status: "ativo",
+      status: existing ? existing.status : "ativo",
       location: {
         lat: -23.5505, // default coordinates
         lng: -46.6333,
@@ -505,7 +522,7 @@ export default function AdvertiserDashboard({
       },
       coverImage: finalCoverImage,
       gallery: finalGallery,
-      createdAt: new Date().toISOString(),
+      createdAt: existing ? existing.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       commissionDigitalPct: digitalPct,
       commissionDigitalValue: (priceVal * digitalPct) / 100,
@@ -519,12 +536,17 @@ export default function AdvertiserDashboard({
       attributes: productForm.attributes,
     };
 
-    onAddProduct(newProd);
-    onAddNotification(
-      `Produto "${newProd.title}" adicionado e disponível para indicação!`,
-      "success",
-    );
+    if (existing) {
+      onUpdateProduct(newProd);
+    } else {
+      onAddProduct(newProd);
+      onAddNotification(
+        `Produto "${newProd.title}" adicionado e disponível para indicação!`,
+        "success",
+      );
+    }
     setIsAddingProduct(false);
+    setEditingProductId(null);
     setUploadedImages([]);
     // Reset
     setProductForm({
@@ -1134,6 +1156,61 @@ export default function AdvertiserDashboard({
 
   // Active Dashboard
   const myProducts = products.filter((p) => p.advertiserId === advertiser.id);
+
+  /**
+   * Comissão devida ao indicador por anúncio.
+   *
+   * O ledger não guarda `product_id` (uma comissão nasce de um lead ou de uma
+   * simulação), então a ligação até o anúncio é feita aqui: lead -> productId
+   * e simulação -> productId. Assim o anunciante vê, no próprio anúncio,
+   * quanto saiu de comissão — venha de lead, de venda ou de financiamento.
+   */
+  // Sem useMemo de propósito: este componente tem returns antecipados acima
+  // (onboarding), e um hook depois deles quebraria a regra de ordem dos hooks.
+  // O cálculo percorre poucas dezenas de itens — não justifica memoizar.
+  const commissionByProduct = (() => {
+    const leadToProduct = new Map(leads.map((l) => [l.id, l.productId]));
+    const simToProduct = new Map((simulations ?? []).map((sim) => [sim.id, sim.productId]));
+    const acc = new Map<string, { total: number; devido: number; eventos: Commission[] }>();
+
+    for (const c of commissions) {
+      const productId = c.leadId
+        ? leadToProduct.get(c.leadId)
+        : c.simulationId
+          ? simToProduct.get(c.simulationId)
+          : undefined;
+      if (!productId) continue;
+      const cur = acc.get(productId) ?? { total: 0, devido: 0, eventos: [] };
+      cur.total += c.amount;
+      // 'paid' já saiu do bolso; o que ainda é obrigação é pending + available.
+      if (c.status !== "paid") cur.devido += c.amount;
+      cur.eventos.push(c);
+      acc.set(productId, cur);
+    }
+    return acc;
+  })();
+
+  /** Preenche o modal com os dados do anúncio para edição. */
+  const startEditingProduct = (p: Product) => {
+    setEditingProductId(p.id);
+    setNewProductCategory(p.category);
+    setUploadedImages(p.gallery?.length ? p.gallery : [p.coverImage]);
+    setProductForm({
+      title: p.title,
+      description: p.description,
+      price: String(p.price),
+      city: p.location.city,
+      state: p.location.state,
+      allowPresencialTier: p.allowPresencialTier,
+      allowNegotiateTier: p.allowNegotiateTier,
+      commissionDigitalPct: String(p.commissionDigitalPct ?? 1),
+      commissionPresencialPct: String(p.commissionPresencialPct ?? 3),
+      commissionLeadValue: String(p.commissionLeadValue ?? 0),
+      coverImage: p.coverImage,
+      attributes: p.attributes ?? {},
+    });
+    setIsAddingProduct(true);
+  };
   const myLeads = leads.filter((l) => l.advertiserId === advertiser.id);
   const pendingArrivals = myLeads.filter(
     (l) => l.status === "visita_agendada" && l.checkInRequested,
@@ -1686,8 +1763,9 @@ export default function AdvertiserDashboard({
                         <th className="py-3.5 px-4">Preço do Bem</th>
                         <th className="py-3.5 px-4">Comissão Digital</th>
                         <th className="py-3.5 px-4">Comissão Presencial</th>
+                        <th className="py-3.5 px-4">Comissão ao Indicador</th>
                         <th className="py-3.5 px-4">Status</th>
-                        <th className="py-3.5 px-4 text-right">Ação</th>
+                        <th className="py-3.5 px-4 text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-sans text-slate-700">
@@ -1730,37 +1808,87 @@ export default function AdvertiserDashboard({
                             )}
                           </td>
                           <td className="py-4 px-4">
+                            {(() => {
+                              const c = commissionByProduct.get(p.id);
+                              if (!c || c.total <= 0) {
+                                return <span className="text-slate-300 text-[11px]">—</span>;
+                              }
+                              return (
+                                <div className="leading-tight">
+                                  <span className="block font-mono font-bold text-slate-900">
+                                    R$ {c.total.toLocaleString("pt-BR")}
+                                  </span>
+                                  <span
+                                    className={`text-[9px] font-bold uppercase tracking-wide ${
+                                      c.devido > 0 ? "text-amber-600" : "text-emerald-600"
+                                    }`}
+                                  >
+                                    {c.devido > 0
+                                      ? `R$ ${c.devido.toLocaleString("pt-BR")} a pagar`
+                                      : "quitada"}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </td>
+                          <td className="py-4 px-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wide ${
                                 p.status === "ativo"
                                   ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
                                   : p.status === "reservado"
                                     ? "bg-amber-50 text-amber-700 border border-amber-100"
-                                    : "bg-slate-50 text-slate-600 border border-slate-100"
+                                    : p.status === "vendido"
+                                      ? "bg-brand-500/10 text-brand-600 border border-brand-500/20"
+                                      : "bg-slate-50 text-slate-600 border border-slate-100"
                               }`}
                             >
                               {p.status}
                             </span>
+                            {p.status === "vendido" && (
+                              <span className="mt-1 block text-[9px] font-semibold text-slate-400">
+                                aguardando remoção
+                              </span>
+                            )}
                           </td>
-                          <td className="py-4 px-4 text-right">
-                            <select
-                              value={p.status}
-                              onChange={(e) =>
-                                onUpdateProductStatus(p.id, e.target.value as ProductStatus)
-                              }
-                              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            >
-                              <option value="ativo">Ativar</option>
-                              <option value="reservado">Reservar</option>
-                              <option value="pausado">Pausar</option>
-                            </select>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <select
+                                value={p.status}
+                                onChange={(e) =>
+                                  onUpdateProductStatus(p.id, e.target.value as ProductStatus)
+                                }
+                                className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                              >
+                                <option value="ativo">Ativar</option>
+                                <option value="reservado">Reservar</option>
+                                <option value="pausado">Pausar</option>
+                                <option value="vendido">Vendido</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => startEditingProduct(p)}
+                                title="Editar anúncio"
+                                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setDeletingProduct(p)}
+                                title="Remover anúncio"
+                                className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
                       {myProducts.length === 0 && (
                         <tr>
                           <td
-                            colSpan={7}
+                            colSpan={8}
                             className="text-center py-12 text-slate-400 italic font-medium bg-slate-50/20"
                           >
                             <div className="space-y-2">
@@ -3268,23 +3396,81 @@ export default function AdvertiserDashboard({
         </div>
       )}
 
+      {/* CONFIRMAÇÃO: REMOVER ANÚNCIO
+          Remoção é irreversível e o histórico de leads/comissões daquele bem
+          fica órfão, então nunca removemos com um clique só. */}
+      {deletingProduct && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 font-sans shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 grid place-items-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-display font-bold text-slate-900 text-lg">Remover anúncio?</h3>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  <strong className="text-slate-900">{deletingProduct.title}</strong> sai do
+                  catálogo e deixa de receber indicações. Esta ação não pode ser desfeita.
+                </p>
+                {(commissionByProduct.get(deletingProduct.id)?.devido ?? 0) > 0 && (
+                  <p className="mt-3 text-[11px] bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-2.5 leading-relaxed">
+                    Atenção: ainda há{" "}
+                    <strong>
+                      R${" "}
+                      {commissionByProduct.get(deletingProduct.id)!.devido.toLocaleString("pt-BR")}
+                    </strong>{" "}
+                    de comissão a pagar neste anúncio. Remover o anúncio não cancela essa obrigação
+                    com o indicador.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setDeletingProduct(null)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDeleteProduct(deletingProduct.id);
+                  setDeletingProduct(null);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                Remover definitivamente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FORM MODAL: ADD PRODUCT */}
       {isAddingProduct && (
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 relative font-sans shadow-2xl">
             <button
-              onClick={() => setIsAddingProduct(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold"
+              onClick={() => {
+                setIsAddingProduct(false);
+                setEditingProductId(null);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold cursor-pointer"
             >
               ✕
             </button>
 
             <div className="text-center mb-6">
               <span className="text-[10px] bg-blue-50 text-blue-800 border border-blue-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
-                Novo Anúncio de Catálogo
+                {editingProductId ? "Editar Anúncio" : "Novo Anúncio de Catálogo"}
               </span>
               <h2 className="font-display font-bold text-slate-900 text-xl mt-2">
-                Escolha a Vertical e Cadastre o Bem
+                {editingProductId
+                  ? "Atualize os dados do anúncio"
+                  : "Escolha a Vertical e Cadastre o Bem"}
               </h2>
               <p className="text-xs text-slate-500 mt-1">
                 O formulário de atributos de dados se adaptará automaticamente.
@@ -3610,7 +3796,7 @@ export default function AdvertiserDashboard({
                 className="w-full bg-blue-700 hover:bg-blue-500 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 shadow-blue-100"
               >
                 <Sparkles className="w-4 h-4 text-blue-200" />
-                Publicar Anúncio no Catálogo Geral
+                {editingProductId ? "Salvar alterações" : "Publicar Anúncio no Catálogo Geral"}
               </button>
             </form>
           </div>

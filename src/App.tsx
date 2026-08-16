@@ -15,6 +15,9 @@ import {
   useAllProducts,
   useCreateProduct,
   useUpdateProductStatus,
+  useUpdateProduct,
+  useDeleteProduct,
+  useAdvertiserCommissions,
   useAdvertiserLeads,
   useIndicatorLeads,
   useAllLeads,
@@ -170,6 +173,8 @@ export default function App() {
   const allProductsQuery = useAllProducts(isAdmin);
   const createProductMutation = useCreateProduct();
   const updateProductStatusMutation = useUpdateProductStatus();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
 
   const products = useMemo<Product[]>(() => {
     if (isAdmin) return allProductsQuery.data ?? [];
@@ -206,6 +211,7 @@ export default function App() {
   const allAdvertisersQuery = useAllAdvertisers();
   const allIndicatorsQuery = useAllIndicators(isAdmin);
   const advertiserRelatedIndicatorsQuery = useAdvertiserRelatedIndicators(advertiserId);
+  const advertiserCommissionsQuery = useAdvertiserCommissions(advertiserId);
   const advertisers = allAdvertisersQuery.data ?? [];
   const indicators = isAdmin
     ? (allIndicatorsQuery.data ?? [])
@@ -280,6 +286,20 @@ export default function App() {
       { id: productId, status },
       { onSuccess: () => addNotification(`Status do produto atualizado para: ${status}`, "info") },
     );
+  };
+
+  const handleUpdateProduct = (updated: Product) => {
+    updateProductMutation.mutate(updated, {
+      onSuccess: () => addNotification(`Anúncio "${updated.title}" atualizado.`, "success"),
+      onError: () => addNotification("Não foi possível atualizar o anúncio.", "info"),
+    });
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    deleteProductMutation.mutate(productId, {
+      onSuccess: () => addNotification("Anúncio removido do catálogo.", "success"),
+      onError: () => addNotification("Não foi possível remover o anúncio.", "info"),
+    });
   };
 
   const buildSystemMessage = (leadId: string, text: string) => ({
@@ -641,6 +661,9 @@ export default function App() {
                 products={products}
                 onAddProduct={handleAddProduct}
                 onUpdateProductStatus={handleUpdateProductStatus}
+                onUpdateProduct={handleUpdateProduct}
+                onDeleteProduct={handleDeleteProduct}
+                commissions={advertiserCommissionsQuery.data ?? []}
                 leads={leads}
                 simulations={simulations}
                 onUpdateSimulationStatus={handleUpdateSimulationStatus}

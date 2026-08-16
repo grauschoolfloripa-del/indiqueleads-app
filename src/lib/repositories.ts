@@ -292,6 +292,34 @@ export const productsRepo = {
       throw error;
     }
   },
+  /**
+   * Edição completa do anúncio pelo anunciante. As imagens vivem numa tabela
+   * separada (`product_images`), então a galeria é regravada por inteiro —
+   * mais simples e previsível do que tentar casar item a item.
+   */
+  async update(p: Product): Promise<void> {
+    if (!isUuid(p.id)) throw new Error("productsRepo.update requires a UUID id");
+    const { error } = await supabase.from("products").update(productToDb(p)).eq("id", p.id);
+    if (error) {
+      console.error("[repositories] productsRepo.update", error);
+      throw error;
+    }
+    const { error: delErr } = await supabase.from("product_images").delete().eq("product_id", p.id);
+    if (delErr) console.error("[repositories] productsRepo.update clear images", delErr);
+    if (p.gallery?.length) {
+      const rows = p.gallery.map((url, position) => ({ product_id: p.id, url, position }));
+      const { error: imgErr } = await supabase.from("product_images").insert(rows);
+      if (imgErr) console.error("[repositories] productsRepo.update product_images", imgErr);
+    }
+  },
+  async remove(id: string): Promise<void> {
+    if (!isUuid(id)) return;
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      console.error("[repositories] productsRepo.remove", error);
+      throw error;
+    }
+  },
   /** Catálogo completo (todos os status) — só retorna dados via RLS de admin. */
   async listAll(): Promise<Product[]> {
     const { data, error } = await supabase
@@ -645,6 +673,22 @@ export const commissionsRepo = {
       .order("created_at", { ascending: false });
     if (error) {
       console.error("[repositories] commissionsRepo.listForIndicator", error);
+      return [];
+    }
+    return (data ?? []).map(commissionFromDb);
+  },
+  /**
+   * Comissões que o anunciante deve — nascidas de leads ou de simulações
+   * dele. A RLS (`commissions_select_advertiser`) é quem garante o recorte:
+   * aqui pedimos tudo e o banco devolve só o que é dele.
+   */
+  async listForAdvertiser(): Promise<Commission[]> {
+    const { data, error } = await supabase
+      .from("commissions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[repositories] commissionsRepo.listForAdvertiser", error);
       return [];
     }
     return (data ?? []).map(commissionFromDb);
