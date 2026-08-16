@@ -60,11 +60,26 @@ O build usa o preset `vercel` do Nitro (definido em `vite.config.ts`) e escreve
 em `.vercel/output`. **Sem isso o Nitro gera saída para Cloudflare Workers**, que
 a Vercel não sabe executar — foi a causa de uma tela de erro genérica no passado.
 
-⚠️ **Repositório privado + plano Hobby bloqueia o deploy.** O erro aparece como
-`Blocked` (não `Error`), com a mensagem *"the commit author did not have
-contributing access"*. Não é falha de build: nesse plano, repositório privado só
-aceita deploy de commits do dono da conta Vercel. Soluções: manter o repositório
-público, ou assinar o plano Pro.
+⚠️ **Deploy `Blocked` (não `Error`) não é falha de build.** No plano Hobby a
+Vercel recusa o deploy quando o autor do commit não é reconhecido como dono do
+projeto. Duas causas, que se somam:
+
+1. **Repositório privado** — Hobby não suporta colaboração em repo privado.
+   Solução: manter público durante o desenvolvimento, ou assinar o Pro.
+2. **Autor do commit divergente** — este repo pertence à conta
+   `grauschoolfloripa-del`, mas commits assinados com o e-mail pessoal
+   (`midiaecopublicidade@gmail.com`) são atribuídos pelo GitHub a outra conta
+   (`Fabriciocufo`), e a Vercel bloqueia. Por isso o `user.email` do repositório
+   é fixado no *noreply* da conta dona:
+
+```bash
+git config user.name  "grauschoolfloripa-del"
+git config user.email "238873711+grauschoolfloripa-del@users.noreply.github.com"
+```
+
+Tornar o repositório público **não desbloqueia deploys antigos** — a Vercel
+avalia no momento em que o commit chega e não reavalia sozinha. É preciso um
+commit novo ou um *Redeploy* manual.
 
 Existe apenas **um** projeto Vercel válido para este repo
 (`indiqueleads-app-qfnp` → `indiqueleads.vercel.app`). Dois projetos apontando
