@@ -17,8 +17,11 @@ import {
   useUpdateProductStatus,
   useUpdateProduct,
   useDeleteProduct,
+  useIndicatorCommissions,
   useAdvertiserCommissions,
   usePayCommission,
+  useAllCommissions,
+  useAllSimulations,
   useNotifications,
   useMarkNotificationsRead,
   useAdvertiserLeads,
@@ -220,6 +223,9 @@ export default function App() {
   const allIndicatorsQuery = useAllIndicators(isAdmin);
   const advertiserRelatedIndicatorsQuery = useAdvertiserRelatedIndicators(advertiserId);
   const advertiserCommissionsQuery = useAdvertiserCommissions(advertiserId);
+  const indicatorCommissionsQuery = useIndicatorCommissions(indicatorId);
+  const allCommissionsQuery = useAllCommissions(isAdmin);
+  const allSimulationsQuery = useAllSimulations(isAdmin);
   const advertisers = allAdvertisersQuery.data ?? [];
   const indicators = isAdmin
     ? (allIndicatorsQuery.data ?? [])
@@ -667,6 +673,7 @@ export default function App() {
                 products={products}
                 leads={leads}
                 simulations={simulations}
+                commissions={indicatorCommissionsQuery.data ?? []}
                 onAddSimulation={handleAddSimulation}
                 onUpdateLeadStatus={handleUpdateLeadStatus}
                 onRequestCheckIn={handleRequestCheckIn}
@@ -711,6 +718,8 @@ export default function App() {
                 advertisers={advertisers}
                 indicators={indicators}
                 leads={leads}
+                commissions={allCommissionsQuery.data ?? []}
+                simulations={allSimulationsQuery.data ?? []}
                 platformConfig={platformConfigQuery.data}
                 onUpdatePlatformConfig={handleUpdatePlatformConfig}
                 categories={categories}

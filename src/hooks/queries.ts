@@ -221,6 +221,24 @@ export function usePayCommission() {
   });
 }
 
+/** Ledger completo — admin. */
+export function useAllCommissions(enabled: boolean) {
+  return useQuery({
+    queryKey: ["commissions", "all"] as const,
+    queryFn: commissionsRepo.listAll,
+    enabled,
+  });
+}
+
+/** Todas as simulações de financiamento — admin. */
+export function useAllSimulations(enabled: boolean) {
+  return useQuery({
+    queryKey: ["simulations", "all"] as const,
+    queryFn: simulationsRepo.listAll,
+    enabled,
+  });
+}
+
 // ---------------- Notifications ----------------
 
 export function useNotifications(enabled: boolean) {

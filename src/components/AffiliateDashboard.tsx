@@ -39,6 +39,7 @@ import {
   ApprovedContract,
   Advertiser,
   ChatMessage,
+  Commission,
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, verticalBadge } from "../lib/verticals";
 import SponsorSlot from "./SponsorSlot";
@@ -49,6 +50,8 @@ interface AffiliateDashboardProps {
   products: Product[];
   leads: Lead[];
   simulations: FinancingSimulation[];
+  /** Ledger de comissões do indicador — fonte de verdade dos ganhos. */
+  commissions: Commission[];
   onAddSimulation: (
     sim: Omit<FinancingSimulation, "id" | "createdAt" | "updatedAt" | "status">,
   ) => void;
@@ -78,6 +81,7 @@ export default function AffiliateDashboard({
   products,
   leads,
   simulations,
+  commissions,
   onAddSimulation,
   onUpdateLeadStatus,
   onRequestCheckIn,
@@ -1255,6 +1259,55 @@ export default function AffiliateDashboard({
       {/* VIEW: DESEMPENHO E LEADS */}
       {activeTab === "desempenho" && (
         <div className="space-y-6">
+          {/* Ganhos reais, lidos do ledger.
+              O resto desta aba é gamificação; estes números são os de verdade —
+              e incluem vendas fechadas por financiamento, que não passam pela
+              tabela de leads e por isso não apareciam em lugar nenhum. */}
+          {(() => {
+            const recebido = commissions
+              .filter((c) => c.status === "paid")
+              .reduce((a, c) => a + c.amount, 0);
+            const aReceber = commissions
+              .filter((c) => c.status !== "paid")
+              .reduce((a, c) => a + c.amount, 0);
+            const vendasLead = activeLeads.filter((l) => l.status === "venda_concluida").length;
+            const vendasFin = (simulations ?? []).filter(
+              (sim) => sim.indicatorId === indicator.id && sim.status === "concluido",
+            ).length;
+            const cards = [
+              {
+                label: "Já recebido",
+                value: `R$ ${recebido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+                hint: "comissões pagas via PIX",
+                cls: "bg-emerald-50 border-emerald-200 text-emerald-900",
+              },
+              {
+                label: "A receber",
+                value: `R$ ${aReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+                hint: "liberado ou aguardando confirmação",
+                cls: "bg-amber-50 border-amber-200 text-amber-900",
+              },
+              {
+                label: "Vendas fechadas",
+                value: String(vendasLead + vendasFin),
+                hint: `${vendasLead} por indicação • ${vendasFin} por financiamento`,
+                cls: "bg-slate-900 border-slate-800 text-white",
+              },
+            ];
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {cards.map((c) => (
+                  <div key={c.label} className={`rounded-2xl border p-4 ${c.cls}`}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                      {c.label}
+                    </span>
+                    <span className="block font-mono font-black text-2xl mt-1">{c.value}</span>
+                    <span className="block text-[10px] opacity-70 mt-0.5">{c.hint}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
           {/* Leagues / Gamification Status Card */}
           <div className="bg-white rounded-3xl border border-slate-150 p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
@@ -1639,63 +1692,80 @@ export default function AffiliateDashboard({
             </p>
 
             <div className="space-y-3">
-              {activeLeads
-                .filter((l) => l.commissionPaid)
-                .map((lead) => (
+              {commissions.map((c) => {
+                const lead = c.leadId ? leads.find((l) => l.id === c.leadId) : undefined;
+                const sim = c.simulationId
+                  ? (simulations ?? []).find((s) => s.id === c.simulationId)
+                  : undefined;
+                const produto = lead?.productTitle ?? sim?.productTitle ?? "Anúncio";
+                const cliente = lead?.clientName ?? sim?.clientName;
+                const origem = sim
+                  ? "Venda por financiamento"
+                  : c.kind === "lead"
+                    ? "Indicação qualificada"
+                    : "Venda";
+
+                const ui =
+                  c.status === "paid"
+                    ? {
+                        chip: "PIX",
+                        chipCls: "bg-emerald-100 text-emerald-800",
+                        valueCls: "text-emerald-600",
+                        title: "Comissão recebida",
+                        sub: c.paidAt
+                          ? `Pago em ${new Date(c.paidAt).toLocaleDateString("pt-BR")}`
+                          : "Pago",
+                      }
+                    : c.status === "available"
+                      ? {
+                          chip: "OK",
+                          chipCls: "bg-blue-100 text-blue-800",
+                          valueCls: "text-blue-700",
+                          title: "Liberada para repasse",
+                          sub: "Aguardando o anunciante efetuar o PIX",
+                        }
+                      : {
+                          chip: "PND",
+                          chipCls: "bg-amber-100 text-amber-800",
+                          valueCls: "text-amber-500",
+                          title: "Comissão pendente",
+                          sub: "Libera quando o anunciante confirmar",
+                        };
+
+                return (
                   <div
-                    key={lead.id}
-                    className="flex justify-between items-center border border-slate-100 rounded-2xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-all"
+                    key={c.id}
+                    className="flex justify-between items-center border border-slate-100 rounded-2xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-all gap-3"
                   >
-                    <div className="flex gap-3">
-                      <div className="bg-emerald-100 text-emerald-800 w-10 h-10 rounded-xl flex items-center justify-center font-bold">
-                        PIX
+                    <div className="flex gap-3 min-w-0">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold font-mono text-[10px] shrink-0 ${ui.chipCls}`}
+                      >
+                        {ui.chip}
                       </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-900">
-                          Comissão de Venda Creditada
-                        </h4>
-                        <p className="text-xs text-slate-500">
-                          {lead.productTitle} • Cliente: {lead.clientName}
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-sm text-slate-900 truncate">{ui.title}</h4>
+                        <p className="text-xs text-slate-500 truncate">
+                          {origem} • {produto}
+                          {cliente ? ` • ${cliente}` : ""}
                         </p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{ui.sub}</p>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-emerald-600 text-sm">
-                      + R${" "}
-                      {lead.commissionValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    <span className={`font-mono font-bold text-sm shrink-0 ${ui.valueCls}`}>
+                      + R$ {c.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                ))}
+                );
+              })}
 
-              {activeLeads
-                .filter((l) => !l.commissionPaid && l.status === "venda_concluida")
-                .map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="flex justify-between items-center border border-slate-150 rounded-2xl p-4 bg-white hover:bg-slate-50 transition-all"
-                  >
-                    <div className="flex gap-3">
-                      <div className="bg-amber-100 text-amber-800 w-10 h-10 rounded-xl flex items-center justify-center font-bold font-mono text-[10px]">
-                        PND
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-slate-900">
-                          Comissão de Venda Pendente de Repasse
-                        </h4>
-                        <p className="text-xs text-slate-500">
-                          {lead.productTitle} • Aguardando prazo de repasse da loja
-                        </p>
-                      </div>
-                    </div>
-                    <span className="font-mono font-bold text-amber-500 text-sm">
-                      + R${" "}
-                      {lead.commissionValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                ))}
-
-              {activeLeads.length === 0 && (
+              {commissions.length === 0 && (
                 <div className="text-center py-12 text-slate-400">
-                  <p className="text-xs">Nenhuma transação financeira efetuada.</p>
+                  <p className="text-xs">Nenhuma comissão registrada ainda.</p>
+                  <p className="text-[10px] mt-1">
+                    Elas aparecem quando o anunciante confirma uma visita, fecha a venda ou conclui
+                    um financiamento que você indicou.
+                  </p>
                 </div>
               )}
             </div>

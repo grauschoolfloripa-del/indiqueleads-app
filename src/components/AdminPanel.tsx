@@ -19,7 +19,16 @@ import {
   Loader2,
 } from "lucide-react";
 import { createAdminUser } from "@/lib/admin-users.functions";
-import { Product, Advertiser, Indicator, Lead, Category, PlatformConfig } from "../types";
+import {
+  Product,
+  Advertiser,
+  Indicator,
+  Lead,
+  Category,
+  PlatformConfig,
+  Commission,
+  FinancingSimulation,
+} from "../types";
 import { VERTICALS, VERTICALS_ORDER } from "../lib/verticals";
 
 interface AdminPanelProps {
@@ -28,6 +37,9 @@ interface AdminPanelProps {
   advertisers: Advertiser[];
   indicators: Indicator[];
   leads: Lead[];
+  /** Ledger completo — fonte de verdade financeira da plataforma. */
+  commissions: Commission[];
+  simulations: FinancingSimulation[];
   platformConfig: PlatformConfig;
   onUpdatePlatformConfig: (config: PlatformConfig) => void;
   categories: Array<{ id: Category | string; name: string; icon: string; fields: string[] }>;
@@ -41,6 +53,8 @@ export default function AdminPanel({
   advertisers,
   indicators,
   leads,
+  commissions,
+  simulations,
   platformConfig,
   onUpdatePlatformConfig,
   categories,
@@ -49,7 +63,7 @@ export default function AdminPanel({
 }: AdminPanelProps) {
   // Navigation
   const [activeTab, setActiveTab] = useState<
-    "geral" | "categorias" | "verticais" | "fraudes" | "taxas" | "admins"
+    "geral" | "financeiro" | "categorias" | "verticais" | "fraudes" | "taxas" | "admins"
   >("geral");
 
   // Criação de novos administradores
@@ -69,17 +83,30 @@ export default function AdminPanel({
   // Local config edits
   const [configEdit, setConfigEdit] = useState({ ...platformConfig });
 
-  // Calculate platform financial stats
-  const totalVolume =
-    products.filter((p) => p.status === "vendido").reduce((acc, p) => acc + p.price, 0) ||
-    leads
-      .filter((l) => l.status === "venda_concluida")
-      .reduce((acc, l) => acc + l.commissionValue * 20, 0); // fallback simulation
-  const platformAccruedFees = leads
-    .filter((l) => l.status === "venda_concluida")
-    .reduce((acc, l) => acc + l.commissionValue * (platformConfig.feePercent / 100), 0);
+  // ---- Financeiro da plataforma, lido do ledger (não estimado) ----
+  // Antes estes números eram derivados de heurísticas (commissionValue * 20,
+  // advertisers.length * 199). Agora saem de `commissions`, que é o registro
+  // real de cada evento de comissão.
+  const sum = (list: Commission[]) => list.reduce((acc, c) => acc + c.amount, 0);
+  const commissionsPaid = sum(commissions.filter((c) => c.status === "paid"));
+  const commissionsAvailable = sum(commissions.filter((c) => c.status === "available"));
+  const commissionsPending = sum(commissions.filter((c) => c.status === "pending"));
+  const commissionsTotal = commissionsPaid + commissionsAvailable + commissionsPending;
+  const commissionsByKind = {
+    lead: sum(commissions.filter((c) => c.kind === "lead")),
+    venda: sum(commissions.filter((c) => c.kind === "venda" && !c.simulationId)),
+    financiamento: sum(commissions.filter((c) => !!c.simulationId)),
+  };
+
+  // Volume: preço dos bens efetivamente vendidos.
+  const totalVolume = products
+    .filter((p) => p.status === "vendido")
+    .reduce((acc, p) => acc + p.price, 0);
+
+  // Receita da plataforma: spread sobre a comissão + taxa por lead + planos.
+  const platformAccruedFees = commissionsTotal * (platformConfig.feePercent / 100);
   const totalLeadsChargedFee = leads.length * platformConfig.feePerLead;
-  const planIncomes = advertisers.length * 199.0; // premium average
+  const planIncomes = advertisers.length * 199.0; // média de plano — ainda estimado
   const totalRevenue = platformAccruedFees + totalLeadsChargedFee + planIncomes;
 
   const handleSaveConfig = (e: FormEvent) => {
@@ -185,6 +212,16 @@ export default function AdminPanel({
           }`}
         >
           Campos Dinâmicos (Verticais)
+        </button>
+        <button
+          onClick={() => setActiveTab("financeiro")}
+          className={`pb-3 px-4 border-b-2 transition-all ${
+            activeTab === "financeiro"
+              ? "border-brand-500 text-brand-600 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          Financeiro / Ledger ({commissions.length})
         </button>
         <button
           onClick={() => setActiveTab("fraudes")}
@@ -620,6 +657,224 @@ export default function AdminPanel({
       )}
 
       {/* VIEW: SUSPICIOUS FRAUDS */}
+      {activeTab === "financeiro" && (
+        <div className="space-y-6">
+          {/* Totais do ledger */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                label: "Comissão total gerada",
+                value: commissionsTotal,
+                hint: "todos os eventos do ledger",
+                cls: "bg-slate-900 text-white border-slate-800",
+              },
+              {
+                label: "Já pago aos indicadores",
+                value: commissionsPaid,
+                hint: "repasses confirmados",
+                cls: "bg-emerald-50 text-emerald-900 border-emerald-200",
+              },
+              {
+                label: "Liberado, a pagar",
+                value: commissionsAvailable,
+                hint: "obrigação em aberto dos anunciantes",
+                cls: "bg-amber-50 text-amber-900 border-amber-200",
+              },
+              {
+                label: "Pendente de confirmação",
+                value: commissionsPending,
+                hint: "aguarda anunciante confirmar",
+                cls: "bg-slate-50 text-slate-800 border-slate-200",
+              },
+            ].map((c) => (
+              <div key={c.label} className={`rounded-2xl border p-4 ${c.cls}`}>
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">
+                  {c.label}
+                </span>
+                <span className="block font-mono font-black text-xl mt-1">
+                  R$ {c.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </span>
+                <span className="block text-[10px] opacity-60 mt-0.5">{c.hint}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Composição por modelo de comissão */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <h3 className="font-display font-bold text-slate-800 text-base">
+              Composição por modelo de comissão
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5 mb-4">
+              Quanto cada trilha de remuneração representa no total distribuído.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { k: "Indicação (lead)", v: commissionsByKind.lead, color: "bg-blue-600" },
+                { k: "Venda direta", v: commissionsByKind.venda, color: "bg-emerald-600" },
+                {
+                  k: "Financiamento",
+                  v: commissionsByKind.financiamento,
+                  color: "bg-brand-500",
+                },
+              ].map((row) => {
+                const pct = commissionsTotal > 0 ? (row.v / commissionsTotal) * 100 : 0;
+                return (
+                  <div key={row.k} className="rounded-2xl border border-slate-100 p-4">
+                    <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                      {row.k}
+                    </span>
+                    <span className="block font-mono font-bold text-slate-900 text-lg mt-1">
+                      R$ {row.v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                    <div className="h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                      <div className={`h-full ${row.color}`} style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-1 block">
+                      {pct.toFixed(1)}% do total
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Ledger completo */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <h3 className="font-display font-bold text-slate-800 text-base">
+              Ledger de comissões ({commissions.length})
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5 mb-4">
+              Cada linha é um evento imutável, escrito por trigger do banco — nenhuma tela cria ou
+              edita comissão diretamente.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                    <th className="py-2.5 pr-4">Data</th>
+                    <th className="py-2.5 pr-4">Indicador</th>
+                    <th className="py-2.5 pr-4">Origem</th>
+                    <th className="py-2.5 pr-4">Negócio</th>
+                    <th className="py-2.5 pr-4 text-right">Valor</th>
+                    <th className="py-2.5 pr-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {commissions.map((c) => {
+                    const ind = indicators.find((i) => i.id === c.indicatorId);
+                    const lead = c.leadId ? leads.find((l) => l.id === c.leadId) : undefined;
+                    const sim = c.simulationId
+                      ? simulations.find((x) => x.id === c.simulationId)
+                      : undefined;
+                    const origem = sim
+                      ? "Financiamento"
+                      : c.kind === "lead"
+                        ? "Indicação"
+                        : "Venda";
+                    return (
+                      <tr key={c.id} className="hover:bg-slate-50/60">
+                        <td className="py-2.5 pr-4 font-mono text-slate-500 whitespace-nowrap">
+                          {new Date(c.createdAt).toLocaleDateString("pt-BR")}
+                        </td>
+                        <td className="py-2.5 pr-4 font-semibold text-slate-800">
+                          {ind?.name ?? c.indicatorId.slice(0, 8)}
+                        </td>
+                        <td className="py-2.5 pr-4">
+                          <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold text-[10px]">
+                            {origem}
+                          </span>
+                        </td>
+                        <td className="py-2.5 pr-4 text-slate-600 max-w-[16rem] truncate">
+                          {lead?.productTitle ?? sim?.productTitle ?? "—"}
+                          {(lead?.clientName ?? sim?.clientName) &&
+                            ` • ${lead?.clientName ?? sim?.clientName}`}
+                        </td>
+                        <td className="py-2.5 pr-4 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                          R$ {c.amount.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        </td>
+                        <td className="py-2.5 pr-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                              c.status === "paid"
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                                : c.status === "available"
+                                  ? "bg-amber-50 text-amber-700 border border-amber-100"
+                                  : "bg-slate-50 text-slate-500 border border-slate-100"
+                            }`}
+                          >
+                            {c.status === "paid"
+                              ? "pago"
+                              : c.status === "available"
+                                ? "a pagar"
+                                : "pendente"}
+                          </span>
+                          {c.paymentReference && (
+                            <span className="block text-[9px] text-slate-400 font-mono mt-0.5">
+                              {c.paymentReference}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {commissions.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-10 text-center text-slate-400 text-xs">
+                        Nenhuma comissão registrada na plataforma ainda.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mesa de financiamentos — visão global */}
+          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <h3 className="font-display font-bold text-slate-800 text-base">
+              Simulações de financiamento ({simulations.length})
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5 mb-4">
+              Fluxo paralelo ao de leads — hoje também gera comissão de venda ao concluir.
+            </p>
+            <div className="space-y-2">
+              {simulations.map((sim) => (
+                <div
+                  key={sim.id}
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3"
+                >
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-slate-900 block truncate">
+                      {sim.productTitle} • {sim.clientName}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      Indicador: {sim.indicatorName || "—"}
+                      {sim.approvedContract ? ` • ${sim.approvedContract.bankName}` : ""}
+                    </span>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase shrink-0 ${
+                      sim.status === "concluido"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                        : sim.status === "rejeitado"
+                          ? "bg-red-50 text-red-600 border border-red-100"
+                          : "bg-slate-100 text-slate-600 border border-slate-200"
+                    }`}
+                  >
+                    {sim.status}
+                  </span>
+                </div>
+              ))}
+              {simulations.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-8">
+                  Nenhuma simulação registrada.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === "fraudes" && (
         <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">

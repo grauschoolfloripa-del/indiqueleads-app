@@ -537,6 +537,18 @@ export const chatRepo = {
 // ---------------- Financing simulations ----------------
 
 export const simulationsRepo = {
+  /** Todas as simulações — só retorna dados para admin (RLS). */
+  async listAll(): Promise<FinancingSimulation[]> {
+    const { data, error } = await supabase
+      .from("financing_simulations")
+      .select(SIMULATION_SELECT)
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[repositories] simulationsRepo.listAll", error);
+      return [];
+    }
+    return (data ?? []).map(simulationFromDb);
+  },
   async listForAdvertiser(advertiserId: string): Promise<FinancingSimulation[]> {
     const { data, error } = await supabase
       .from("financing_simulations")
@@ -700,6 +712,18 @@ export const commissionsRepo = {
       console.error("[repositories] commissionsRepo.pay", error);
       throw error;
     }
+  },
+  /** Ledger inteiro — só retorna dados para admin (RLS). */
+  async listAll(): Promise<Commission[]> {
+    const { data, error } = await supabase
+      .from("commissions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[repositories] commissionsRepo.listAll", error);
+      return [];
+    }
+    return (data ?? []).map(commissionFromDb);
   },
   async listForAdvertiser(): Promise<Commission[]> {
     const { data, error } = await supabase
