@@ -49,6 +49,7 @@ import type { AffiliateCtx } from "./useAffiliateState";
 /** Aba `carteira` do painel do indicador. JSX movido sem alteração. */
 export default function CarteiraTab({ ctx }: { ctx: AffiliateCtx }) {
   const {
+    certifiedCategories,
     activeChatLeadId,
     activeLeads,
     activeTab,

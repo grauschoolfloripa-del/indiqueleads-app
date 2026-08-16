@@ -83,10 +83,19 @@ export interface AffiliateDashboardProps {
     senderRole: "client" | "advertiser",
     text: string,
   ) => void;
+  /**
+   * Nichos que este indicador liberou na Academy.
+   *
+   * A vitrine já chega filtrada por eles, mas os filtros de categoria
+   * precisam da lista para não oferecer nichos que a pessoa não pode
+   * indicar — oferecer e não ter nada dentro parece defeito.
+   */
+  certifiedCategories: Category[];
 }
 
 export function useAffiliateState(props: AffiliateDashboardProps) {
   const {
+    certifiedCategories,
     indicator,
     onUpdateIndicator,
     products,
@@ -390,6 +399,7 @@ export function useAffiliateState(props: AffiliateDashboardProps) {
   const scheduledVisits = activeLeads.filter((l) => l.status === "visita_agendada");
 
   return {
+    certifiedCategories,
     activeChatLeadId,
     activeLeads,
     activeTab,

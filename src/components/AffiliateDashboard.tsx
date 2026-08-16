@@ -62,6 +62,7 @@ import FinanciamentosTab from "./affiliate/FinanciamentosTab";
 export default function AffiliateDashboard(props: AffiliateDashboardProps) {
   const ctx = useAffiliateState(props);
   const {
+    certifiedCategories,
     activeChatLeadId,
     activeLeads,
     activeTab,
@@ -312,6 +313,21 @@ export default function AffiliateDashboard(props: AffiliateDashboardProps) {
               </span>
               <span className="text-sm font-mono font-semibold text-amber-400">
                 R$ {indicator.balancePending.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            {/* Sem isto, tudo que o indicador já recebeu some da tela no
+                instante em que o anunciante paga: os dois saldos voltam a zero
+                e a pessoa não vê mais nenhum sinal do que ganhou. */}
+            <div className="border-l border-slate-800 h-10 pl-4">
+              <span className="block text-[10px] text-slate-400 uppercase font-bold">
+                Já Recebido
+              </span>
+              <span className="text-sm font-mono font-semibold text-sky-300">
+                R${" "}
+                {commissions
+                  .filter((c) => c.status === "paid")
+                  .reduce((acc, c) => acc + c.amount, 0)
+                  .toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
             </div>
           </div>

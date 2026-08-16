@@ -49,6 +49,7 @@ import type { AffiliateCtx } from "./useAffiliateState";
 /** Aba `vitrine` do painel do indicador. JSX movido sem alteração. */
 export default function VitrineTab({ ctx }: { ctx: AffiliateCtx }) {
   const {
+    certifiedCategories,
     activeChatLeadId,
     activeLeads,
     activeTab,
@@ -177,7 +178,10 @@ export default function VitrineTab({ ctx }: { ctx: AffiliateCtx }) {
             >
               Todas
             </button>
-            {VERTICALS_ORDER.map((catId) => {
+            {/* Só os nichos que a pessoa liberou na Academy. Mostrar os 13 e
+                deixar 12 vazios faz o app parecer quebrado — e sugere acesso a
+                produto que ela não pode indicar. */}
+            {VERTICALS_ORDER.filter((catId) => certifiedCategories.includes(catId)).map((catId) => {
               const v = VERTICALS[catId];
               const active = selectedCategory === catId;
               return (

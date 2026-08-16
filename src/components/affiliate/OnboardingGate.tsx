@@ -52,6 +52,7 @@ import type { AffiliateCtx } from "./useAffiliateState";
  */
 export default function OnboardingGate({ ctx }: { ctx: AffiliateCtx }) {
   const {
+    certifiedCategories,
     activeChatLeadId,
     activeLeads,
     activeTab,

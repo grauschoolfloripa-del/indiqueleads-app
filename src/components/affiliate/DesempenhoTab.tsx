@@ -49,6 +49,7 @@ import type { AffiliateCtx } from "./useAffiliateState";
 /** Aba `desempenho` do painel do indicador. JSX movido sem alteração. */
 export default function DesempenhoTab({ ctx }: { ctx: AffiliateCtx }) {
   const {
+    certifiedCategories,
     activeChatLeadId,
     activeLeads,
     activeTab,

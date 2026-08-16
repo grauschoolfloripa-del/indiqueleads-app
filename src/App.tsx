@@ -727,6 +727,7 @@ export default function App() {
                   indicator={indicatorProfileQuery.data}
                   onUpdateIndicator={handleUpdateIndicator}
                   products={products.filter((p) => certifiedCategories.includes(p.category))}
+                  certifiedCategories={certifiedCategories}
                   leads={leads}
                   simulations={simulations}
                   commissions={indicatorCommissionsQuery.data ?? []}
