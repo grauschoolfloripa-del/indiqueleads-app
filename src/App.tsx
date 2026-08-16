@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import AppIntro from "@/components/AppIntro";
 import InstallApp from "@/components/InstallApp";
 import PushOptIn from "@/components/PushOptIn";
 import { useIsStandalone } from "@/hooks/usePwa";
@@ -213,6 +214,10 @@ export default function App() {
   // Anunciante, admin e visitante nunca são travados: o anunciante trabalha no
   // computador e a vitrine pública precisa abrir para qualquer um, sempre.
   const runningAsApp = useIsStandalone();
+
+  // Abertura da marca: só no app instalado, uma vez por abertura. No navegador
+  // a pessoa está navegando um site — cortina de 6s ali seria intrusiva.
+  const [introConcluida, setIntroConcluida] = useState(false);
 
   const products = useMemo<Product[]>(() => {
     if (isAdmin) return allProductsQuery.data ?? [];
@@ -655,6 +660,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans selection:bg-blue-500 selection:text-white">
+      {runningAsApp && !introConcluida && <AppIntro onDone={() => setIntroConcluida(true)} />}
+
       <CommissionCelebration
         notifications={notificationsQuery.data ?? []}
         onDismiss={(ids) =>

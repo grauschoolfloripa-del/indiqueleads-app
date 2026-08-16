@@ -11,13 +11,20 @@
  *  4. Só /assets/ (nomes com hash, imutáveis) pode ser cache-first.
  */
 
-const VERSION = "v2"; // subir a cada mudança neste arquivo, para o cache antigo ser descartado
+const VERSION = "v3"; // subir a cada mudança neste arquivo, para o cache antigo ser descartado
 const SHELL = `il-shell-${VERSION}`;
 const ASSETS = `il-assets-${VERSION}`;
 const MEDIA = `il-media-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 
-const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png", "/indiqueleads-logo.png"];
+const PRECACHE = [
+  OFFLINE_URL,
+  "/icons/icon-192.png",
+  "/indiqueleads-logo.png",
+  // Abertura do app: baixada na instalação para tocar instantânea depois.
+  "/videos/intro.mp4",
+  "/videos/intro-poster.jpg",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -119,10 +126,15 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Imagens e ícones do próprio site.
+  // Vídeo é pedido em pedaços (Range). Guardar uma resposta 206 no cache
+  // devolveria um trecho no lugar do arquivo inteiro na próxima vez — e o
+  // vídeo simplesmente não tocaria. Deixamos o navegador cuidar sozinho.
+  if (request.headers.has("range")) return;
+
+  // Imagens, fontes e a abertura do app.
   if (
     url.origin === self.location.origin &&
-    /\.(png|jpe?g|svg|webp|avif|ico|woff2?)$/i.test(url.pathname)
+    /\.(png|jpe?g|svg|webp|avif|ico|woff2?|mp4)$/i.test(url.pathname)
   ) {
     event.respondWith(staleWhileRevalidate(request, MEDIA));
   }
