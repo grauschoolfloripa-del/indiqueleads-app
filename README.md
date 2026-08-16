@@ -54,6 +54,55 @@ Editor, registre no histórico para o `db push` não tentar reaplicá-la:
 npx supabase migration repair --status applied <versao> --db-url "..."
 ```
 
+## O aplicativo (PWA)
+
+O app é o próprio site instalado — **não existe na App Store nem na Play
+Store, de propósito**. A Apple não permite baixar app do site do desenvolvedor
+(nem depois da abertura do CADE: no iOS o app precisa vir da App Store ou de
+uma loja alternativa autorizada), e no Android o APK direto passou a exigir
+verificação de desenvolvedor. O PWA entrega a instalação pelo site nos dois
+aparelhos, sem loja e sem revisão.
+
+**App exclusivo:** aprovada a candidatura, o indicador só vê a Academy e a
+vitrine rodando como app instalado (`display-mode: standalone`). Antes da
+aprovação ele segue no navegador — é onde preenche o cadastro. Anunciante,
+admin e visitante nunca são travados; a vitrine pública precisa abrir para
+qualquer um.
+
+Peças: `public/manifest.webmanifest`, `public/sw.js`, `src/lib/pwa.ts`,
+`src/components/InstallApp.tsx`. Ícones são gerados do logo:
+
+```bash
+python3 scripts/gen-icons.py
+```
+
+Para testar as telas do app instalado sem instalar, em desenvolvimento:
+`http://localhost:8080/?simular-app=1`. O bloco é removido pelo bundler em
+produção — não é uma brecha no ar.
+
+### Regras do service worker
+
+Errar aqui prende o usuário numa versão velha, então: nunca interceptar nada
+além de GET; nunca tocar em chamada do Supabase; navegação sempre
+network-first; só `/assets/` (nome com hash) pode ser cache-first.
+
+### Push
+
+`notifications` ganhou um trigger que chama a Edge Function `send-push`. O
+trigger engole a própria exceção **de propósito** — push é um extra e não pode
+derrubar o registro de uma comissão.
+
+Falta publicar a função e cadastrar os segredos (o endereço e o segredo
+compartilhado já estão em `app_private.push_config`):
+
+```bash
+SUPABASE_ACCESS_TOKEN=<seu-token> npx supabase secrets set --project-ref ichydxicjootuaokhgkz VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... PUSH_SHARED_SECRET=... VAPID_SUBJECT=mailto:contato@midiaeco.com
+```
+
+```bash
+SUPABASE_ACCESS_TOKEN=<seu-token> npx supabase functions deploy send-push --project-ref ichydxicjootuaokhgkz
+```
+
 ## Deploy (Vercel)
 
 O build usa o preset `vercel` do Nitro (definido em `vite.config.ts`) e escreve
