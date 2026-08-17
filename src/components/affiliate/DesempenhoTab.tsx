@@ -1,4 +1,4 @@
-import { useState, FormEvent, UIEvent } from "react";
+import { Fragment, useState, FormEvent, UIEvent } from "react";
 import { useTabParam } from "@/hooks/useTabParam";
 import {
   Share2,
@@ -286,9 +286,13 @@ export default function DesempenhoTab({ ctx }: { ctx: AffiliateCtx }) {
                   const leadMsgs = chatMessages.filter((m) => m.leadId === lead.id);
 
                   return (
-                    <>
+                    // Cada lead vira DUAS linhas: a do lead e a do chat
+                    // expandido. Como o map só pode devolver um nó, elas vêm
+                    // num fragmento — e a chave precisa estar nele, não nas
+                    // linhas de dentro. `<>` não aceita chave; por isso o
+                    // fragmento nomeado.
+                    <Fragment key={lead.id}>
                       <tr
-                        key={lead.id}
                         className={`hover:bg-slate-50/50 transition-all ${isChatOpen ? "bg-blue-50/20" : ""}`}
                       >
                         <td className="py-4 px-4 font-medium text-slate-900">
@@ -377,7 +381,7 @@ export default function DesempenhoTab({ ctx }: { ctx: AffiliateCtx }) {
                         </td>
                       </tr>
                       {isChatOpen && (
-                        <tr key={`${lead.id}-chat-expanded`} className="bg-slate-50/50">
+                        <tr className="bg-slate-50/50">
                           <td
                             colSpan={6}
                             className="p-4 bg-slate-50/60 border-t border-b border-slate-100"
@@ -488,7 +492,7 @@ export default function DesempenhoTab({ ctx }: { ctx: AffiliateCtx }) {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>
