@@ -745,6 +745,12 @@ export default function App() {
               </p>
             </div>
           </div>
+        ) : supaLoading ? (
+          /* Sessão sendo restaurada. Sem este ramo o app caía na LandingPage —
+             que traz o logo — durante a fração de segundo entre abrir e o
+             Supabase devolver a sessão salva. Quem reabria o app via o logo
+             piscar antes do próprio painel. */
+          <div className="flex-1 bg-[#0B1728]" />
         ) : !loggedUser || loggedUser.role !== currentRole ? (
           /* Render beautiful complete Landing Page with Login Forms if no user is authenticated for this role */
           <LandingPage />
