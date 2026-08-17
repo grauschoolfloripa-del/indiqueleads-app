@@ -215,6 +215,15 @@ export default function App() {
   // computador e a vitrine pública precisa abrir para qualquer um, sempre.
   const runningAsApp = useIsStandalone();
 
+  // Telas que ganham a moldura de app no celular (barra superior + navegação
+  // inferior). Precisa ser calculado aqui porque o recuo do topo mora no
+  // <main>, acima dos painéis.
+  const comMolduraDeApp =
+    !!loggedUser &&
+    !naAcademy &&
+    ((currentRole === "indicador" && indicatorReady && runningAsApp) ||
+      currentRole === "anunciante");
+
   // Abertura da marca: só no app instalado, uma vez por abertura. No navegador
   // a pessoa está navegando um site — cortina de 6s ali seria intrusiva.
   const [introConcluida, setIntroConcluida] = useState(false);
@@ -673,9 +682,11 @@ export default function App() {
         }
       />
 
-      {/* Persistent Profile / Session Bar for Logged-In Users */}
+      {/* Barra de sessão — só no computador. No celular ela ocupava a primeira
+          dobra com nome, papel e e-mail, informação que a pessoa já sabe; a
+          identidade e o "sair" moram no menu lateral do app. */}
       {loggedUser && currentRole !== "visitante" && (
-        <div className="bg-blue-50/80 backdrop-blur-sm border-b border-blue-100/60 py-2.5 px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-950 font-medium font-sans">
+        <div className="hidden lg:flex bg-blue-50/80 backdrop-blur-sm border-b border-blue-100/60 py-2.5 px-6 flex-col sm:flex-row items-center justify-between gap-3 text-xs text-blue-950 font-medium font-sans">
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -705,7 +716,14 @@ export default function App() {
       )}
 
       {/* Main Content Render Box based on current simulation role and login state */}
-      <main className="flex-1 pb-16">
+      {/* O recuo do topo precisa ficar aqui, e não dentro do painel: tudo que
+          vem antes dele — como o aviso de notificações bloqueadas — ficaria
+          escondido atrás da barra fixa do app. */}
+      <main
+        className={`flex-1 pb-16 ${
+          comMolduraDeApp ? "pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-0" : ""
+        }`}
+      >
         {currentRole === "visitante" && activeProductForVisitor ? (
           <VisitorView
             product={activeProductForVisitor}

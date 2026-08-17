@@ -44,6 +44,8 @@ import {
 } from "../../types";
 import { VERTICALS, VERTICALS_ORDER, verticalBadge } from "../../lib/verticals";
 import SponsorSlot from "../SponsorSlot";
+import ProductCardCompact from "@/components/app/ProductCardCompact";
+import { SponsorHero, StatStrip } from "@/components/app/AppHero";
 import type { AffiliateCtx } from "./useAffiliateState";
 
 /** Aba `vitrine` do painel do indicador. JSX movido sem alteração. */
@@ -140,10 +142,27 @@ export default function VitrineTab({ ctx }: { ctx: AffiliateCtx }) {
     withdrawSuccess,
   } = ctx;
 
+  const recebido = commissions.filter((c) => c.status === "paid").reduce((a, c) => a + c.amount, 0);
+  const dinheiro = (v: number) => `R$ ${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+      {/* ---- topo do app: patrocínio e números. Só no celular; no computador
+             o patrocínio tem seu próprio espaço e os saldos ficam no cartão de
+             perfil. ---- */}
+      <div className="space-y-4 lg:hidden">
+        <SponsorHero />
+        <StatStrip
+          items={[
+            { label: "Disponível", value: dinheiro(indicator.balanceAvailable), tone: "positivo" },
+            { label: "A receber", value: dinheiro(indicator.balancePending), tone: "espera" },
+            { label: "Já recebido", value: dinheiro(recebido) },
+          ]}
+        />
+      </div>
+
       {/* Sidebar filters */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5 lg:col-span-1">
+      <div className="hidden lg:block bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-5 lg:col-span-1">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <span className="font-display font-bold text-slate-800 text-sm flex items-center gap-2">
             <Filter className="w-4 h-4 text-blue-700" />
@@ -419,119 +438,136 @@ export default function VitrineTab({ ctx }: { ctx: AffiliateCtx }) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredProducts.map((prod) => {
-              const digitalComm = prod.commissionDigitalValue || 0;
-              const presencialComm = prod.commissionPresencialValue || 0;
-
-              return (
-                <div
+          <>
+            {/* Celular: dois por linha, cartão compacto. O cartão largo abaixo
+                traz detalhamento que não cabe em 170px de largura. */}
+            <div className="grid grid-cols-2 gap-3 lg:hidden">
+              {filteredProducts.map((prod) => (
+                <ProductCardCompact
                   key={prod.id}
-                  className="bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col"
-                >
-                  <div className="relative h-44 overflow-hidden bg-slate-900">
-                    <img
-                      src={prod.coverImage}
-                      alt={prod.title}
-                      className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-xl text-[10px] font-bold font-mono tracking-wider flex items-center gap-1.5 shadow-sm">
-                      {verticalBadge(prod.category)}
-                    </div>
-                    {prod.status === "reservado" && (
-                      <div className="absolute inset-0 bg-slate-950/60 flex items-center justify-center">
-                        <span className="bg-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest font-display">
-                          RESERVADO
-                        </span>
+                  product={prod}
+                  onOpen={onViewProduct ? () => onViewProduct(prod.id) : undefined}
+                  onShare={() => setSharingProduct(prod)}
+                />
+              ))}
+            </div>
+
+            <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 gap-6">
+              {filteredProducts.map((prod) => {
+                const digitalComm = prod.commissionDigitalValue || 0;
+                const presencialComm = prod.commissionPresencialValue || 0;
+
+                return (
+                  <div
+                    key={prod.id}
+                    className="bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col"
+                  >
+                    <div className="relative h-44 overflow-hidden bg-slate-900">
+                      <img
+                        src={prod.coverImage}
+                        alt={prod.title}
+                        className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-xl text-[10px] font-bold font-mono tracking-wider flex items-center gap-1.5 shadow-sm">
+                        {verticalBadge(prod.category)}
                       </div>
-                    )}
-                    <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-sm rounded-lg py-1 px-2.5 text-xs font-semibold text-slate-200 border border-white/5 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-red-400" />
-                      <span>
-                        {prod.location.city} - {prod.location.state}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] text-blue-700 font-bold tracking-wider uppercase font-mono">
-                        {prod.advertiserName}
-                      </span>
-                      <h3 className="font-display font-bold text-slate-900 text-base leading-tight mt-0.5 line-clamp-1">
-                        {prod.title}
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{prod.description}</p>
-
-                      <div className="mt-3 font-mono">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                          Valor de Venda
-                        </span>
-                        <span className="text-lg font-bold text-slate-900">
-                          R$ {prod.price.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Commissions Tiers detail */}
-                    <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-                      <div>
-                        <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider">
-                          Digital (Indicação)
-                        </span>
-                        <span className="text-xs font-mono font-bold text-blue-800">
-                          R$ {digitalComm.toLocaleString("pt-BR")}{" "}
-                          <span className="text-[9px] font-normal text-slate-500">
-                            ({prod.commissionDigitalPct}%)
+                      {prod.status === "reservado" && (
+                        <div className="absolute inset-0 bg-slate-950/60 flex items-center justify-center">
+                          <span className="bg-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest font-display">
+                            RESERVADO
                           </span>
-                        </span>
-                      </div>
-                      <div className="border-l border-slate-200 pl-2">
-                        <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider">
-                          Presencial (Acompanha)
-                        </span>
-                        <span
-                          className={`text-xs font-mono font-bold ${prod.allowPresencialTier ? "text-emerald-700" : "text-slate-400"}`}
-                        >
-                          {prod.allowPresencialTier ? (
-                            <>
-                              R$ {presencialComm.toLocaleString("pt-BR")}{" "}
-                              <span className="text-[9px] font-normal text-slate-500">
-                                ({prod.commissionPresencialPct}%)
-                              </span>
-                            </>
-                          ) : (
-                            "Não permitido"
-                          )}
+                        </div>
+                      )}
+                      <div className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-sm rounded-lg py-1 px-2.5 text-xs font-semibold text-slate-200 border border-white/5 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-red-400" />
+                        <span>
+                          {prod.location.city} - {prod.location.state}
                         </span>
                       </div>
                     </div>
 
-                    {/* Primary Call to Action */}
-                    <div className="mt-4 flex gap-2">
-                      {onViewProduct && (
+                    <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] text-blue-700 font-bold tracking-wider uppercase font-mono">
+                          {prod.advertiserName}
+                        </span>
+                        <h3 className="font-display font-bold text-slate-900 text-base leading-tight mt-0.5 line-clamp-1">
+                          {prod.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                          {prod.description}
+                        </p>
+
+                        <div className="mt-3 font-mono">
+                          <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                            Valor de Venda
+                          </span>
+                          <span className="text-lg font-bold text-slate-900">
+                            R$ {prod.price.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Commissions Tiers detail */}
+                      <div className="mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                        <div>
+                          <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider">
+                            Digital (Indicação)
+                          </span>
+                          <span className="text-xs font-mono font-bold text-blue-800">
+                            R$ {digitalComm.toLocaleString("pt-BR")}{" "}
+                            <span className="text-[9px] font-normal text-slate-500">
+                              ({prod.commissionDigitalPct}%)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="border-l border-slate-200 pl-2">
+                          <span className="text-[9px] text-slate-500 font-bold block uppercase tracking-wider">
+                            Presencial (Acompanha)
+                          </span>
+                          <span
+                            className={`text-xs font-mono font-bold ${prod.allowPresencialTier ? "text-emerald-700" : "text-slate-400"}`}
+                          >
+                            {prod.allowPresencialTier ? (
+                              <>
+                                R$ {presencialComm.toLocaleString("pt-BR")}{" "}
+                                <span className="text-[9px] font-normal text-slate-500">
+                                  ({prod.commissionPresencialPct}%)
+                                </span>
+                              </>
+                            ) : (
+                              "Não permitido"
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Primary Call to Action */}
+                      <div className="mt-4 flex gap-2">
+                        {onViewProduct && (
+                          <button
+                            onClick={() => onViewProduct(prod.id)}
+                            className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <Eye className="w-4 h-4 text-slate-500" />
+                            Ver Detalhes
+                          </button>
+                        )}
                         <button
-                          onClick={() => onViewProduct(prod.id)}
-                          className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                          onClick={() => setSharingProduct(prod)}
+                          className="flex-1 bg-blue-700 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-3 rounded-xl transition-all shadow flex items-center justify-center gap-1.5 shadow-blue-100"
                         >
-                          <Eye className="w-4 h-4 text-slate-500" />
-                          Ver Detalhes
+                          <Share2 className="w-3.5 h-3.5" />
+                          Obter Link
                         </button>
-                      )}
-                      <button
-                        onClick={() => setSharingProduct(prod)}
-                        className="flex-1 bg-blue-700 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-3 rounded-xl transition-all shadow flex items-center justify-center gap-1.5 shadow-blue-100"
-                      >
-                        <Share2 className="w-3.5 h-3.5" />
-                        Obter Link
-                      </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>

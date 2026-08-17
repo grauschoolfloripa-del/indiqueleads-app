@@ -45,6 +45,8 @@ import {
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, verticalBadge } from "../lib/verticals";
 import SponsorSlot from "./SponsorSlot";
+import MobileChrome from "./app/MobileChrome";
+import { signOut as supabaseSignOut } from "@/hooks/useAuth";
 import { useAffiliateState, type AffiliateDashboardProps } from "./affiliate/useAffiliateState";
 import OnboardingGate from "./affiliate/OnboardingGate";
 import VitrineTab from "./affiliate/VitrineTab";
@@ -159,10 +161,48 @@ export default function AffiliateDashboard(props: AffiliateDashboardProps) {
     return <OnboardingGate ctx={ctx} />;
   }
 
+  const titulosDeAba: Record<string, string> = {
+    vitrine: "Vitrine",
+    desempenho: "Meu desempenho",
+    carteira: "Carteira",
+    financiamentos: "Financiamentos",
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
-      {/* Header Profile Summary */}
-      <div className="bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-white/10 relative overflow-hidden">
+    // Os recuos afastam o conteúdo das barras fixas do app. No computador as
+    // barras não existem, então voltam ao espaçamento normal.
+    <div className="max-w-7xl mx-auto px-4 font-sans py-4 pb-[calc(4rem+env(safe-area-inset-bottom)+1rem)] lg:py-6">
+      <MobileChrome
+        title={titulosDeAba[activeTab] ?? "IndiqueLeads"}
+        tabs={[
+          { id: "vitrine", label: "Vitrine", icon: Eye },
+          { id: "desempenho", label: "Leads", icon: TrendingUp, badge: activeLeads.length },
+          { id: "carteira", label: "Carteira", icon: Wallet },
+          { id: "financiamentos", label: "Crédito", icon: Landmark },
+        ]}
+        activeTab={activeTab}
+        onTab={(id) => setActiveTab(id as typeof activeTab)}
+        actions={[
+          {
+            id: "academy",
+            label: "Liberar outro nicho",
+            icon: Award,
+            highlight: true,
+            onClick: () =>
+              void navigate({
+                to: "/",
+                search: (prev: Record<string, unknown>) => ({ ...prev, aba: "academy" }),
+              }),
+          },
+        ]}
+        profile={{ name: indicator.name, subtitle: `Liga ${indicator.league}` }}
+        onLogout={() => void supabaseSignOut()}
+      />
+
+      {/* Cartão de perfil — só no computador. No celular ele trazia nome,
+          e-mail, reputação e chave PIX no topo de toda tela; a identidade
+          agora vive no menu e os números na faixa da vitrine. */}
+      <div className="hidden lg:block bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-white/10 relative overflow-hidden">
         <div className="absolute right-0 bottom-0 top-0 opacity-[0.07] flex items-center mr-12 pointer-events-none">
           <Award className="w-64 h-64 text-white" />
         </div>
@@ -336,14 +376,15 @@ export default function AffiliateDashboard(props: AffiliateDashboardProps) {
         </div>
       </div>
 
-      {/* Sponsor slot — top of affiliate dashboard */}
-      <div className="mb-6">
+      {/* Patrocínio no computador. No celular ele foi para o topo da vitrine,
+          como primeiro elemento da tela — dois blocos seriam repetição. */}
+      <div className="mb-6 hidden lg:block">
         <SponsorSlot variant="card" label="Patrocinadores" />
       </div>
 
       {/* Dashboard Sub-navigation Tabs */}
 
-      <div className="flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
+      <div className="hidden lg:flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
         <button
           onClick={() => setActiveTab("vitrine")}
           className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${

@@ -38,6 +38,7 @@ import {
   ArrowRightLeft,
   Link,
   Code,
+  Plus,
 } from "lucide-react";
 import {
   Product,
@@ -55,6 +56,9 @@ import {
 } from "../types";
 import { VERTICALS, VERTICALS_ORDER, getVertical } from "@/lib/verticals";
 import SponsorSlot from "./SponsorSlot";
+import MobileChrome from "./app/MobileChrome";
+import { SponsorHero } from "./app/AppHero";
+import { signOut as supabaseSignOut } from "@/hooks/useAuth";
 import DynamicAttributesFields from "@/components/product/DynamicAttributesFields";
 
 import { useAdvertiserState, type AdvertiserDashboardProps } from "./advertiser/useAdvertiserState";
@@ -202,10 +206,43 @@ export default function AdvertiserDashboard(props: AdvertiserDashboardProps) {
     return <OnboardingGate ctx={ctx} />;
   }
 
+  const titulosDeAba: Record<string, string> = {
+    funnel: "Funil de vendas",
+    produtos: "Seus anúncios",
+    financeiro: "Financeiro",
+    afiliados: "Indicadores",
+    financiamentos: "Financiamentos",
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 font-sans">
-      {/* Header Info */}
-      <div className="bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-white/10 relative overflow-hidden">
+    <div className="max-w-7xl mx-auto px-4 py-4 pb-[calc(4rem+env(safe-area-inset-bottom)+1rem)] font-sans lg:py-6">
+      <MobileChrome
+        title={titulosDeAba[activeTab] ?? "IndiqueLeads"}
+        tabs={[
+          { id: "funnel", label: "Funil", icon: TrendingUp, badge: myLeads.length },
+          { id: "produtos", label: "Anúncios", icon: Layers, badge: myProducts.length },
+          { id: "financeiro", label: "Repasses", icon: DollarSign },
+          { id: "afiliados", label: "Rede", icon: Users },
+          { id: "financiamentos", label: "Crédito", icon: Landmark },
+        ]}
+        activeTab={activeTab}
+        onTab={(id) => setActiveTab(id as typeof activeTab)}
+        actions={[
+          {
+            id: "novo-anuncio",
+            label: "Anunciar novo bem",
+            icon: Plus,
+            highlight: true,
+            onClick: () => setIsAddingProduct(true),
+          },
+        ]}
+        profile={{ name: advertiser.name, subtitle: `Plano ${advertiser.plan}` }}
+        onLogout={() => void supabaseSignOut()}
+      />
+
+      {/* Cabeçalho do anunciante — só no computador. No celular a identidade
+          mora no menu lateral, e a primeira dobra fica para o patrocínio. */}
+      <div className="hidden lg:block bg-gradient-to-br from-sea-700 via-ink-900 to-ink-950 rounded-3xl p-6 text-white mb-8 shadow-xl border border-white/10 relative overflow-hidden">
         {/* brilho da marca no canto */}
         <div
           aria-hidden
@@ -339,14 +376,18 @@ export default function AdvertiserDashboard(props: AdvertiserDashboardProps) {
         </div>
       </div>
 
-      {/* Sponsor slot — top of advertiser dashboard */}
-      <div className="mb-6">
+      {/* Patrocínio: no celular é o primeiro elemento da tela; no computador
+          segue como bloco entre o cabeçalho e as abas. */}
+      <div className="mb-4 lg:hidden">
+        <SponsorHero />
+      </div>
+      <div className="mb-6 hidden lg:block">
         <SponsorSlot variant="card" label="Patrocinadores" />
       </div>
 
       {/* Navigation tabs inside dashboard */}
 
-      <div className="flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
+      <div className="hidden lg:flex overflow-x-auto scrollbar-none border-b border-slate-200 mb-6 font-display font-medium text-sm [-webkit-overflow-scrolling:touch]">
         <button
           onClick={() => setActiveTab("funnel")}
           className={`pb-3 px-4 shrink-0 whitespace-nowrap border-b-2 transition-all ${
